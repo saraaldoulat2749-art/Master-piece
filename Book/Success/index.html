@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../../Nav/style.css">
+
+    <link rel="stylesheet" href="style.css">
+       <link rel="stylesheet" href="../../Footer/style.css">
+</head>
+<body>
+    <div id="nav-container"></div>
+<script>
+fetch("../../Nav/index.html")
+  .then(response => response.text())
+  .then(data => {
+    document.getElementById("nav-container").innerHTML = data;
+  })
+  .catch(error => console.error("Error loading navbar:", error));
+</script> 
+    <main class="success-container">
+        <section class="success-header">
+            <div class="success-icon">✓</div>
+            <h1>Booking Successful!</h1>
+            <p>
+                Your appointment has been booked successfully.
+                Here are your appointment details.
+            </p>
+        </section>
+        <section class="booking-card">
+            <h2 class="booking-title">Appointment Details</h2>
+            <div class="doctor-info">
+                <img
+                    id="doctorImage"
+                    class="doctor-image"
+                    src="https://placehold.co/200x200/e8f8f7/087f86?text=Doctor"
+                    alt="Doctor"
+                >
+                <div class="doctor-details">
+                    <h2 id="doctorName">Doctor Name</h2>
+                    <p id="doctorSpecialty" class="specialty">
+                        Medical Specialty
+                    </p>
+                    <p id="doctorArea">Clinic Location</p>
+                </div>
+            </div>
+            <h3 class="details-title">Your Appointment</h3>
+            <div class="details-grid">
+                <div class="detail-item">
+                    <div class="detail-icon">📅</div>
+                    <div class="detail-text">
+                        <span>Appointment Date</span>
+                        <strong id="appointmentDate">Not specified</strong>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-icon">🕒</div>
+                    <div class="detail-text">
+                        <span>Appointment Time</span>
+                        <strong id="appointmentTime">Not specified</strong>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-icon">📍</div>
+                    <div class="detail-text">
+                        <span>Clinic Location</span>
+                        <strong id="appointmentLocation">Not specified</strong>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-icon">✓</div>
+                    <div class="detail-text">
+                        <span>Booking Status</span>
+                        <strong>Confirmed</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="confirmation-note">
+                Your appointment is confirmed. Please arrive a few minutes
+                before your scheduled time.
+            </div>
+            <div class="buttons">
+                <a href="../Time/index.html" class="btn btn-primary">
+                    Book Another Appointment
+                </a>
+                <a href="../../Home/Master.html" class="btn btn-secondary">
+                    Back to Home
+                </a>
+            </div>
+        </section>
+    </main>
+    <div id="footer-container"></div>
+<script>
+    fetch("../../Footer/index.html")
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("footer-container").innerHTML = data;
+        })
+        .catch(error => console.error("Error loading footer:", error));
+</script>
+<script src="script.js"></script>
+</body>
+</html>

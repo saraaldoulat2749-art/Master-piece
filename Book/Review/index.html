@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+     <link rel="stylesheet" href="../../Nav/style.css">
+
+    <link rel="stylesheet" href="style.css">
+       <link rel="stylesheet" href="../../Footer/style.css">
+</head>
+<body>
+       <div id="nav-container"></div>
+<script>
+fetch("../../Nav/index.html")
+  .then(response => response.text())
+  .then(data => {
+    document.getElementById("nav-container").innerHTML = data;
+  })
+  .catch(error => console.error("Error loading navbar:", error));
+</script>
+    <main class="page">
+    
+    </a>
+    <h1 class="page-title">Review Your <span>Booking</span></h1>
+    <p class="subtitle">
+        Please review your appointment details before confirming.
+    </p>
+    <div class="container">
+        <!-- Booking steps -->
+        <div class="steps">
+            <div class="step completed">
+                <div class="circle">✓</div>
+                <div class="step-label">Book Appointment</div>
+            </div>
+            <div class="step completed">
+                <div class="circle">✓</div>
+                <div class="step-label">Select Date &amp; Time</div>
+            </div>
+            <div class="step active">
+                <div class="circle">3</div>
+                <div class="step-label">Review Booking</div>
+            </div>
+            <div class="step">
+                <div class="circle">4</div>
+                <div class="step-label">Booking Success</div>
+            </div>
+           
+        </div>
+        <div class="content-grid">
+            <!-- Appointment details -->
+            <section class="card">
+                <h2 class="card-title">Appointment Details</h2>
+                <div class="doctor">
+                    <img
+                        id="doctorImage"
+                        class="doctor-image"
+                        src="https://placehold.co/160x160/e1f3f3/168f9b?text=Doctor"
+                        alt="Doctor photo"
+                    >
+                    <div>
+                        <h3 id="doctorName">Doctor not selected</h3>
+                        <p id="doctorSpecialty">Specialty not selected</p>
+                        <div class="rating">★ <span>Doctor information</span></div>
+                    </div>
+                </div>
+                <hr class="divider">
+                <div class="detail-row">
+                    <div class="detail-label">
+                        <span class="detail-icon">▦</span>Date
+                    </div>
+                    <div class="detail-value" id="appointmentDate">—</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">
+                        <span class="detail-icon">◷</span>Time
+                    </div>
+                    <div class="detail-value" id="appointmentTime">—</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">
+                        <span class="detail-icon">⌖</span>Location
+                    </div>
+                    <div class="detail-value" id="doctorArea">—</div>
+                </div>
+                <div class="detail-row">
+                    <div class="detail-label">
+                        <span class="detail-icon">▣</span>Duration
+                    </div>
+                    <div class="detail-value">30 minutes</div>
+                </div>
+            </section>
+            <!-- Patient information -->
+            <section>
+                <div class="card patient-card">
+                    <h2 class="card-title">♙ Patient Information</h2>
+                    <div class="patient-field">
+                        <label for="patientName">Full Name *</label>
+                        <input
+                            type="text"
+                            id="patientName"
+                            placeholder="Enter your full name"
+                            required
+                        >
+                    </div>
+                    <div class="patient-field">
+                        <label for="patientPhone">Phone Number *</label>
+                        <input
+                            type="tel"
+                            id="patientPhone"
+                            placeholder="+962 7X XXX XXXX"
+                            required
+                        >
+                    </div>
+                    <div class="patient-field">
+                        <label for="patientEmail">Email Address</label>
+                        <input
+                            type="email"
+                            id="patientEmail"
+                            placeholder="you@example.com"
+                        >
+                    </div>
+                </div>
+                <div class="notice">
+                    <strong>ⓘ Before You Confirm</strong>
+                    Please check your appointment details carefully.
+                    You can return to the previous step if you need to
+                    change the selected date or time.
+                </div>
+            </section>
+        </div>
+        <div class="error" id="errorMessage" role="alert"></div>
+        <div class="actions">
+            <a href="../Time/index.html" class="button back-button">
+                ← Back
+            </a>
+            <a
+                href="../Success/index.html"
+                class="button confirm-button"
+                id="confirmButton"
+            >
+                ✓ Confirm Appointment
+        </a>
+        </div>
+    </div>
+  
+</main>
+<div id="footer-container"></div>
+<script>
+    fetch("../../Footer/index.html")
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("footer-container").innerHTML = data;
+        })
+        .catch(error => console.error("Error loading footer:", error));
+</script>
+<script src="script.js"></script>
+</body>
+</html>

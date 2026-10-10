@@ -1,0 +1,309 @@
+   * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        :root {
+            --primary: #0aa6a6;
+            --dark: #18384a;
+            --muted: #718795;
+            --border: #e3edef;
+            --soft: #effafb;
+        }
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #eef9fb;
+            color: var(--dark);
+        }
+        .page {
+            width: 94%;
+            max-width: 1180px;
+            margin: 32px auto 45px;
+        }
+        .back-top {
+            display: inline-block;
+            text-decoration: none;
+            color: #168d9b;
+            font-size: 14px;
+            margin-bottom: 23px;
+        }
+        .page-title {
+            font-size: 32px;
+            margin-bottom: 12px;
+        }
+        .page-title span {
+            color: var(--primary);
+        }
+        .subtitle {
+            font-size: 14px;
+            color: var(--muted);
+            margin-bottom: 28px;
+        }
+        .container {
+            background: white;
+            border: 1px solid #eaf1f3;
+            border-radius: 18px;
+            padding: 30px;
+            box-shadow: 0 12px 35px rgba(18, 38, 58, 0.06);
+        }
+        /* Steps */
+        .steps {
+            display: flex;
+            align-items: flex-start;
+            margin: 0 auto 34px;
+        }
+        .step {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+        .step:not(:last-child)::after {
+            content: "";
+            position: absolute;
+            top: 18px;
+            left: calc(50% + 23px);
+            width: calc(100% - 46px);
+            height: 2px;
+            background: #e2ebed;
+        }
+        .step.completed:not(:last-child)::after {
+            background: var(--primary);
+        }
+        .circle {
+            position: relative;
+            z-index: 1;
+            width: 37px;
+            height: 37px;
+            margin: 0 auto 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid #dfe9eb;
+            border-radius: 50%;
+            background: white;
+            color: #83949e;
+            font-size: 13px;
+        }
+        .step.completed .circle,
+        .step.active .circle {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .step-label {
+            color: #83949e;
+            font-size: 12px;
+        }
+        .step.completed .step-label,
+        .step.active .step-label {
+            color: #078f9b;
+            font-weight: bold;
+        }
+        /* Main layout */
+        .content-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(260px, 0.9fr);
+            gap: 24px;
+            align-items: start;
+        }
+        .card {
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            padding: 22px;
+            background: white;
+        }
+        .card-title {
+            font-size: 17px;
+            margin-bottom: 22px;
+        }
+        /* Doctor */
+        .doctor {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .doctor-image {
+            width: 82px;
+            height: 82px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #e1f3f3;
+            border: 2px solid #edf7f7;
+            flex-shrink: 0;
+        }
+        .doctor h3 {
+            font-size: 17px;
+            margin-bottom: 7px;
+        }
+        .doctor p {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 7px;
+        }
+        .rating {
+            color: #e6a323;
+            font-size: 13px;
+        }
+        .rating span {
+            color: var(--muted);
+        }
+        .divider {
+            border: 0;
+            border-top: 1px solid var(--border);
+            margin: 17px 0;
+        }
+        /* Appointment details */
+        .detail-row {
+            display: grid;
+            grid-template-columns: 125px minmax(0, 1fr);
+            gap: 12px;
+            padding: 16px 0;
+            border-bottom: 1px solid #edf2f3;
+            align-items: start;
+            font-size: 13px;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+        .detail-label {
+            color: var(--muted);
+        }
+        .detail-value {
+            font-weight: 600;
+            overflow-wrap: anywhere;
+        }
+        .detail-icon {
+            color: var(--primary);
+            margin-right: 7px;
+        }
+        /* Patient info */
+        .patient-card {
+            background: #fbfefe;
+        }
+        .patient-field {
+            margin-bottom: 20px;
+        }
+        .patient-field:last-child {
+            margin-bottom: 0;
+        }
+        .patient-field label {
+            display: block;
+            color: var(--muted);
+            font-size: 12px;
+            margin-bottom: 7px;
+        }
+        .patient-field input {
+            width: 100%;
+            padding: 11px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            outline: none;
+        }
+        .patient-field input:focus {
+            border-color: var(--primary);
+        }
+        .notice {
+            margin-top: 20px;
+            padding: 15px;
+            background: var(--soft);
+            border: 1px solid #dceff1;
+            border-radius: 10px;
+            font-size: 12px;
+            line-height: 1.7;
+            color: #607987;
+        }
+        .notice strong {
+            display: block;
+            color: #168f9b;
+            margin-bottom: 5px;
+            font-size: 13px;
+        }
+        .error {
+            display: none;
+            margin-top: 15px;
+            padding: 12px;
+            border-radius: 8px;
+            color: #b42318;
+            background: #fff2f0;
+            font-size: 13px;
+        }
+        /* Buttons */
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-top: 25px;
+        }
+        .button {
+            min-height: 46px;
+            padding: 0 22px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9px;
+            font-family: inherit;
+            font-size: 13px;
+            font-weight: bold;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .back-button {
+            background: white;
+            color: #526a78;
+            border: 1px solid var(--border);
+        }
+        .confirm-button {
+            background: linear-gradient(100deg, #079ba7, #08b7c2);
+            color: white;
+            border: none;
+        }
+        .confirm-button:hover {
+            filter: brightness(0.96);
+        }
+      
+        @media (max-width: 800px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+           
+        }
+        @media (max-width: 520px) {
+            .page-title {
+                font-size: 26px;
+            }
+            .container {
+                padding: 17px;
+            }
+            .step-label {
+                font-size: 10px;
+                line-height: 1.4;
+            }
+            .circle {
+                width: 32px;
+                height: 32px;
+            }
+            .step:not(:last-child)::after {
+                top: 15px;
+                left: calc(50% + 19px);
+                width: calc(100% - 38px);
+            }
+            .doctor {
+                align-items: flex-start;
+            }
+            .detail-row {
+                grid-template-columns: 100px minmax(0, 1fr);
+                font-size: 12px;
+            }
+            .actions {
+                align-items: stretch;
+            }
+            .button {
+                padding: 0 12px;
+                font-size: 12px;
+            }
+         
+        }

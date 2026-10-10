@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../Nav/style.css">
+
+    <link rel="stylesheet" href="style.css">
+       <link rel="stylesheet" href="../Footer/style.css">
+</head>
+<body>
+       <div id="nav-container"></div>
+<script>
+fetch("../Nav/index.html")
+  .then(response => response.text())
+  .then(data => {
+    document.getElementById("nav-container").innerHTML = data;
+  })
+  .catch(error => console.error("Error loading navbar:", error));
+</script>
+    <main class="page">
+
+ <a href="../services/index.html" class="back">← Back to Services</a>
+
+  <section class="hero">
+    <div>
+      <h1>Find Nearby <span>Pharmacies</span></h1>
+      <p class="subtitle"><br>
+        Search for your medicine and find nearby pharmacies easily.
+      </p>
+    </div>
+
+    <img
+      src="https://png.pngtree.com/thumb_back/fw800/background/20240401/pngtree-blur-pharmacist-taking-medicine-from-shelf-in-the-pharmacy-image_15649233.jpg"
+      alt="Healthcare professional">
+  </section>
+
+  <section class="panel">
+    <h2>Search for Medicine &amp; Pharmacy</h2>
+    <p class="intro">
+      Enter the medicine name and your area to find nearby pharmacies that have it available.
+    </p>
+
+    <div class="fields">
+      <div>
+        <label for="medicine">♢ Medicine Name</label>
+        <input
+          id="medicine"
+          type="text"
+          placeholder="Enter medicine name (e.g. Panadol)"
+          value="Panadol"
+          autocomplete="off">
+      </div>
+
+      <div>
+        <label for="area">📍 Your Area</label>
+        <select id="area">
+          <option value="Amman">Amman</option>
+          <option value="Zarqa">Zarqa</option>
+          <option value="Irbid">Irbid</option>
+          <option value="Salt">Salt</option>
+          <option value="Aqaba">Aqaba</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Pharmacy results update automatically. No search button. -->
+    <div class="results-head">
+      <h3>📍 <span id="resultsTitle">Available pharmacies near you</span></h3>
+      <div class="count" id="resultCount" aria-live="polite"></div>
+    </div>
+
+    <div class="cards" id="pharmacyCards"></div>
+  </section>
+
+
+
+</main>
+<div id="footer-container"></div>
+
+<script>
+    fetch("../Footer/index.html")
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("footer-container").innerHTML = data;
+        })
+        .catch(error => console.error("Error loading footer:", error));
+</script>
+<script src="script.js"></script>
+</body>
+</html>

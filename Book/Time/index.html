@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+  <link rel="stylesheet" href="../../Nav/style.css">
+
+    <link rel="stylesheet" href="style.css">
+       <link rel="stylesheet" href="../../Footer/style.css">
+</head>
+<body>
+     <div id="nav-container"></div>
+<script>
+fetch("../../Nav/index.html")
+  .then(response => response.text())
+  .then(data => {
+    document.getElementById("nav-container").innerHTML = data;
+  })
+  .catch(error => console.error("Error loading navbar:", error));
+</script>
+    <main class="page">
+    <h1 class="page-title">Select Date <span>&amp; Time</span></h1>
+    <p class="subtitle">
+        Choose your preferred date and time for the appointment.
+    </p>
+    <div class="booking-container">
+        <!-- Booking progress steps -->
+        <div class="steps">
+            <div class="step completed">
+                <div class="step-circle">1</div>
+                <div class="step-label">Book Appointment</div>
+            </div>
+            <div class="step active">
+                <div class="step-circle">2</div>
+                <div class="step-label">Select Date &amp; Time</div>
+            </div>
+            <div class="step">
+                <div class="step-circle">3</div>
+                <div class="step-label">Review Booking</div>
+            </div>
+            <div class="step">
+                <div class="step-circle">4</div>
+                <div class="step-label">Booking Success</div>
+            </div>
+          
+        </div>
+        <div class="main-layout">
+            <!-- Doctor card -->
+            <aside class="doctor-card">
+                <img
+                    id="doctorImage"
+                    class="doctor-image"
+                    src="https://placehold.co/200x200/e1f3f3/168f9b?text=Doctor"
+                    alt="Selected doctor"
+                >
+                <h3 id="doctorName">Doctor not selected</h3>
+                <p class="doctor-specialty" id="doctorSpecialty">
+                    Specialty not selected
+                </p>
+                <hr class="doctor-divider">
+                <div class="doctor-detail">
+                    <span class="detail-icon">♙</span>
+                    <span id="doctorArea">Area not selected</span>
+                </div>
+                <div class="doctor-detail">
+                    <span class="detail-icon">▣</span>
+                    <span>30 minutes per appointment</span>
+                </div>
+                <div class="doctor-detail">
+                    <span class="detail-icon">✓</span>
+                    <span>
+                        Appointment details will be reviewed before confirmation.
+                    </span>
+                </div>
+                <a href="Book.html" class="change-doctor">Change doctor</a>
+            </aside>
+            <!-- Date and time area -->
+            <section class="right-content">
+                <h2 class="section-heading">Choose Your Date &amp; Time</h2>
+                <p class="section-description">
+                    Select a date, then choose an available time slot.
+                </p>
+                <div class="selection-grid">
+                    <!-- Date card -->
+                    <div class="selection-card">
+                        <h3>
+                            <span class="heading-icon">▣</span>
+                            Select Date
+                        </h3>
+                        <label class="field-label" for="appointmentDate">
+                            Appointment Date
+                        </label>
+                        <input
+                            type="date"
+                            id="appointmentDate"
+                            class="date-input"
+                            required
+                        >
+                        <p class="hint">
+                            Choose today or a future date. Availability is for demonstration.
+                        </p>
+                    </div>
+                    <!-- Time slots card -->
+                    <div class="selection-card">
+                        <h3>
+                            <span class="heading-icon">◷</span>
+                            Available Time Slots
+                        </h3>
+                        <div class="time-grid" id="timeGrid">
+                            <button type="button" class="time-slot">09:00 AM</button>
+                            <button type="button" class="time-slot">10:00 AM</button>
+                            <button type="button" class="time-slot">11:00 AM</button>
+                            <button type="button" class="time-slot">12:00 PM</button>
+                            <button type="button" class="time-slot">01:00 PM</button>
+                            <button type="button" class="time-slot">02:00 PM</button>
+                            <button type="button" class="time-slot">03:00 PM</button>
+                            <button type="button" class="time-slot">04:00 PM</button>
+                        </div>
+                        <p class="time-hint">
+                            Click a time slot to select your appointment.
+                        </p>
+                    </div>
+                </div>
+                <!-- Appointment information -->
+                <div class="information">
+                    <h4>ⓘ Appointment Information</h4>
+                    <p>
+                        Please arrive 10 minutes before your appointment.
+                        Your booking will be confirmed in the next step.
+                    </p>
+                </div>
+                <div class="error-message" id="errorMessage" role="alert"></div>
+                <div class="form-actions">
+                    <a href="../index.html"class="back-button">← Back</a>
+                    <a
+                        href="../Review/index.html"
+                        class="continue-button"
+                        id="continueButton"
+                    >
+                        Continue to Review →
+                </a>
+                </div>
+            </section>
+        </div>
+    </div>
+</main>
+<div id="footer-container"></div>
+<script>
+    fetch("../../Footer/index.html")
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("footer-container").innerHTML = data;
+        })
+        .catch(error => console.error("Error loading footer:", error));
+</script>
+<script src="script.js"></script>
+</body>
+</html>

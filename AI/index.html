@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../Nav/style.css">
+
+    <link rel="stylesheet" href="style.css">
+       <link rel="stylesheet" href="../Footer/style.css">
+</head>
+<body>
+      <div id="nav-container"></div>
+<script>
+fetch("../Nav/index.html")
+  .then(response => response.text())
+  .then(data => {
+    document.getElementById("nav-container").innerHTML = data;
+  })
+  .catch(error => console.error("Error loading navbar:", error));
+</script>
+    <main class="page">
+
+            <a href="../services/index.html" class="back">← Back to Services</a>
+
+<section class="hero">
+  <div>
+    <h1>AI <span>Symptom Checker</span></h1>
+    <p class="subtitle">
+      Tell us how you're feeling to receive general health guidance.
+    </p>
+  </div>
+
+  <img
+    src="https://static.vecteezy.com/system/resources/thumbnails/035/547/725/small_2x/ai-generated-robot-sitting-at-desk-with-laptop-computer-in-front-of-him-by-generative-ai-photo.jpg"
+    alt="Healthcare professional">
+</section>
+
+<section class="panel">
+  <h2>Tell Us About Your Symptoms</h2>
+  <p class="intro">
+    Select the symptoms you are experiencing and answer a few questions below.
+  </p>
+
+ <form id="symptomForm" action="Summary/index.html" method="get">
+
+    <div class="field">
+      <label>Which symptoms are you experiencing?</label>
+
+      <div class="symptoms">
+        <label class="symptom">
+          <input type="checkbox" name="symptom" value="Headache">
+          Headache
+        </label>
+
+        <label class="symptom">
+          <input type="checkbox" name="symptom" value="Fever">
+          Fever
+        </label>
+
+        <label class="symptom">
+          <input type="checkbox" name="symptom" value="Cough">
+          Cough
+        </label>
+
+        <label class="symptom">
+          <input type="checkbox" name="symptom" value="Sore throat">
+          Sore throat
+        </label>
+
+        <label class="symptom">
+          <input type="checkbox" name="symptom" value="Fatigue">
+          Fatigue
+        </label>
+
+        <label class="symptom">
+          <input type="checkbox" name="symptom" value="Stomach pain">
+          Stomach pain
+        </label>
+
+        <label class="symptom">
+          <input type="checkbox" name="symptom" value="Nausea">
+          Nausea
+        </label>
+
+        <label class="symptom">
+          <input type="checkbox" name="symptom" value="Dizziness">
+          Dizziness
+        </label>
+
+        <label class="symptom">
+          <input type="checkbox" name="symptom" value="Shortness of breath">
+          Shortness of breath
+        </label>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div class="field">
+        <label for="duration">
+          How long have you had these symptoms?
+        </label>
+
+        <select id="duration" name="duration" required>
+          <option value="">Choose duration</option>
+          <option>Started today</option>
+          <option>2–3 days</option>
+          <option>4–7 days</option>
+          <option>More than a week</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="severity">
+          How severe are your symptoms?
+        </label>
+
+        <select id="severity" name="severity" required>
+          <option value="">Choose severity</option>
+          <option>Mild</option>
+          <option>Moderate</option>
+          <option>Severe</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="field">
+      <label for="details">Additional details (optional)</label>
+
+      <textarea
+        id="details"
+        name="details"
+        placeholder="Describe any other symptoms or relevant details..."></textarea>
+    </div>
+
+   <button type="submit" class="button">
+  View Guidance &amp; Results →
+</button>
+
+    <p class="note">
+      This tool provides general information and is not a medical diagnosis.
+      If you have severe difficulty breathing, chest pain, or sudden confusion,
+      seek emergency care immediately.
+    </p>
+
+  </form>
+</section>
+
+
+</main>
+<div id="footer-container"></div>
+
+<script>
+    fetch("../Footer/index.html")
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("footer-container").innerHTML = data;
+        })
+        .catch(error => console.error("Error loading footer:", error));
+</script>
+<script src="script.js"></script>
+</body>
+</html>

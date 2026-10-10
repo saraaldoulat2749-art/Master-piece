@@ -1,0 +1,375 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CarePlus | Your Health, Our Priority</title>
+    <link rel="stylesheet" href="Master.css">
+        <link rel="stylesheet" href="../Footer/style.css">
+<link rel="stylesheet" href="../Nav/style.css">
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+</head>
+
+<body>
+
+    <!-- ================= HERO SECTION ================= -->
+    <section class="hero" id="home">
+
+<div class="hero-video-bg">
+       
+<iframe
+    src="https://player.vimeo.com/video/512459198?background=1&autoplay=1&muted=1&loop=1&autopause=0&playsinline=1"
+    frameborder="0"
+    allow="autoplay; fullscreen; picture-in-picture"
+    loading="eager"
+    title="CarePlus Hero Video">
+</iframe>
+
+    </div>
+
+    <div class="hero-overlay"></div>
+
+        <!-- HEADER -->
+        <div id="nav-container"></div>
+<script>
+fetch("../Nav/index.html")
+  .then(response => response.text())
+  .then(data => {
+    document.getElementById("nav-container").innerHTML = data;
+  })
+  .catch(error => console.error("Error loading navbar:", error));
+</script>
+<div id="home">
+        <!-- HERO CONTENT -->
+        <main class="hero-content">
+
+            <div class="tag">Integrated Health Platform</div>
+
+            <h1>
+                All Your Health Needs
+                <span>in One Place</span>
+            </h1>
+
+            <p class="description">
+                Book appointments, search for medicines, get symptom
+                guidance, shop medical products, and access home services —
+                all in one easy platform.
+            </p>
+
+            <!-- SEARCH -->
+            <form class="search-box" id="search">
+
+                <span class="magnify">⌕</span>
+
+                <input
+                    type="search"
+                    id="searchInput"
+                    placeholder="Search for a doctor, medicine, service..."
+                    aria-label="Search for a doctor, medicine, or service"
+                >
+
+                <button type="submit" aria-label="Search">⌕</button>
+
+            </form>
+
+            <!-- FEATURES -->
+            <div class="features">
+
+                <div class="feature">
+                    <div class="feature-icon">ϟ</div>
+                    <p>Easy &amp; Fast<br>Platform</p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">◷</div>
+                    <p>24/7<br>Support</p>
+                </div>
+
+                <div class="feature">
+                    <div class="feature-icon">♢</div>
+                    <p>Trusted Doctors<br>&amp; Services</p>
+                </div>
+
+
+            </div>
+
+
+<a href="../services/index.html" class="services-btn">
+    <span>Our Services</span>
+    <span class="services-arrow">
+        <i class="fa-solid fa-arrow-up-right-from-square"></i>
+    </span>
+</a>
+
+        </main>
+
+    </section>
+
+
+    <!-- ================= ABOUT SECTION ================= -->
+    <section class="about-section" id="about">
+
+        <div class="about-container">
+
+            <!-- ABOUT CONTENT -->
+            <div class="about-content">
+
+                <span class="about-label">ABOUT CAREPLUS</span>
+
+                <h2>
+                    Your Health,<br>
+                    Our Priority
+                </h2>
+
+                <p class="about-description">
+                    One smart platform connecting you with
+                    healthcare services, trusted medical
+                    professionals, and convenient home care.
+                </p>
+
+            </div>
+
+            <!-- ABOUT IMAGE -->
+            <div class="about-image-box">
+
+                <img
+                    src="https://iihmrbangalore.edu.in/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-03-at-12.26.34.jpeg"
+                    alt="CarePlus Healthcare Team"
+                    class="about-image"
+                >
+
+            </div>
+
+            <!-- MISSION, VISION, VALUES -->
+            <div class="about-features">
+
+                <div class="about-feature">
+
+                    <span class="feature-number">01</span>
+
+                    <h3>Our Mission</h3>
+
+                    <p>
+                        Making healthcare services easier
+                        and more accessible for everyone.
+                    </p>
+
+                </div>
+
+                <div class="about-feature">
+
+                    <span class="feature-number">02</span>
+
+                    <h3>Our Vision</h3>
+
+                    <p>
+                        Creating a smarter future through
+                        connected digital healthcare.
+                    </p>
+
+                </div>
+
+                <div class="about-feature">
+
+                    <span class="feature-number">03</span>
+
+                    <h3>Our Values</h3>
+
+                    <p>
+                        Building trust through privacy,
+                        quality, and compassionate care.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= SERVICES SECTION ================= -->
+    <section class="quick-services" id="services">
+
+        <!-- SECTION HEADING -->
+        <div class="quick-services-heading">
+
+            <span>--- Our Services ---</span>
+
+            <h2>Healthcare at Your Fingertips</h2>
+
+        </div>
+
+        <!-- SERVICES CARDS -->
+        <div class="quick-services-grid">
+
+            <a href="#appointments" class="quick-service">
+
+                <div class="quick-icon">♙</div>
+
+                <h3>Appointments</h3>
+
+            </a>
+
+            <a href="#medicine-search" class="quick-service">
+
+                <div class="quick-icon">✚</div>
+
+                <h3>Medicine Search</h3>
+
+            </a>
+
+            <a href="#ai-diagnosis" class="quick-service">
+
+                <div class="quick-icon">✧</div>
+
+                <h3>AI Symptoms</h3>
+
+            </a>
+
+            <a href="#medical-store" class="quick-service">
+
+                <div class="quick-icon">▣</div>
+
+                <h3>Medical Store</h3>
+
+            </a>
+
+            <a href="#elderly-care" class="quick-service">
+
+                <div class="quick-icon">♡</div>
+
+                <h3>Elderly Care</h3>
+
+            </a>
+
+            <a href="#home-lab-tests" class="quick-service">
+
+                <div class="quick-icon">⚕</div>
+
+                <h3>Home Lab Tests</h3>
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <section class="how-it-works" id="how-it-works">
+
+        <div class="decoration decoration-one"></div>
+        <div class="decoration decoration-two"></div>
+
+        <div class="section-header">
+
+            <div class="section-label">
+                <i class="fa-solid fa-heart-pulse"></i>
+                <span>Simple Steps</span>
+            </div>
+
+            <h2>
+                How <span>CarePlus</span> Works
+            </h2>
+
+            <p>
+                Your healthcare journey made simple.
+                Access trusted medical services in just four easy steps.
+            </p>
+
+        </div>
+
+        <div class="steps-container">
+
+            <!-- Step 1 -->
+            <article class="step-card">
+                <div class="icon-circle">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+
+                <div class="step-number">01</div>
+
+                <h3>Search &amp; Explore</h3>
+
+                <p>
+                    Find the right doctor, healthcare service,
+                    or medicine that meets your needs.
+                </p>
+            </article>
+
+            <!-- Step 2 -->
+            <article class="step-card">
+                <div class="icon-circle">
+                    <i class="fa-regular fa-calendar-check"></i>
+                </div>
+
+                <div class="step-number">02</div>
+
+                <h3>Book &amp; Confirm</h3>
+
+                <p>
+                    Choose your preferred date and time,
+                    then complete your booking with ease.
+                </p>
+            </article>
+
+            <!-- Step 3 -->
+            <article class="step-card">
+                <div class="icon-circle">
+                    <i class="fa-solid fa-bell"></i>
+                </div>
+
+                <div class="step-number">03</div>
+
+                <h3>Get Confirmation</h3>
+
+                <p>
+                    Receive your booking details and stay
+                    informed with helpful reminders.
+                </p>
+            </article>
+
+            <!-- Step 4 -->
+            <article class="step-card">
+                <div class="icon-circle">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+
+                <div class="step-number">04</div>
+
+                <h3>Receive Quality Care</h3>
+
+                <p>
+                    Enjoy convenient access to trusted
+                    healthcare professionals and services.
+                </p>
+            </article>
+
+        </div>
+
+       
+
+    </section>
+
+<div id="footer-container"></div>
+
+<script>
+    fetch("../Footer/index.html")
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("footer-container").innerHTML = data;
+        })
+        .catch(error => console.error("Error loading footer:", error));
+</script>    <!-- ================= JAVASCRIPT ================= -->
+    <script src="Master.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,126 @@
+:root {
+    --dark: #172536;
+    --cyan: #22c7d5;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    height: 80px;
+    padding: 15px 3%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 25px;
+    position: relative;
+    z-index: 5;
+    background-color: var(--dark);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.logo-icon {
+    width: 52px;
+    height: 52px;
+    background: var(--cyan);
+    border-radius: 13px;
+    display: grid;
+    place-items: center;
+    font-size: 29px;
+    color: white;
+    box-shadow: 0 0 25px #22c7d544;
+}
+
+.logo h2 {
+    color: white;
+    font-size: 29px;
+    line-height: 1.2;
+    font-weight: 700;
+}
+
+.logo h2 span {
+    color: var(--cyan);
+}
+
+.logo p {
+    font-size: 10px;
+    letter-spacing: .2px;
+    color: #d6e4eb;
+    margin-top: 3px;
+}
+
+nav {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+nav a {
+    color: #f0f6fa;
+    font-size: 12px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color .3s;
+    position: relative;
+}
+
+nav a:hover,
+nav a.active {
+    color: var(--cyan);
+}
+
+nav a.active::after {
+    content: "";
+    position: absolute;
+    bottom: -12px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--cyan);
+}
+
+.actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.btn {
+    padding: 10px 16px;
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.btn-login {
+    color: white;
+    border: 1px solid var(--cyan);
+}
+
+.btn-signup {
+    color: var(--dark);
+    background: var(--cyan);
+}
+
+@media (max-width: 1100px) {
+    header {
+        flex-wrap: wrap;
+        height: auto;
+    }
+
+    nav {
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+}

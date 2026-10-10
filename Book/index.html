@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="../Nav/style.css">
+
+    <link rel="stylesheet" href="style.css">
+       <link rel="stylesheet" href="../Footer/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+</head>
+<body>
+   <div id="nav-container"></div>
+<script>
+fetch("../Nav/index.html")
+  .then(response => response.text())
+  .then(data => {
+    document.getElementById("nav-container").innerHTML = data;
+  })
+  .catch(error => console.error("Error loading navbar:", error));
+</script>
+  <main class="booking-page">
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-text">
+            <a href="../services/index.html" class="back-link">← Back to Services</a>
+            <h1>Book an <span>Appointment</span></h1>
+            <p>
+                Find the right doctor and schedule your visit
+                in a few easy steps.
+            </p>
+        </div>
+        <div class="hero-image">
+            <img
+                src="https://ts4.mm.bing.net/th?id=OIP.TbrRGKR7k8uw3ZHNTorvvAHaD2&pid=15.1"
+                alt="Doctor"
+            >
+        </div>
+    </section>
+    <!-- Booking Form -->
+    <section class="booking-card">
+        <!-- Booking Steps -->
+        <div class="steps">
+            <div class="step active">
+                <div class="step-number">1</div>
+                <span>Book Appointment</span>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <span>Select Date &amp; Time</span>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <span>Review Booking</span>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <span>Booking Success</span>
+            </div>
+          
+        </div>
+        <h2 class="section-title">Select Your Area</h2>
+        <p class="section-description">
+            Choose your area, medical specialty, and preferred doctor
+            to book an appointment easily.
+        </p>
+        <form id="bookingForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="area">⌖ &nbsp; Select Area</label>
+                    <select id="area" required>
+                        <option value="">Choose an area</option>
+                        <option>Amman</option>
+                        <option>Zarqa</option>
+                        <option>Irbid</option>
+                        <option>Aqaba</option>
+                        <option>Salt</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="specialty">♧ &nbsp; Select Specialty</label>
+                    <select id="specialty" required>
+                        <option value="">Choose a specialty</option>
+                        <option>General Medicine</option>
+                        <option>Cardiology</option>
+                        <option>Dentistry</option>
+                        <option>Pediatrics</option>
+                        <option>Orthopedics</option>
+                        <option>Gynecology</option>
+                        <option>Dermatology</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="doctor">♙ &nbsp; Select Doctor</label>
+                    <select id="doctor" required>
+                        <option value="">Choose a doctor</option>
+                        <option>Dr. Sara Al-Masri</option>
+                        <option>Dr. Ahmad Khaled</option>
+                        <option>Dr. Lina Hassan</option>
+                    </select>
+                </div>
+            </div>
+          <a href="Time/index.html" class="find-button">
+    ⌕ &nbsp; Find Available Time &nbsp; →
+</a>
+        </form>
+        <!-- Popular Specialties -->
+        <section class="specialties">
+            <h2>Popular Specialties</h2>
+            <div class="specialty-grid">
+                <div class="specialty" data-specialty="General Medicine">
+                    <div class="specialty-icon">♡</div>
+                    <span>General Medicine</span>
+                </div>
+                <div class="specialty" data-specialty="Cardiology">
+                    <div class="specialty-icon">♡</div>
+                    <span>Cardiology</span>
+                </div>
+                <div class="specialty" data-specialty="Dentistry">
+                    <div class="specialty-icon">♧</div>
+                    <span>Dentistry</span>
+                </div>
+                <div class="specialty" data-specialty="Pediatrics">
+                    <div class="specialty-icon">♙</div>
+                    <span>Pediatrics</span>
+                </div>
+                <div class="specialty" data-specialty="Orthopedics">
+                    <div class="specialty-icon">✧</div>
+                    <span>Orthopedics</span>
+                </div>
+                <div class="specialty" data-specialty="Gynecology">
+                    <div class="specialty-icon">♡</div>
+                    <span>Gynecology</span>
+                </div>
+            </div>
+        </section>
+    </section>
+</main>
+<div id="footer-container"></div>
+
+<script>
+    fetch("../Footer/index.html")
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById("footer-container").innerHTML = data;
+        })
+        .catch(error => console.error("Error loading footer:", error));
+</script>
+<script src="script.js"></script>
+</body>
+</html>
