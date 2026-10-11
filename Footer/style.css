@@ -4,7 +4,7 @@
     padding: 55px 7% 20px;
     font-family: Arial, sans-serif;
     border-top: 3px solid #22c7d5;
-    height: 47vh;
+    min-height: 47vh;
 }
 
 .footer-container {
@@ -25,16 +25,27 @@
     font-weight: bold;
 }
 
+.footer-logo .brand-plus {
+    color: #22c7d5;
+}
+
 .logo-icon {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    background: #18b9c7;
-    color: white;
-    font-size: 23px;
+    width: 46px;
+    height: 46px;
+    flex: none;
+    border: 1px solid rgba(34, 199, 213, 0.55);
+    border-radius: 14px;
+    background: linear-gradient(145deg, rgba(34, 199, 213, 0.2), rgba(34, 199, 213, 0.06));
+    color: #22c7d5;
+}
+
+.logo-icon svg {
+    display: block;
+    width: 30px;
+    height: 30px;
 }
 
 .footer-brand > p:first-of-type {
@@ -74,6 +85,15 @@
     color: #d4e4eb;
     font-size: 13px;
     margin-bottom: 14px;
+}
+
+.footer-contact p a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.footer-contact p a:hover {
+    color: #22c7d5;
 }
 
 .social-links {

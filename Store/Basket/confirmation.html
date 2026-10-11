@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#172536">
+  <title>Order Confirmation | CarePlus</title>
+  <link rel="stylesheet" href="../../Nav/style.css"><link rel="stylesheet" href="../../Footer/style.css"><link rel="stylesheet" href="checkout.css">
+</head>
+<body>
+  <div id="nav-container"></div>
+  <main class="checkout-page confirmation-page">
+    <section class="confirmation-card" id="confirmation-card"><div class="success-mark" aria-hidden="true">✓</div><span class="eyebrow">CAREPLUS MEDICAL STORE</span><h1>Your order has been placed successfully!</h1><p class="confirmation-intro">Thank you for shopping with CarePlus Healthcare.</p><p class="order-reference">Order reference <strong id="order-reference"></strong></p>
+      <div class="confirmation-columns"><section><h2>Order items</h2><div id="confirmed-items" class="order-items"></div><div class="price-lines"><div><span>Subtotal</span><strong id="confirmed-subtotal"></strong></div><div><span>Delivery fee</span><strong id="confirmed-delivery-fee"></strong></div><div class="grand-total"><span>Total</span><strong id="confirmed-total"></strong></div></div></section><section><h2>Delivery details</h2><dl class="delivery-details" id="delivery-details"></dl><h2 class="payment-heading">Payment</h2><p id="confirmed-payment" class="confirmed-payment"></p></section></div>
+      <a class="continue-shopping" href="../index.html">Continue Shopping <span>→</span></a>
+    </section>
+    <section class="confirmation-card no-order" id="no-order" hidden><h1>No recent order found</h1><p>Start shopping to place your order.</p><a class="continue-shopping" href="../index.html">Continue Shopping <span>→</span></a></section>
+  </main>
+  <div id="footer-container"></div><script src="checkout.js"></script>
+  <script src="../../Footer/footer.js"></script>
+</body>
+</html>

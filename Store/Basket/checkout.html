@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#172536">
+  <title>Checkout | CarePlus</title>
+  <link rel="stylesheet" href="../../Nav/style.css"><link rel="stylesheet" href="../../Footer/style.css"><link rel="stylesheet" href="checkout.css">
+</head>
+<body>
+  <div id="nav-container"></div>
+  <main class="checkout-page">
+    <a class="back-link" href="../index.html?cart=open">← Back to cart</a>
+    <header class="checkout-heading"><span class="eyebrow">CAREPLUS MEDICAL STORE</span><h1>Checkout</h1><p>Review your order and enter your delivery details.</p></header>
+    <div class="checkout-layout">
+      <form id="checkout-form" novalidate>
+        <section class="checkout-panel order-panel">
+          <div class="panel-heading"><div><span class="step-number">01</span><div><h2>Order summary</h2><p>Review the items in your order.</p></div></div><a class="edit-cart" href="../index.html?cart=open">Edit Cart</a></div>
+          <div id="order-items" class="order-items"></div>
+          <div id="empty-cart" class="empty-cart" hidden>Your cart is empty. <a href="../index.html">Continue shopping</a></div>
+          <div class="price-lines"><div><span>Subtotal</span><strong id="subtotal">JOD 0.00</strong></div><div><span>Delivery fee</span><strong id="delivery-fee">JOD 0.00</strong></div><div class="grand-total"><span>Total</span><strong id="grand-total">JOD 0.00</strong></div></div>
+        </section>
+
+        <section class="checkout-panel">
+          <div class="panel-heading"><div><span class="step-number">02</span><div><h2>Customer information</h2><p>Where should we deliver your order?</p></div></div></div>
+          <div class="form-grid">
+            <label class="form-field">Full Name<input id="full-name" name="fullName" type="text" autocomplete="name" required minlength="3" placeholder="Your full name"><small class="field-error" data-error="fullName"></small></label>
+            <label class="form-field">Email Address<input id="email" name="email" type="email" autocomplete="email" required placeholder="name@example.com"><small class="field-error" data-error="email"></small></label>
+            <label class="form-field">Phone Number<input id="phone" name="phone" type="tel" autocomplete="tel" required pattern="(?:\+962|00962|0)?7[789]\d{7}" placeholder="079 000 0000"><small class="field-hint">Jordanian mobile number</small><small class="field-error" data-error="phone"></small></label>
+            <label class="form-field">City<select id="city" name="city" autocomplete="address-level2" required><option value="">Select a city</option><option>Amman</option><option>Zarqa</option><option>Irbid</option><option>Salt</option><option>Aqaba</option><option>Madaba</option><option>Jerash</option><option>Ajloun</option><option>Karak</option><option>Mafraq</option><option>Tafilah</option><option>Ma'an</option></select><small class="field-error" data-error="city"></small></label>
+            <label class="form-field full-width">Area / Neighborhood<input id="area" name="area" type="text" autocomplete="address-level3" required placeholder="Neighborhood or area"><small class="field-error" data-error="area"></small></label>
+            <label class="form-field full-width">Full Delivery Address<textarea id="address" name="address" autocomplete="street-address" rows="3" required minlength="8" placeholder="Street, building, floor, and apartment number"></textarea><small class="field-error" data-error="address"></small></label>
+            <label class="form-field full-width">Additional Delivery Instructions <span class="optional">(optional)</span><textarea id="instructions" name="instructions" rows="2" placeholder="Landmark, preferred delivery time, or other notes"></textarea></label>
+          </div>
+        </section>
+
+        <section class="checkout-panel">
+          <div class="panel-heading"><div><span class="step-number">03</span><div><h2>Delivery method</h2><p>Choose the option that works for you.</p></div></div></div>
+          <div class="choice-list">
+            <label class="choice-card"><input type="radio" name="delivery" value="standard" checked><span class="choice-radio"></span><span class="choice-copy"><strong>Standard Delivery</strong><small>Estimated 2–4 business days</small></span><strong class="choice-price">JOD 2.50</strong></label>
+            <label class="choice-card"><input type="radio" name="delivery" value="express"><span class="choice-radio"></span><span class="choice-copy"><strong>Express Delivery</strong><small>Estimated 1–2 business days</small></span><strong class="choice-price">JOD 5.00</strong></label>
+          </div>
+        </section>
+
+        <section class="checkout-panel">
+          <div class="panel-heading"><div><span class="step-number">04</span><div><h2>Payment method</h2><p>Choose how you would like to pay.</p></div></div></div>
+          <div class="choice-list">
+            <label class="choice-card payment-choice"><input type="radio" name="payment" value="Cash on Delivery" checked><span class="choice-radio"></span><span class="choice-copy"><strong>Cash on Delivery</strong><small>Pay when your order arrives.</small></span><span class="cash-icon" aria-hidden="true">JOD</span></label>
+            <div class="choice-card disabled-choice"><span class="choice-radio"></span><span class="choice-copy"><strong>Credit / Debit Card</strong><small>Secure card payment is not configured yet.</small></span><span class="lock-icon" aria-hidden="true">🔒</span></div>
+          </div>
+        </section>
+        <div id="form-message" class="form-message" role="alert" hidden></div>
+        <button class="place-order-button" id="place-order" type="submit">Place Order <span>→</span></button>
+        <p class="secure-note">Your order and delivery details are used to prepare this order.</p>
+      </form>
+      <aside class="checkout-side-note"><div class="side-icon" aria-hidden="true">✓</div><h2>CarePlus delivery</h2><p>We’ll use your contact and address details to coordinate delivery of your medical supplies.</p><a href="mailto:info@careplus.com">Questions? Contact our team</a></aside>
+    </div>
+  </main>
+  <div id="footer-container"></div>
+  <script src="checkout.js"></script>
+  <script src="../../Footer/footer.js"></script>
+</body>
+</html>

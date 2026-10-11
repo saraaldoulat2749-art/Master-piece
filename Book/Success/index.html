@@ -16,6 +16,9 @@ fetch("../../Nav/index.html")
   .then(response => response.text())
   .then(data => {
     document.getElementById("nav-container").innerHTML = data;
+    document.querySelectorAll('#nav-container a[href^="../"]').forEach(link => {
+      link.href = `../${link.getAttribute("href")}`;
+    });
   })
   .catch(error => console.error("Error loading navbar:", error));
 </script> 
@@ -100,5 +103,6 @@ fetch("../../Nav/index.html")
         .catch(error => console.error("Error loading footer:", error));
 </script>
 <script src="script.js"></script>
+    <script src="../../Footer/footer.js"></script>
 </body>
 </html>

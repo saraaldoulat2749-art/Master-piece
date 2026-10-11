@@ -3,35 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>CarePlus Navigation</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-     <header>
-            <div class="logo">
-                <div class="logo-icon">♥</div>
+    <header class="careplus-navbar" aria-label="CarePlus Healthcare navigation">
+        <a class="careplus-navbar__brand" href="../Home/Master.html" aria-label="CarePlus home">
+            <span class="careplus-navbar__logo" aria-hidden="true">
+                <svg viewBox="0 0 48 48" focusable="false"><path d="M24 41S6 29 6 17.5C6 10.8 10.8 7 16.1 7c3.4 0 6.1 1.8 7.9 4.8C25.8 8.8 28.5 7 31.9 7 37.2 7 42 10.8 42 17.5 42 29 24 41 24 41Z"/><path d="M11 24h7l3-6 5.5 13 4-8H37"/></svg>
+            </span>
+            <span class="careplus-navbar__name">Care<span>Plus</span></span>
+        </a>
 
-                <div>
-                    <h2>Care<span>Plus</span></h2>
-                    <p>Your Health, Our Priority</p>
-                </div>
-            </div>
+        <input class="careplus-navbar__toggle" type="checkbox" id="careplus-navbar-toggle" aria-label="Toggle navigation menu">
+        <label class="careplus-navbar__menu-button" for="careplus-navbar-toggle" aria-label="Open navigation menu">
+            <span></span><span></span><span></span>
+        </label>
 
-            <nav>
-                <a href="../Home/Master.html" class="active">Home</a>
-                <a href="../Home/Master.html#services">Services</a>
-                <a href="../Pharmacy/index.html">Pharmacies</a>
-                <a href="#store">Medical Store</a>
-                <a href="#elderly">Elderly Care</a>
-                <a href="#labs">Specimen Collection</a>
-                <a href="../Home/Master.html#about">About Us</a>
-                <a href="#contact">Contact</a>
-            </nav>
+        <nav class="careplus-navbar__links" aria-label="Main navigation">
+            <a class="active" href="../Home/Master.html">Home</a>
+            <a href="../Home/Master.html#services">Services</a>
+            <a href="../Home/Master.html#about">About</a>
+            <a href="../Home/Master.html#contact">Contact</a>
+        </nav>
 
-            <div class="actions">
-                <a href="#login" class="btn btn-login">Login</a>
-                <a href="#signup" class="btn btn-signup">Sign Up</a>
-            </div>
-        </header>
+        <div class="careplus-navbar__actions">
+            <a class="careplus-navbar__login" href="#login">Login</a>
+        </div>
+    </header>
 </body>
 </html>

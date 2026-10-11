@@ -5,35 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../Nav/style.css">
 </head>
-<body>
+<body class="services-page">
 
-<!-- =========================
-     HEADER
-========================= -->
-<header id="home">
-    <a href="#home" class="logo">
-        <div class="logo-icon">♥</div>
-        <div>
-            <h2>Care<span>Plus</span></h2>
-            <p>Your Health, Our Priority</p>
-        </div>
-    </a>
-    <nav>
-        <a href="../Home/Master.html">Home</a> 
-        <a href="#services">Services</a>
-        <a href="#pharmacies">Pharmacies</a>
-        <a href="#medical-store">Medical Store</a>
-        <a href="#elderly-care">Elderly Care</a>
-        <a href="#home-lab-tests">Specimen Collection</a>
-        <a href="#about">About Us</a>
-        <a href="#contact">Contact</a>
-</nav>
-    <div class="header-actions">
-        <a href="#login" class="header-btn">Login</a>
-        <a href="#signup" class="header-btn signup-btn">Sign Up</a>
-    </div>
-</header>
+<div id="nav-container"></div>
+<script>
+fetch("../Nav/index.html")
+  .then(response => response.text())
+  .then(data => {
+    document.getElementById("nav-container").innerHTML = data;
+    const links = document.querySelectorAll("#nav-container .careplus-navbar__links a");
+    links.forEach(link => link.classList.remove("active"));
+    const servicesLink = [...links].find(link => link.textContent.trim() === "Services");
+    if (servicesLink) {
+      servicesLink.href = "#services";
+      servicesLink.classList.add("active");
+    }
+  })
+  .catch(error => console.error("Error loading navbar:", error));
+</script>
 <!-- =========================
      SERVICES
 ========================= -->
@@ -115,7 +106,7 @@
                 </div>
             </a>
             <!-- Service 4 -->
-            <a href="#medical-store" class="service-card">
+            <a href="../Store/index.html" class="service-card">
                 <div class="service-top">
                     <div class="service-icon">▣</div>
                     <span class="service-number">04</span>
@@ -131,7 +122,7 @@
                 </div>
             </a>
             <!-- Service 5 -->
-            <a href="#elderly-care" class="service-card">
+            <a href="../elederly/index.html" class="service-card">
                 <div class="service-top">
                     <div class="service-icon">♡</div>
                     <span class="service-number">05</span>
@@ -173,6 +164,8 @@
 </section>
 
 </main>
+<div id="footer-container" data-footer-autoload></div>
 <script src="script.js"></script>
+<script src="../Footer/footer.js"></script>
 </body>
 </html>

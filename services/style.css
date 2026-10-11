@@ -611,3 +611,13 @@ nav a.active::after {
         transform: none;
     }
 }
+
+/* Give the area behind the shared navbar a soft service-page teal glow. */
+.services-page #nav-container {
+    position: relative;
+    isolation: isolate;
+    padding: 1px 0;
+    background:
+        radial-gradient(ellipse at 50% 0%, rgba(34, 199, 213, .14), transparent 64%),
+        linear-gradient(180deg, #0b354c 0%, #041d2d 100%);
+}
