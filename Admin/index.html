@@ -1,0 +1,48 @@
+﻿<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#062536">
+  <title>Admin Dashboard | CarePlus</title>
+  <link rel="stylesheet" href="admin.css">
+  <link rel="stylesheet" href="theme.css">
+</head>
+<body data-protected="true" data-admin-protected="true">
+  <script src="../auth.js"></script>
+  <div class="admin-layout">
+    <aside class="sidebar" id="admin-sidebar">
+      <a class="brand" href="index.html"><span class="brand-mark">+</span><span>Care<span>Plus</span><small>ADMIN</small></span></a>
+      <nav class="side-nav" aria-label="Admin sections">
+        <a class="active" href="index.html"><span>â–¦</span>Dashboard</a>
+        <a href="Users/index.html"><span>â™™</span>Users</a>
+        <a href="Appointments/index.html"><span>â–¡</span>Appointments</a>
+        <a href="Products/index.html"><span>ï¼‹</span>Products</a>
+        <a href="Pharmacies/index.html"><span>âŒ–</span>Pharmacies</a>
+        <a href="CareRequests/index.html"><span>â™¡</span>Care requests</a>
+      </nav>
+      <div class="sidebar-bottom"><p>Admin workspace</p><a href="../Home/Master.html">View CarePlus site â†—</a></div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar"><button class="menu-toggle" type="button" aria-label="Open admin navigation" aria-controls="admin-sidebar" aria-expanded="false">â˜°</button><div class="topbar-copy"><span class="eyebrow">CAREPLUS MANAGEMENT</span><h1>Dashboard</h1></div><a class="logout-link" href="../Home/Master.html" data-auth-toggle>LOG OUT</a></header>
+      <section class="page-content" data-admin-page="dashboard">
+        <div class="welcome-row"><div><p class="eyebrow">WELCOME TO CAREPLUS</p><h2>Your care management overview</h2><p>Review appointments, users, products, pharmacies, and care requests from one place.</p></div><span class="session-chip"><i></i> Admin overview</span></div>
+        <section class="stats-grid" aria-label="Workspace record counts">
+          <article class="stat-card"><span class="stat-icon">â™™</span><p>Users</p><strong id="count-users">0</strong><small>Shared browser records</small></article>
+          <article class="stat-card"><span class="stat-icon">â–¡</span><p>Appointments</p><strong id="count-appointments">0</strong><small>Shared browser records</small></article>
+          <article class="stat-card"><span class="stat-icon">ï¼‹</span><p>Products</p><strong id="count-products">0</strong><small>Shared browser records</small></article>
+          <article class="stat-card"><span class="stat-icon">âŒ–</span><p>Pharmacies</p><strong id="count-pharmacies">0</strong><small>Shared browser records</small></article>
+          <article class="stat-card"><span class="stat-icon">â™¡</span><p>Care requests</p><strong id="count-careRequests">0</strong><small>Shared browser records</small></article>
+          <article class="stat-card"><span class="stat-icon">▧</span><p>Store orders</p><strong id="count-orders">0</strong><small>Shared browser records</small></article>
+        </section>
+        <section class="dashboard-grid">
+          <article class="panel recent-panel"><div class="panel-heading"><div><p class="eyebrow">LATEST ENTRIES</p><h2>Recent appointments</h2></div><a href="Appointments/index.html">Manage appointments â†’</a></div><div class="recent-empty" id="recent-appointments"><span>â–¡</span><strong>No appointment records</strong><p>New entries you add in this demo will appear here.</p></div></article>
+          <article class="panel shortcuts-panel"><p class="eyebrow">QUICK ACCESS</p><h2>Manage CarePlus</h2><a href="Users/index.html">Manage users <span>â†’</span></a><a href="Products/index.html">Manage products <span>â†’</span></a><a href="Pharmacies/index.html">Manage pharmacies <span>â†’</span></a><a href="CareRequests/index.html">Review care requests <span>â†’</span></a></article>
+        </section>
+        <p class="privacy-note">Do not enter real patient, account, or business information in this demo. Browser storage is not protected and can be changed or cleared by the user.</p>
+      </section>
+    </main>
+  </div>
+  <script src="../data/careplus-data.js"></script><script src="admin.js"></script>
+</body>
+</html>

@@ -5,13 +5,13 @@
   <title>Home Care Request | CarePlus</title>
   <link rel="stylesheet" href="../Nav/style.css"><link rel="stylesheet" href="../Footer/style.css"><link rel="stylesheet" href="style.css">
 </head>
-<body class="elderly-page service-request-page">
+<body class="elderly-page service-request-page" data-protected="true"><script src="../auth.js"></script>
   <div id="nav-container"></div>
   <main>
     <section class="request-hero section-wrap"><a class="breadcrumb" href="index.html">Elderly Care <span aria-hidden="true">/</span> Home Care</a><span class="eyebrow">IN-HOME SUPPORT</span><h1>Home Care, planned <span>around your day.</span></h1><p>Tell us about the routines, schedule, and support tasks you would like to discuss. A CarePlus team member must confirm provider availability and the final arrangements.</p><a class="button button-secondary" href="hospital-companion.html">Looking for an appointment companion?</a></section>
     <section class="booking-section">
       <div class="booking-layout section-wrap">
-        <aside class="booking-intro"><span class="eyebrow">HOME CARE REQUEST</span><h2>Request support at home.</h2><p>Choose a date, duration, and the type of assistance you need. This request is sent for follow-up; it does not reserve a caregiver.</p><div class="demo-status"><span class="status-dot"></span><div><strong>Availability not live</strong><small>CarePlus will need to confirm service coverage and provider availability.</small></div></div><div class="payment-status"><span aria-hidden="true">&#9675;</span><div><strong>Payment not enabled</strong><small>No payment is collected on this page.</small></div></div><a class="text-link" href="index.html">&larr; All elderly care options</a></aside>
+        <aside class="booking-intro"><span class="eyebrow">HOME CARE REQUEST</span><h2>Request support at home.</h2><p>Choose a date, duration, and the type of assistance you need. This request is sent for follow-up; it does not reserve a caregiver.</p><div class="demo-status"><span class="status-dot"></span><div><strong>Availability not live</strong><small>CarePlus will need to confirm service coverage and provider availability.</small></div></div><div class="payment-status"><span aria-hidden="true">&#9675;</span><div><strong>Payment not enabled</strong><small>No payment is collected on this page.</small></div></div></aside>
 
         <form class="booking-form" id="care-form" data-service="home">
           <div class="form-heading"><div><span class="form-step">HOME CARE</span><h3>Care and schedule details</h3></div><p>* Required fields</p></div>
@@ -38,6 +38,7 @@
             <label><input type="checkbox" name="tasks" value="Specialized support from an appropriately qualified caregiver">Specialized support from an appropriately qualified caregiver</label>
           </div></fieldset>
           <div class="form-grid family-fields">
+            <label>Care recipient's name<input name="elderlyName" autocomplete="off" placeholder="Person receiving care"></label>
             <label>Family contact name *<input name="customerName" autocomplete="name" required minlength="2" placeholder="Your full name"></label>
             <label>Family contact phone *<input name="customerPhone" type="tel" autocomplete="tel" required placeholder="Your phone number"></label>
             <label>Email address *<input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
@@ -46,14 +47,14 @@
           </div>
           <label class="consent-field"><input type="checkbox" name="authorization" required><span>I am authorized to request care for myself or the family member named in this request.</span></label>
           <p class="estimate-disclaimer">Sample estimate only. No caregiver is reserved, no availability is confirmed, and no payment is taken here.</p>
-          <button class="button button-primary submit-button" type="submit">Continue to WhatsApp <span aria-hidden="true">&rarr;</span></button><p class="form-feedback" id="form-feedback" role="status" aria-live="polite"></p>
+          <button class="button button-primary submit-button" type="submit">Submit care request <span aria-hidden="true">&rarr;</span></button><p class="form-feedback" id="form-feedback" role="status" aria-live="polite"></p>
         </form>
 
         <aside class="price-card" aria-live="polite"><span class="eyebrow">SAMPLE ESTIMATE</span><h3>Home care total</h3><div class="price-row"><span id="base-label">Home care · 3 hours</span><strong id="base-price">JOD 24.00</strong></div><div class="price-row" id="return-fee-row" hidden><span>Sample return-trip fee</span><strong id="return-fee">JOD 0.00</strong></div><div class="price-row"><span>Sample service fee</span><strong id="service-fee">JOD 1.00</strong></div><div class="price-total"><span>Estimate</span><strong id="total-price">JOD 25.00</strong></div><p>Editable sample rate used for this prototype. Final rate requires CarePlus confirmation.</p><div class="price-config"><span>Hourly sample rate</span><strong>JOD 8</strong></div></aside>
       </div>
     </section>
   </main>
-  <div id="footer-container"></div><script src="script.js"></script>
+  <div id="footer-container"></div><script src="../data/careplus-data.js"></script><script src="script.js"></script>
   <script src="../Footer/footer.js"></script>
 </body>
 </html>

@@ -45,16 +45,122 @@
             line-height: 1.7;
         }
         .hero-image {
-            width: 300px;
-            height: 180px;
+            width: min(42%, 380px);
+            min-width: 290px;
+            height: 245px;
             display: flex;
             justify-content: center;
             align-items: center;
-            background: #d8f5f7;
+            flex: 0 0 auto;
+            overflow: hidden;
+            border-radius: 26px;
+            background: radial-gradient(circle at 48% 52%, #ffffff 0 26%, #e4f9fa 27% 62%, transparent 63%);
         }
-        .hero-image img {
-            width: 100%;
-            height: 100%;
+        .appointment-art {
+            position: relative;
+            width: 320px;
+            height: 230px;
+            display: grid;
+            place-items: center;
+            isolation: isolate;
+        }
+        .art-orbit {
+            position: absolute;
+            z-index: -1;
+            border: 1px solid rgba(5, 185, 202, .16);
+            border-radius: 50%;
+        }
+        .orbit-one { width: 210px; height: 210px; animation: orbit-turn 22s linear infinite; }
+        .orbit-two { width: 270px; height: 170px; transform: rotate(-28deg); animation: orbit-turn 30s linear reverse infinite; }
+        .float-icon { position: absolute; z-index: 1; display: grid; place-items: center; color: #079eb0; background: #fff; box-shadow: 0 7px 18px rgba(16,54,77,.12); }
+        .heart-icon { top: 42px; right: 39px; width: 29px; height: 29px; border-radius: 10px; color: #e87987; font-size: 16px; animation: icon-drift 4.2s ease-in-out infinite, heart-beat 2.2s ease-in-out infinite; }
+        .clock-icon { right: 31px; top: 105px; width: 27px; height: 27px; border: 2px solid #b5e9ed; border-radius: 50%; animation: icon-drift 5s ease-in-out .6s infinite; }
+        .clock-icon::before, .clock-icon i { position: absolute; left: 11px; top: 5px; width: 2px; height: 7px; border-radius: 2px; background: #079eb0; transform-origin: bottom center; }
+        .clock-icon i { top: 10px; left: 11px; height: 5px; transform: rotate(125deg); }
+        .mini-cross { left: 41px; bottom: 42px; width: 23px; height: 23px; border-radius: 8px; color: #fff; background: #55c5b2; font-size: 18px; animation: icon-drift 4.7s ease-in-out 1s infinite; }
+        .calendar-card {
+            position: relative;
+            width: 190px;
+            padding: 0 15px 15px;
+            overflow: hidden;
+            border: 1px solid #dceff1;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 18px 42px rgba(16, 54, 77, .15);
+            animation: calendar-float 5s ease-in-out infinite;
+        }
+        .calendar-top {
+            height: 38px;
+            margin: 0 -15px 13px;
+            padding: 0 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: linear-gradient(110deg, #078ba2, #05b9ca);
+            color: white;
+        }
+        .calendar-top > span { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.7); }
+        .calendar-top b { margin-left: auto; font-size: 9px; letter-spacing: .8px; }
+        .calendar-heading { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; color: #294b5f; font-size: 10px; font-weight: 700; }
+        .calendar-heading i { width: 6px; height: 6px; border-top: 1.5px solid #6d8b9c; border-right: 1.5px solid #6d8b9c; }
+        .calendar-heading i:first-child { transform: rotate(-135deg); }
+        .calendar-heading i:last-child { transform: rotate(45deg); }
+        .calendar-week, .calendar-days { display: grid; grid-template-columns: repeat(7, 1fr); justify-items: center; align-items: center; }
+        .calendar-week { margin-bottom: 5px; color: #91a7b3; font-size: 8px; font-weight: 700; }
+        .calendar-days { min-height: 26px; color: #476579; font-size: 9px; }
+        .calendar-days span { animation: day-appear .55s both; }
+        .calendar-days span:nth-child(2) { animation-delay: .06s; }
+        .calendar-days span:nth-child(3) { animation-delay: .12s; }
+        .calendar-days span:nth-child(4) { animation-delay: .18s; }
+        .calendar-days span:nth-child(5) { animation-delay: .24s; }
+        .calendar-days span:nth-child(6) { animation-delay: .3s; }
+        .calendar-days span:nth-child(7) { animation-delay: .36s; }
+        .date-active { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: #05b9ca; color: white; box-shadow: 0 4px 10px rgba(5,185,202,.32); }
+        .calendar-days .date-active { animation: date-pulse 2.8s ease-in-out infinite; }
+        .muted-days { color: #afbec7; }
+        .appointment-confirmation {
+            position: absolute;
+            right: 0;
+            bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 10px 13px 10px 10px;
+            border: 1px solid #e4f1ed;
+            border-radius: 12px;
+            background: #fff;
+            box-shadow: 0 10px 24px rgba(16, 54, 77, .13);
+            animation: confirmation-arrive .8s cubic-bezier(.2,.8,.2,1) both, confirmation-float 4.5s ease-in-out .8s infinite;
+        }
+        .appointment-confirmation::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            border-radius: inherit;
+            background: linear-gradient(110deg, transparent 25%, rgba(5,185,202,.1) 48%, transparent 70%);
+            transform: translateX(-110%);
+            animation: confirmation-shine 5s ease-in-out 1.5s infinite;
+            pointer-events: none;
+        }
+        .appointment-confirmation b, .appointment-confirmation small { display: block; }
+        .appointment-confirmation b { color: #294b5f; font-size: 9px; }
+        .appointment-confirmation small { margin-top: 3px; color: #718c99; font-size: 8px; }
+        .confirm-check { width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; background: #e1f7ee; color: #15966b; font-size: 14px; font-weight: 700; animation: check-pop .65s cubic-bezier(.2,.8,.2,1) .35s both, check-pulse 3.4s ease-in-out 1.4s infinite; }
+        .medical-cross { position: absolute; top: 16px; left: 36px; width: 27px; height: 27px; display: grid; place-items: center; border-radius: 9px; background: #fff; color: #05aebe; box-shadow: 0 7px 16px rgba(16,54,77,.1); font-size: 22px; font-weight: 500; animation: cross-pulse 3s ease-in-out infinite; }
+        @keyframes calendar-float { 0%, 100% { transform: translateY(2px) rotate(-2deg); } 50% { transform: translateY(-7px) rotate(0deg); } }
+        @keyframes confirmation-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
+        @keyframes date-pulse { 0%, 100% { box-shadow: 0 4px 10px rgba(5,185,202,.25); } 50% { box-shadow: 0 0 0 5px rgba(5,185,202,.12), 0 4px 10px rgba(5,185,202,.25); } }
+        @keyframes cross-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+        @keyframes orbit-turn { to { rotate: 360deg; } }
+        @keyframes icon-drift { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
+        @keyframes heart-beat { 0%, 100% { scale: 1; } 12% { scale: 1.13; } 24% { scale: 1; } 36% { scale: 1.09; } 48% { scale: 1; } }
+        @keyframes day-appear { from { opacity: 0; translate: 0 4px; } to { opacity: 1; translate: 0 0; } }
+        @keyframes confirmation-arrive { from { opacity: 0; translate: 14px 10px; scale: .9; } to { opacity: 1; translate: 0 0; scale: 1; } }
+        @keyframes confirmation-shine { 0%, 20% { transform: translateX(-110%); } 45%, 100% { transform: translateX(110%); } }
+        @keyframes check-pop { 0% { scale: 0; rotate: -35deg; } 70% { scale: 1.18; rotate: 8deg; } 100% { scale: 1; rotate: 0; } }
+        @keyframes check-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(21,150,107,0); } 50% { box-shadow: 0 0 0 5px rgba(21,150,107,.1); } }
+        @media (prefers-reduced-motion: reduce) {
+            .calendar-card, .appointment-confirmation, .appointment-confirmation::after, .date-active, .medical-cross, .art-orbit, .float-icon, .confirm-check, .calendar-days span { animation: none; }
         }
         /* Booking Card */
         .booking-card {
@@ -225,8 +331,9 @@
                 grid-template-columns: repeat(3, minmax(0, 1fr));
             }
             .hero-image {
-                width: 190px;
-                height: 150px;
+                width: 300px;
+                min-width: 0;
+                height: 220px;
             }
             .step {
                 font-size: 11px;
@@ -237,9 +344,14 @@
             }
         }
         @media (max-width: 560px) {
+            .hero { flex-direction: column; align-items: stretch; gap: 10px; }
             .hero-image {
-                display: none;
+                width: 100%;
+                max-width: 340px;
+                height: 210px;
+                align-self: center;
             }
+            .appointment-art { transform: scale(.92); }
             .booking-card {
                 padding: 18px 12px;
             }

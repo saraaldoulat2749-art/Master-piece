@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="style.css">
        <link rel="stylesheet" href="../../Footer/style.css">
 </head>
-<body>
+<body data-protected="true"><script src="../../auth.js"></script>
     <div id="nav-container"></div>
 <script>
 fetch("../../Nav/index.html")
@@ -24,7 +24,7 @@ fetch("../../Nav/index.html")
 </script> 
     <main class="success-container">
         <section class="success-header">
-            <div class="success-icon">✓</div>
+            <div class="success-icon">âœ“</div>
             <h1>Booking Successful!</h1>
             <p>
                 Your appointment has been booked successfully.
@@ -51,31 +51,31 @@ fetch("../../Nav/index.html")
             <h3 class="details-title">Your Appointment</h3>
             <div class="details-grid">
                 <div class="detail-item">
-                    <div class="detail-icon">📅</div>
+                    <div class="detail-icon">ðŸ“…</div>
                     <div class="detail-text">
                         <span>Appointment Date</span>
                         <strong id="appointmentDate">Not specified</strong>
                     </div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-icon">🕒</div>
+                    <div class="detail-icon">ðŸ•’</div>
                     <div class="detail-text">
                         <span>Appointment Time</span>
                         <strong id="appointmentTime">Not specified</strong>
                     </div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-icon">📍</div>
+                    <div class="detail-icon">ðŸ“</div>
                     <div class="detail-text">
                         <span>Clinic Location</span>
                         <strong id="appointmentLocation">Not specified</strong>
                     </div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-icon">✓</div>
+                    <div class="detail-icon">âœ“</div>
                     <div class="detail-text">
                         <span>Booking Status</span>
-                        <strong>Confirmed</strong>
+                        <strong id="bookingStatus">Requested</strong>
                     </div>
                 </div>
             </div>
@@ -102,7 +102,7 @@ fetch("../../Nav/index.html")
         })
         .catch(error => console.error("Error loading footer:", error));
 </script>
-<script src="script.js"></script>
+<script src="../../data/careplus-data.js"></script><script src="script.js"></script>
     <script src="../../Footer/footer.js"></script>
 </body>
 </html>

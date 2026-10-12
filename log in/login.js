@@ -46,10 +46,13 @@ document.getElementById("toggle-password").addEventListener("click", () => {
   password.type = password.type === "password" ? "text" : "password";
 });
 
-document.getElementById("forgot-link").addEventListener("click", event => {
-  event.preventDefault();
-  showMessage("recovery");
-});
+const forgotLink = document.getElementById("forgot-link");
+if (forgotLink) {
+  forgotLink.addEventListener("click", event => {
+    event.preventDefault();
+    showMessage("recovery");
+  });
+}
 
 form.addEventListener("submit", event => {
   event.preventDefault();
@@ -63,8 +66,14 @@ form.addEventListener("submit", event => {
   button.disabled = true;
   button.classList.add("is-loading");
   window.setTimeout(() => {
-    button.disabled = false;
-    button.classList.remove("is-loading");
-    showMessage("unavailable");
-  }, 350);
+    const role = form.querySelector('input[name="role"]:checked')?.value || "user";
+    if (window.CarePlusAuth?.startDemoSession(role, identity.value.trim())) {
+      const destination = role === "admin" ? "../Admin/index.html" : "../Home/Master.html";
+      window.location.assign(new URL(destination, document.baseURI).href);
+    } else {
+      button.disabled = false;
+      button.classList.remove("is-loading");
+      showMessage("unavailable");
+    }
+  }, 250);
 });

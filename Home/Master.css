@@ -375,13 +375,15 @@ h1 span {
     font-weight: 600;
 }
 .quick-services-grid {
-    display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
     gap: 13px;
-    max-width: 1250px;
+    max-width: 1010px;
     margin: auto;
 }
 .quick-service {
+    flex: 0 1 190px;
     min-height: 115px;
     padding: 16px 8px;
     display: flex;
@@ -430,7 +432,8 @@ h1 span {
 }
 @media (max-width: 900px) {
     .quick-services-grid {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 190px));
+        justify-content: center;
     }
 }
 @media (max-width: 480px) {
@@ -439,9 +442,12 @@ h1 span {
     }
     .quick-services-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+        justify-content: center;
         gap: 10px;
     }
     .quick-service {
+        flex-basis: calc(50% - 5px);
+        max-width: 190px;
         min-height: 105px;
     }
 }
@@ -509,7 +515,18 @@ h1 span {
     height: 320px;
     object-fit: cover;
     object-position: center;
+}
+.about-image-wrap {
+    position: relative;
+    overflow: hidden;
     border-radius: 30px;
+}
+.about-image-wrap::after {
+    position: absolute;
+    inset: 0;
+    background: rgba(84, 119, 146, .24);
+    content: "";
+    pointer-events: none;
 }
 /* FEATURES */
 .about-features {
@@ -590,6 +607,8 @@ h1 span {
     }
     .about-image {
         height: 280px;
+    }
+    .about-image-wrap {
         border-radius: 20px;
     }
     .about-features {
@@ -637,6 +656,8 @@ h1 span {
     }
     .about-image {
         height: 250px;
+    }
+    .about-image-wrap {
         border-radius: 18px;
     }
     .about-features {
@@ -1244,3 +1265,117 @@ nav a {
                 transform: none;
             }
         }
+
+/* Replace the Home page's turquoise accents with white. */
+:root { --cyan: #fff; --turquoise: #fff; }
+body .btn-signup,
+body .services-btn,
+body .search-box button,
+body .start-btn { background: #fff; border-color: #fff; color: var(--dark); }
+body .btn:hover { box-shadow: 0 7px 20px rgba(255,255,255,.28); }
+body .services-btn:hover,
+body .search-box button:hover,
+body .start-btn:hover { background: #f1f5f7; color: var(--dark); }
+body .services-arrow { color: var(--dark); }
+body .tag { border-color: rgba(255,255,255,.6); background: rgba(255,255,255,.1); color: #fff; }
+body h1 span,
+body .quick-services-heading span,
+body .quick-icon,
+body .about-label,
+body .feature-number,
+body .section-label,
+body .section-header h2 span,
+body .icon-circle i,
+body .step-number { color: #fff; }
+body .quick-service { border-color: rgba(255,255,255,.24); }
+body .quick-service:hover { border-color: #fff; box-shadow: 0 8px 25px rgba(255,255,255,.12); }
+body .quick-icon,
+body .feature-icon,
+body .icon-circle { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.25); }
+body .quick-service:hover .quick-icon,
+body .step-card:hover .icon-circle { background: rgba(255,255,255,.24); box-shadow: 0 0 28px rgba(255,255,255,.15); }
+body .glow { background: rgba(255,255,255,.1); }
+body .about-image-box:hover,
+body .about-feature:hover,
+body .step-card:hover { box-shadow: 0 12px 32px rgba(255,255,255,.12); }
+body .about-feature:hover { border-color: #fff; }
+body .how-it-works {
+    background: radial-gradient(circle at 10% 10%, rgba(255,255,255,.1), transparent 25%),
+                radial-gradient(circle at 90% 90%, rgba(255,255,255,.08), transparent 28%),
+                var(--navy);
+}
+body .decoration { border-color: rgba(255,255,255,.4); }
+body .section-label::before,
+body .section-label::after,
+body .step-card:not(:last-child)::before,
+body .step-card:not(:last-child)::after { background: #fff; }
+body .step-card { border-color: rgba(255,255,255,.45); }
+body .step-card:hover { border-color: #fff; }
+body .icon-circle { border-color: #fff; }
+body .careplus-navbar { --cp-teal: #fff; }
+body .logo-icon { border-color: rgba(255,255,255,.55); background: rgba(255,255,255,.12); color: #fff; }
+body .social-links a { border-color: #fff; }
+body .social-links a:hover { background: #fff; color: var(--dark); }
+body .careplus-footer { border-top-color: #fff; }
+body .footer-logo .brand-plus,
+body .footer-brand > p:first-of-type,
+body .footer-column h3,
+body .footer-column > a:hover,
+body .footer-contact p a:hover,
+body .footer-legal a:hover { color: #fff; }
+
+/* Soft turquoise accents for the Home page. */
+:root { --cyan: #94D5D6; --turquoise: #94D5D6; }
+body .btn-signup,
+body .services-btn,
+body .search-box button,
+body .start-btn { background: #94D5D6; border-color: #94D5D6; color: var(--dark); }
+body .services-btn:hover,
+body .search-box button:hover,
+body .start-btn:hover { background: #a8dddd; color: var(--dark); }
+body .tag { border-color: rgba(148,213,214,.68); background: rgba(148,213,214,.14); color: #94D5D6; }
+body h1 span,
+body .quick-services-heading span,
+body .quick-icon,
+body .about-label,
+body .feature-number,
+body .section-label,
+body .section-header h2 span,
+body .icon-circle i,
+body .step-number { color: #94D5D6; }
+body .quick-service { border-color: rgba(148,213,214,.34); }
+body .quick-service:hover { border-color: #94D5D6; box-shadow: 0 8px 25px rgba(148,213,214,.18); }
+body .quick-icon,
+body .feature-icon,
+body .icon-circle { background: rgba(148,213,214,.16); border-color: rgba(148,213,214,.38); }
+body .quick-service:hover .quick-icon,
+body .step-card:hover .icon-circle { background: rgba(148,213,214,.3); box-shadow: 0 0 28px rgba(148,213,214,.22); }
+body .glow { background: rgba(148,213,214,.14); }
+body .about-image-box:hover,
+body .about-feature:hover,
+body .step-card:hover { box-shadow: 0 12px 32px rgba(148,213,214,.16); }
+body .about-feature:hover,
+body .step-card:hover { border-color: #94D5D6; }
+body .how-it-works {
+    background: radial-gradient(circle at 10% 10%, rgba(148,213,214,.14), transparent 25%),
+                radial-gradient(circle at 90% 90%, rgba(148,213,214,.11), transparent 28%),
+                var(--navy);
+}
+body .decoration { border-color: rgba(148,213,214,.52); }
+body .section-label::before,
+body .section-label::after,
+body .step-card:not(:last-child)::before,
+body .step-card:not(:last-child)::after { background: #94D5D6; }
+body .step-card { border-color: rgba(148,213,214,.54); }
+body .icon-circle { border-color: #94D5D6; }
+body .careplus-navbar { --cp-teal: #94D5D6; }
+body .logo-icon { border-color: rgba(148,213,214,.65); background: rgba(148,213,214,.18); color: #94D5D6; }
+body .social-links a { border-color: #94D5D6; }
+body .social-links a:hover { background: #94D5D6; color: var(--dark); }
+body .careplus-footer { border-top-color: #94D5D6; }
+body .footer-logo .brand-plus,
+body .footer-brand > p:first-of-type,
+body .footer-column h3,
+body .footer-column > a:hover,
+body .footer-contact p a:hover,
+body .footer-legal a:hover { color: #94D5D6; }

@@ -46,7 +46,7 @@ fetch("../Nav/index.html")
         </div>
         <div class="services-grid">
    <!-- Service 1 -->
-<div class="service-card">
+<a href="details/appointments.html" class="service-card">
     <div class="service-top">
         <div class="service-icon">♙</div>
         <span class="service-number">01</span>
@@ -61,15 +61,13 @@ fetch("../Nav/index.html")
 
     <div class="service-bottom">
         <span>Explore Service</span>
-        <a href="../Book/index.html"
-           class="service-arrow"
-           aria-label="Book Appointments">↗</a>
+        <span class="service-arrow" aria-hidden="true">↗</span>
     </div>
-</div>
+</a>
             
        
 <!-- Service 2 -->
-<a href="../Pharmacy/" class="service-card">
+<a href="details/medicine.html" class="service-card">
     <div class="service-top">
         <div class="service-icon">✚</div>
         <span class="service-number">02</span>
@@ -89,7 +87,7 @@ fetch("../Nav/index.html")
 </a>
 
             <!-- Service 3 -->
-            <a href="../AI" class="service-card service-ai">
+            <a href="details/ai.html" class="service-card service-ai">
                 <div class="service-top">
                     <div class="service-icon">✧</div>
                     <span class="service-number">03</span>
@@ -106,7 +104,7 @@ fetch("../Nav/index.html")
                 </div>
             </a>
             <!-- Service 4 -->
-            <a href="../Store/index.html" class="service-card">
+            <a href="details/store.html" class="service-card">
                 <div class="service-top">
                     <div class="service-icon">▣</div>
                     <span class="service-number">04</span>
@@ -122,7 +120,7 @@ fetch("../Nav/index.html")
                 </div>
             </a>
             <!-- Service 5 -->
-            <a href="../elederly/index.html" class="service-card">
+            <a href="details/elderly.html" class="service-card">
                 <div class="service-top">
                     <div class="service-icon">♡</div>
                     <span class="service-number">05</span>
@@ -131,22 +129,6 @@ fetch("../Nav/index.html")
                 <p>
                     Arrange home care and daily support
                     for your elderly loved ones.
-                </p>
-                <div class="service-bottom">
-                    <span>Explore Service</span>
-                    <span class="service-arrow">↗</span>
-                </div>
-            </a>
-            <!-- Service 6 -->
-            <a href="#home-lab-tests" class="service-card">
-                <div class="service-top">
-                    <div class="service-icon">⚕</div>
-                    <span class="service-number">06</span>
-                </div>
-                <h2>Specimen Collection</h2>
-                <p>
-                    Request convenient home sample
-                    collection without visiting a lab.
                 </p>
                 <div class="service-bottom">
                     <span>Explore Service</span>
@@ -164,8 +146,7 @@ fetch("../Nav/index.html")
 </section>
 
 </main>
-<div id="footer-container" data-footer-autoload></div>
 <script src="script.js"></script>
-<script src="../Footer/footer.js"></script>
+<script src="../auth.js"></script>
 </body>
 </html>

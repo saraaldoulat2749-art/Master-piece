@@ -6,7 +6,7 @@ const categories = [
   { id: "professional", name: "Equipment for Professionals", photo: "stethoscope,medical,equipment" }
 ];
 
-const products = [
+let products = [
   ["Digital Blood Pressure Monitor", "devices", "Automatic upper-arm monitor with an easy-to-read digital display.", 34.90, "digital,blood,pressure,monitor", true],
   ["Blood Glucose Meter", "devices", "Compact blood glucose meter for everyday home monitoring.", 18.50, "blood,glucose,meter", true],
   ["Fingertip Pulse Oximeter", "devices", "Portable fingertip device with a clear digital screen.", 15.75, "pulse,oximeter,medical", true],
@@ -50,8 +50,8 @@ function loadCart() {
   try {
     const saved = JSON.parse(localStorage.getItem(cartStorageKey) || "[]");
     return new Map(saved.map(item => {
-      const id = Number(item.product?.id ?? item.id);
-      const product = products.find(entry => entry.id === id) || item.product;
+      const id = String(item.product?.id ?? item.id);
+      const product = products.find(entry => String(entry.id) === id) || item.product;
       const quantity = Math.max(1, Number(item.quantity) || 1);
       return product ? [id, { product, quantity }] : null;
     }).filter(Boolean));
@@ -124,6 +124,13 @@ PRODUCT_PHOTOS[28] = "https://www.girodmedical.es/media/catalog/product/cache/5b
 PRODUCT_PHOTOS[30] = "https://gilgalmedical.com/cdn/shop/files/1188030_pkit_1200x630.jpg?v=1767376852";
 PRODUCT_PHOTOS[31] = "https://www.lojaroster.com.br/media/catalog/product/cache/13/image/1000x1231/4648e8fa899f1575903b33dc39eb6705/r/o/ro-22_kit-instrumentais.jpg";
 products.forEach((product, index) => { product.image = PRODUCT_PHOTOS[index] || categoryPhotos[product.category]; });
+window.CarePlusData.seed("products", products.map(product => ({ ...product, quantity: product.inStock ? 20 : 0, status: product.inStock ? "Available" : "Unavailable" })));
+products = window.CarePlusData.list("products").map(product => ({ ...product, inStock: product.inStock ?? (Number(product.quantity) > 0 && product.status !== "Unavailable"), image: product.image || categoryPhotos[product.category] }));
+window.CarePlusData.subscribe(() => {
+  products = window.CarePlusData.list("products").map(product => ({ ...product, inStock: product.inStock ?? (Number(product.quantity) > 0 && product.status !== "Unavailable"), image: product.image || categoryPhotos[product.category] }));
+  cart.forEach((item, id) => { const current = products.find(product => String(product.id) === String(id)); if (current) item.product = current; else cart.delete(id); });
+  renderCategories(); renderProducts(); renderCart();
+});
 
 function renderCategories() {
   $("#category-filter").innerHTML = `<option value="all">All categories</option>` + categories.map(category => `<option value="${category.id}">${category.name}</option>`).join("");
@@ -196,27 +203,27 @@ function setCartOpen(open) {
 }
 
 function addToCart(id, quantity = 1) {
-  const product = products.find(item => item.id === id);
+  const product = products.find(item => String(item.id) === String(id));
   if (!product?.inStock) return;
   const item = cart.get(id) || { product, quantity: 0 }; item.quantity += quantity; cart.set(id, item); renderCart(); showToast(`${product.name} added to your cart`);
 }
 
 function showDetails(id) {
-  const product = products.find(item => item.id === id);
+  const product = products.find(item => String(item.id) === String(id));
   $("#details-content").innerHTML = `<img src="${product.image}" data-category="${product.category}" alt="${product.name}" class="details-image"><div class="details-copy"><span class="product-category">${categoryName(product.category)}</span><h2>${product.name}</h2><p>${product.description}</p><span class="stock-badge ${product.inStock ? "in-stock" : "out-stock"}">${product.inStock ? "In Stock" : "Out of Stock"}</span>${ratingMarkup(product)}<strong class="details-price">${money(product.price)}</strong><button class="add-button details-add" data-add="${product.id}" ${product.inStock ? "" : "disabled"}>Add to Cart</button></div>`;
   $("#details-dialog").showModal();
 }
 
 $("#product-grid").addEventListener("click", event => {
   const add = event.target.closest("[data-add]");
-  if (add) { const id = Number(add.dataset.add); const qty = Number($("#qty-" + id)?.value || 1); addToCart(id, Math.max(1, qty)); return; }
-  const details = event.target.closest("[data-details]"); if (details) showDetails(Number(details.dataset.details));
+  if (add) { const id = add.dataset.add; const qty = Number($("#qty-" + id)?.value || 1); addToCart(id, Math.max(1, qty)); return; }
+  const details = event.target.closest("[data-details]"); if (details) showDetails(details.dataset.details);
   const qty = event.target.closest("[data-qty]");
   if (qty) { const input = $("#qty-" + qty.dataset.qty); input.value = Math.max(1, Number(input.value || 1) + Number(qty.dataset.delta)); }
 });
-$("#details-content").addEventListener("click", event => { const button = event.target.closest("[data-add]"); if (button) addToCart(Number(button.dataset.add)); });
+$("#details-content").addEventListener("click", event => { const button = event.target.closest("[data-add]"); if (button) addToCart(button.dataset.add); });
 $("#category-cards").addEventListener("click", event => { const card = event.target.closest("[data-category-card]"); if (!card) return; $("#category-filter").value = card.dataset.categoryCard; renderProducts(); $("#products").scrollIntoView({ behavior: "smooth" }); });
-$("#cart-items").addEventListener("click", event => { const button = event.target.closest("[data-cart-qty]"); if (!button) return; const id = Number(button.dataset.cartQty); const item = cart.get(id); item.quantity += Number(button.dataset.change); if (item.quantity <= 0) cart.delete(id); renderCart(); });
+$("#cart-items").addEventListener("click", event => { const button = event.target.closest("[data-cart-qty]"); if (!button) return; const id = String(button.dataset.cartQty); const item = cart.get(id); if (!item) return; item.quantity += Number(button.dataset.change); if (item.quantity <= 0) cart.delete(id); renderCart(); });
 ["#product-search", "#min-price", "#max-price"].forEach(selector => $(selector).addEventListener("input", renderProducts));
 ["#category-filter", "#stock-filter", "#sort-filter"].forEach(selector => $(selector).addEventListener("change", renderProducts));
 document.addEventListener("error", event => {

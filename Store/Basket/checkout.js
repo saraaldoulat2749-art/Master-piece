@@ -125,6 +125,21 @@ function submitOrder(event) {
     deliveryMethod, deliveryFee, payment: "Cash on Delivery", subtotal, total: subtotal + deliveryFee,
     placedAt: new Date().toISOString()
   };
+  const signedInIdentity = String(sessionStorage.getItem("careplusDemoIdentity") || "").trim().toLowerCase();
+  const signedInUser = window.CarePlusData?.list("users").find(user => user.email?.toLowerCase() === signedInIdentity || user.phone === sessionStorage.getItem("careplusDemoIdentity"));
+  const orderOwner = signedInUser || window.CarePlusData?.list("users").find(user => user.email?.toLowerCase() === order.customer.email.toLowerCase());
+  const sharedOrder = window.CarePlusData?.create("orders", {
+    reference: order.reference, customerName: order.customer.fullName, items: order.items, customer: order.customer,
+    userId: orderOwner?.id || "",
+    deliveryMethod, deliveryFee, payment: order.payment, subtotal, total: order.total,
+    placedAt: order.placedAt, status: "Placed", source: "store-checkout"
+  });
+  if (!sharedOrder) {
+    formMessage.textContent = "Your order could not be saved in this browser. Please try again.";
+    formMessage.hidden = false;
+    return;
+  }
+  order.id = sharedOrder.id;
   sessionStorage.setItem(ORDER_KEY, JSON.stringify(order));
   sessionStorage.removeItem(DRAFT_KEY);
   localStorage.removeItem(CART_KEY);
@@ -158,12 +173,12 @@ if (isConfirmationPage()) {
   byId("order-items").addEventListener("click", event => {
     const button = event.target.closest("[data-action]");
     if (!button) return;
-    const id = Number(button.dataset.id);
-    const item = cart.find(entry => Number(entry.product.id) === id);
+    const id = String(button.dataset.id);
+    const item = cart.find(entry => String(entry.product.id) === id);
     if (!item) return;
-    if (button.dataset.action === "remove") cart = cart.filter(entry => Number(entry.product.id) !== id);
+    if (button.dataset.action === "remove") cart = cart.filter(entry => String(entry.product.id) !== id);
     if (button.dataset.action === "increase") item.quantity += 1;
-    if (button.dataset.action === "decrease") { item.quantity -= 1; if (item.quantity <= 0) cart = cart.filter(entry => Number(entry.product.id) !== id); }
+    if (button.dataset.action === "decrease") { item.quantity -= 1; if (item.quantity <= 0) cart = cart.filter(entry => String(entry.product.id) !== id); }
     saveCart(); renderCheckoutItems();
   });
   document.querySelectorAll('input[name="delivery"]').forEach(input => input.addEventListener("change", () => { updateTotals(); saveDraft(); }));

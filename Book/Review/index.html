@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="style.css">
        <link rel="stylesheet" href="../../Footer/style.css">
 </head>
-<body>
+<body data-protected="true"><script src="../../auth.js"></script>
        <div id="nav-container"></div>
 <script>
 fetch("../../Nav/index.html")
@@ -33,11 +33,11 @@ fetch("../../Nav/index.html")
         <!-- Booking steps -->
         <div class="steps">
             <div class="step completed">
-                <div class="circle">✓</div>
+                <div class="circle">âœ“</div>
                 <div class="step-label">Book Appointment</div>
             </div>
             <div class="step completed">
-                <div class="circle">✓</div>
+                <div class="circle">âœ“</div>
                 <div class="step-label">Select Date &amp; Time</div>
             </div>
             <div class="step active">
@@ -64,31 +64,31 @@ fetch("../../Nav/index.html")
                     <div>
                         <h3 id="doctorName">Doctor not selected</h3>
                         <p id="doctorSpecialty">Specialty not selected</p>
-                        <div class="rating">★ <span>Doctor information</span></div>
+                        <div class="rating">â˜… <span>Doctor information</span></div>
                     </div>
                 </div>
                 <hr class="divider">
                 <div class="detail-row">
                     <div class="detail-label">
-                        <span class="detail-icon">▦</span>Date
+                        <span class="detail-icon">â–¦</span>Date
                     </div>
-                    <div class="detail-value" id="appointmentDate">—</div>
+                    <div class="detail-value" id="appointmentDate">â€”</div>
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">
-                        <span class="detail-icon">◷</span>Time
+                        <span class="detail-icon">â—·</span>Time
                     </div>
-                    <div class="detail-value" id="appointmentTime">—</div>
+                    <div class="detail-value" id="appointmentTime">â€”</div>
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">
-                        <span class="detail-icon">⌖</span>Location
+                        <span class="detail-icon">âŒ–</span>Location
                     </div>
-                    <div class="detail-value" id="doctorArea">—</div>
+                    <div class="detail-value" id="doctorArea">â€”</div>
                 </div>
                 <div class="detail-row">
                     <div class="detail-label">
-                        <span class="detail-icon">▣</span>Duration
+                        <span class="detail-icon">â–£</span>Duration
                     </div>
                     <div class="detail-value">30 minutes</div>
                 </div>
@@ -96,7 +96,7 @@ fetch("../../Nav/index.html")
             <!-- Patient information -->
             <section>
                 <div class="card patient-card">
-                    <h2 class="card-title">♙ Patient Information</h2>
+                    <h2 class="card-title">â™™ Patient Information</h2>
                     <div class="patient-field">
                         <label for="patientName">Full Name *</label>
                         <input
@@ -125,7 +125,7 @@ fetch("../../Nav/index.html")
                     </div>
                 </div>
                 <div class="notice">
-                    <strong>ⓘ Before You Confirm</strong>
+                    <strong>â“˜ Before You Confirm</strong>
                     Please check your appointment details carefully.
                     You can return to the previous step if you need to
                     change the selected date or time.
@@ -135,14 +135,14 @@ fetch("../../Nav/index.html")
         <div class="error" id="errorMessage" role="alert"></div>
         <div class="actions">
             <a href="../Time/index.html" class="button back-button">
-                ← Back
+                â† Back
             </a>
             <a
                 href="../Success/index.html"
                 class="button confirm-button"
                 id="confirmButton"
             >
-                ✓ Confirm Appointment
+                âœ“ Confirm Appointment
         </a>
         </div>
     </div>
@@ -157,7 +157,7 @@ fetch("../../Nav/index.html")
         })
         .catch(error => console.error("Error loading footer:", error));
 </script>
-<script src="script.js"></script>
+<script src="../../data/careplus-data.js"></script><script src="script.js"></script>
     <script src="../../Footer/footer.js"></script>
 </body>
 </html>

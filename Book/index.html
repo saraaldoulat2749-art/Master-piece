@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
-<body>
+<body data-protected="true"><script src="../auth.js"></script>
    <div id="nav-container"></div>
 <script>
 fetch("../Nav/index.html")
@@ -32,11 +32,23 @@ fetch("../Nav/index.html")
                 in a few easy steps.
             </p>
         </div>
-        <div class="hero-image">
-            <img
-                src="https://ts4.mm.bing.net/th?id=OIP.TbrRGKR7k8uw3ZHNTorvvAHaD2&pid=15.1"
-                alt="Doctor"
-            >
+        <div class="hero-image" role="img" aria-label="Illustration of a scheduled doctor appointment">
+            <div class="appointment-art" aria-hidden="true">
+                <span class="art-orbit orbit-one"></span>
+                <span class="art-orbit orbit-two"></span>
+                <span class="medical-cross">+</span>
+                <span class="float-icon heart-icon">♥</span>
+                <span class="float-icon clock-icon"><i></i></span>
+                <span class="float-icon mini-cross">+</span>
+                <div class="calendar-card">
+                    <div class="calendar-top"><span></span><span></span><b>CarePlus</b></div>
+                    <div class="calendar-heading"><i></i><span>Choose a date</span><i></i></div>
+                    <div class="calendar-week"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div>
+                    <div class="calendar-days"><span>12</span><span>13</span><span class="date-active">14</span><span>15</span><span>16</span><span>17</span><span>18</span></div>
+                    <div class="calendar-days muted-days"><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span></div>
+                </div>
+                <div class="appointment-confirmation"><span class="confirm-check">✓</span><span><b>Appointment</b><small>Confirmed · 10:30 AM</small></span></div>
+            </div>
         </div>
     </section>
     <!-- Booking Form -->

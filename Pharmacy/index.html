@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="style.css">
        <link rel="stylesheet" href="../Footer/style.css">
 </head>
-<body>
+<body data-protected="true"><script src="../auth.js"></script>
        <div id="nav-container"></div>
 <script>
 fetch("../Nav/index.html")
@@ -21,7 +21,7 @@ fetch("../Nav/index.html")
 </script>
     <main class="page">
 
- <a href="../services/index.html" class="back">← Back to Services</a>
+ <a href="../services/index.html" class="back">â† Back to Services</a>
 
   <section class="hero">
     <div>
@@ -31,9 +31,26 @@ fetch("../Nav/index.html")
       </p>
     </div>
 
-    <img
-      src="https://png.pngtree.com/thumb_back/fw800/background/20240401/pngtree-blur-pharmacist-taking-medicine-from-shelf-in-the-pharmacy-image_15649233.jpg"
-      alt="Healthcare professional">
+    <div class="pharmacy-illustration" role="img" aria-label="Animated map showing nearby pharmacies">
+      <div class="map-scene" aria-hidden="true">
+        <span class="map-road road-one"></span><span class="map-road road-two"></span><span class="map-road road-three"></span>
+        <svg class="route-path" viewBox="0 0 330 190" preserveAspectRatio="none"><path d="M42 137 C78 133 83 77 132 78 S180 125 218 73 S265 51 286 48" /></svg>
+        <span class="map-scan"></span><span class="search-lens"><i></i></span>
+        <span class="map-block block-one"></span><span class="map-block block-two"></span><span class="map-block block-three"></span>
+        <span class="map-marker marker-one"><i></i></span><span class="map-marker marker-two"><i></i></span>
+        <span class="location-pulse"></span><span class="location-pin main-pin"><i></i></span>
+        <div class="map-search-chip"><span>âŒ•</span><b>NEARBY SEARCH</b><i></i></div>
+        <div class="pharmacy-store">
+          <div class="store-sign"><b>+</b><span>PHARMACY</span></div>
+          <div class="store-awning"><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="store-front"><span class="store-window"></span><span class="store-door"></span><span class="store-window"></span></div>
+        </div>
+        <div class="distance-card"><span class="distance-icon">+</span><span class="distance-copy"><b>Care Pharmacy</b><small>350 m <i></i> Open now</small></span><span class="distance-arrow">&#8594;</span></div>
+        <span class="medicine-bottle bottle-left"><i></i></span><span class="medicine-bottle bottle-right"><i></i></span>
+        <span class="floating-pill pill-one"><i></i></span><span class="floating-pill pill-two"><i></i></span><span class="floating-pill pill-three"><i></i></span><span class="floating-pill pill-four"><i></i></span>
+        <span class="floating-cross">+</span>
+      </div>
+    </div>
   </section>
 
   <section class="panel">
@@ -44,7 +61,7 @@ fetch("../Nav/index.html")
 
     <div class="fields">
       <div>
-        <label for="medicine">♢ Medicine Name</label>
+        <label for="medicine">â™¢ Medicine Name</label>
         <input
           id="medicine"
           type="text"
@@ -54,7 +71,7 @@ fetch("../Nav/index.html")
       </div>
 
       <div>
-        <label for="area">📍 Your Area</label>
+        <label for="area">ðŸ“ Your Area</label>
         <select id="area">
           <option value="Amman">Amman</option>
           <option value="Zarqa">Zarqa</option>
@@ -67,7 +84,7 @@ fetch("../Nav/index.html")
 
     <!-- Pharmacy results update automatically. No search button. -->
     <div class="results-head">
-      <h3>📍 <span id="resultsTitle">Available pharmacies near you</span></h3>
+      <h3>ðŸ“ <span id="resultsTitle">Available pharmacies near you</span></h3>
       <div class="count" id="resultCount" aria-live="polite"></div>
     </div>
 
@@ -87,7 +104,7 @@ fetch("../Nav/index.html")
         })
         .catch(error => console.error("Error loading footer:", error));
 </script>
-<script src="script.js"></script>
+<script src="../data/careplus-data.js"></script><script src="script.js"></script>
     <script src="../Footer/footer.js"></script>
 </body>
 </html>

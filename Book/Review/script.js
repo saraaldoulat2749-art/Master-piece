@@ -100,6 +100,17 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
+        const appointment = window.CarePlusData?.create("appointments", {
+            patient: patientName, phone: patientPhone, email: patientEmail,
+            userId: window.CarePlusData?.list("users").find(user => user.email?.toLowerCase() === sessionStorage.getItem("careplusDemoIdentity")?.toLowerCase() || user.phone === sessionStorage.getItem("careplusDemoIdentity"))?.id || "",
+            doctor, specialty, area, date, time, status: "Requested", source: "user-booking"
+        });
+        if (!appointment) {
+            errorMessage.textContent = "This browser could not save your demo appointment. Please try again.";
+            errorMessage.style.display = "block";
+            return;
+        }
+
         // تجهيز جميع المعلومات لصفحة النجاح
         const successParams = new URLSearchParams({
             area: area,
@@ -109,7 +120,8 @@ document.addEventListener("DOMContentLoaded", function () {
             time: time,
             patientName: patientName,
             patientPhone: patientPhone,
-            patientEmail: patientEmail
+            patientEmail: patientEmail,
+            appointmentId: appointment.id
         });
 
         if (image) {

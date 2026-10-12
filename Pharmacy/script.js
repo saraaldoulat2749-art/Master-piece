@@ -1,4 +1,4 @@
-const pharmacies = [
+let pharmacies = [
   {
     name: "Al Shifa Pharmacy",
     area: "Amman",
@@ -81,6 +81,10 @@ const pharmacies = [
   }
 ];
 
+window.CarePlusData.seed("pharmacies", pharmacies.map((pharmacy, index) => ({ id: `pharmacy-${index + 1}`, ...pharmacy, status: "Active" })));
+pharmacies = window.CarePlusData.list("pharmacies");
+window.CarePlusData.subscribe(() => { pharmacies = window.CarePlusData.list("pharmacies"); renderPharmacies(); });
+
 const medicineInput = document.getElementById("medicine");
 const areaSelect = document.getElementById("area");
 const cardsContainer = document.getElementById("pharmacyCards");
@@ -89,13 +93,22 @@ const resultsTitle = document.getElementById("resultsTitle");
 
 function renderPharmacies() {
   const medicine = medicineInput.value.trim().toLowerCase();
+  const selectedArea = areaSelect.value;
+  const areas = [...new Set(pharmacies.filter(pharmacy => pharmacy.status !== "Inactive").map(pharmacy => pharmacy.area))];
+  areaSelect.replaceChildren(...areas.map(areaName => {
+    const option = document.createElement("option");
+    option.value = areaName;
+    option.textContent = areaName;
+    return option;
+  }));
+  if (areas.includes(selectedArea)) areaSelect.value = selectedArea;
   const area = areaSelect.value;
 
   const filtered = pharmacies.filter(pharmacy =>
-    pharmacy.area === area &&
+    pharmacy.area === area && pharmacy.status !== "Inactive" &&
     (
       !medicine ||
-      pharmacy.medicines.some(item =>
+      (pharmacy.medicines || []).some(item =>
         item.includes(medicine) || medicine.includes(item)
       )
     )

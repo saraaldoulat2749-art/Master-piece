@@ -8,6 +8,14 @@ const area = params.get("area") || "";
 const image = params.get("image") || "";
 const date = params.get("date") || "";
 const time = params.get("time") || "";
+const appointmentId = params.get("appointmentId") || "";
+const bookingStatus = document.getElementById("bookingStatus");
+function syncAppointmentStatus() {
+    const appointment = appointmentId && window.CarePlusData?.get("appointments", appointmentId);
+    if (bookingStatus) bookingStatus.textContent = appointment?.status || "Demo record unavailable";
+}
+syncAppointmentStatus();
+window.CarePlusData?.subscribe(syncAppointmentStatus);
 
 // عرض معلومات الدكتور
 document.getElementById("doctorName").textContent =

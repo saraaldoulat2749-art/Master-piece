@@ -17,6 +17,7 @@
 </head>
 
 <body>
+    <script src="../auth.js"></script>
 
     <!-- ================= HERO SECTION ================= -->
     <section class="hero" id="home">
@@ -49,33 +50,24 @@ fetch("../Nav/index.html")
         <!-- HERO CONTENT -->
         <main class="hero-content">
 
-            <div class="tag">Integrated Health Platform</div>
+            <div class="tag">CarePlus Healthcare Services</div>
 
             <h1>
-                All Your Health Needs
-                <span>in One Place</span>
+                Healthcare made easier
+                <span>for everyday life</span>
             </h1>
 
             <p class="description">
-                Book appointments, search for medicines, get symptom
-                guidance, shop medical products, and access home services —
-                all in one easy platform.
+                Find doctors, explore nearby pharmacies, get general health
+                guidance, shop medical essentials, and discover personalized
+                elderly care — all in one place.
             </p>
 
             <!-- SEARCH -->
             <form class="search-box" id="search">
-
-                <span class="magnify">⌕</span>
-
-                <input
-                    type="search"
-                    id="searchInput"
-                    placeholder="Search for a doctor, medicine, service..."
-                    aria-label="Search for a doctor, medicine, or service"
-                >
-
+                <span class="magnify" aria-hidden="true">⌕</span>
+                <input type="search" id="searchInput" placeholder="Search doctors, medicines, and services..." aria-label="Search for a doctor, medicine, or service">
                 <button type="submit" aria-label="Search">⌕</button>
-
             </form>
 
             <!-- FEATURES -->
@@ -83,17 +75,17 @@ fetch("../Nav/index.html")
 
                 <div class="feature">
                     <div class="feature-icon">ϟ</div>
-                    <p>Easy &amp; Fast<br>Platform</p>
+                    <p>Simple Service<br>Discovery</p>
                 </div>
 
                 <div class="feature">
                     <div class="feature-icon">◷</div>
-                    <p>24/7<br>Support</p>
+                    <p>Care Options<br>In One Place</p>
                 </div>
 
                 <div class="feature">
                     <div class="feature-icon">♢</div>
-                    <p>Trusted Doctors<br>&amp; Services</p>
+                    <p>Support for<br>Every Generation</p>
                 </div>
 
 
@@ -137,13 +129,13 @@ fetch("../Nav/index.html")
 
             <!-- ABOUT IMAGE -->
             <div class="about-image-box">
-
+                <div class="about-image-wrap">
                 <img
                     src="https://iihmrbangalore.edu.in/wp-content/uploads/2025/07/WhatsApp-Image-2025-07-03-at-12.26.34.jpeg"
                     alt="CarePlus Healthcare Team"
                     class="about-image"
                 >
-
+                </div>
             </div>
 
             <!-- MISSION, VISION, VALUES -->
@@ -210,7 +202,7 @@ fetch("../Nav/index.html")
         <!-- SERVICES CARDS -->
         <div class="quick-services-grid">
 
-            <a href="#appointments" class="quick-service">
+            <a href="../services/details/appointments.html" class="quick-service">
 
                 <div class="quick-icon">♙</div>
 
@@ -218,7 +210,7 @@ fetch("../Nav/index.html")
 
             </a>
 
-            <a href="#medicine-search" class="quick-service">
+            <a href="../services/details/medicine.html" class="quick-service">
 
                 <div class="quick-icon">✚</div>
 
@@ -226,7 +218,7 @@ fetch("../Nav/index.html")
 
             </a>
 
-            <a href="#ai-diagnosis" class="quick-service">
+            <a href="../services/details/ai.html" class="quick-service">
 
                 <div class="quick-icon">✧</div>
 
@@ -234,7 +226,7 @@ fetch("../Nav/index.html")
 
             </a>
 
-            <a href="#medical-store" class="quick-service">
+            <a href="../services/details/store.html" class="quick-service">
 
                 <div class="quick-icon">▣</div>
 
@@ -242,19 +234,11 @@ fetch("../Nav/index.html")
 
             </a>
 
-            <a href="../elederly/index.html" class="quick-service">
+            <a href="../services/details/elderly.html" class="quick-service">
 
                 <div class="quick-icon">♡</div>
 
                 <h3>Elderly Care</h3>
-
-            </a>
-
-            <a href="#home-lab-tests" class="quick-service">
-
-                <div class="quick-icon">⚕</div>
-
-                <h3>Home Lab Tests</h3>
 
             </a>
 

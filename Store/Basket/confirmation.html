@@ -5,7 +5,7 @@
   <title>Order Confirmation | CarePlus</title>
   <link rel="stylesheet" href="../../Nav/style.css"><link rel="stylesheet" href="../../Footer/style.css"><link rel="stylesheet" href="checkout.css">
 </head>
-<body>
+<body data-protected="true"><script src="../../auth.js"></script>
   <div id="nav-container"></div>
   <main class="checkout-page confirmation-page">
     <section class="confirmation-card" id="confirmation-card"><div class="success-mark" aria-hidden="true">✓</div><span class="eyebrow">CAREPLUS MEDICAL STORE</span><h1>Your order has been placed successfully!</h1><p class="confirmation-intro">Thank you for shopping with CarePlus Healthcare.</p><p class="order-reference">Order reference <strong id="order-reference"></strong></p>
@@ -14,7 +14,7 @@
     </section>
     <section class="confirmation-card no-order" id="no-order" hidden><h1>No recent order found</h1><p>Start shopping to place your order.</p><a class="continue-shopping" href="../index.html">Continue Shopping <span>→</span></a></section>
   </main>
-  <div id="footer-container"></div><script src="checkout.js"></script>
+  <div id="footer-container"></div><script src="../../data/careplus-data.js"></script><script src="checkout.js"></script>
   <script src="../../Footer/footer.js"></script>
 </body>
 </html>
