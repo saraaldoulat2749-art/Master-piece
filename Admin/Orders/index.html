@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#041b2a">
+  <title>Customer Orders | CarePlus Admin</title>
+  <link rel="stylesheet" href="../admin.css">
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="orders.css">
+</head>
+<body class="orders-page" data-protected="true" data-admin-protected="true">
+  <script src="../../auth.js"></script>
+  <div class="admin-layout">
+    <aside class="sidebar" id="admin-sidebar">
+      <a class="brand" href="../index.html"><span class="brand-mark">+</span><span>Care<span>Plus</span><small>ADMIN</small></span></a>
+      <nav class="side-nav" aria-label="Admin sections">
+        <a href="../index.html"><span>▦</span>Dashboard</a>
+        <a href="../Users/index.html"><span>♙</span>Users</a>
+        <a href="../Appointments/index.html"><span>□</span>Appointments</a>
+        <a href="../Products/index.html"><span>＋</span>Products</a>
+        <a href="../Pharmacies/index.html"><span>⌖</span>Pharmacies</a>
+        <a href="../CareRequests/index.html"><span>♡</span>Care requests</a>
+        <a class="active" href="index.html" data-orders-nav><span>▣</span>Orders</a>
+      </nav>
+      <div class="sidebar-bottom"><p>Admin workspace</p><a href="../../Home/Master.html">View CarePlus site</a></div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar">
+        <button class="menu-toggle" type="button" aria-label="Open admin navigation" aria-controls="admin-sidebar" aria-expanded="false">☰</button>
+        <div class="topbar-copy"><span class="eyebrow">STORE FULFILMENT</span><h1>Customer orders</h1></div>
+        <a class="logout-link" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a>
+      </header>
+      <section class="page-content" data-admin-page="orders">
+        <div class="welcome-row">
+          <div><p class="eyebrow">ORDER MANAGEMENT</p><h2>Track customer orders</h2><p>Review store and pharmacy orders from the shared CarePlus order records.</p></div>
+        </div>
+        <section class="panel customer-orders-panel" aria-labelledby="customer-orders-title">
+          <div class="customer-orders-heading">
+            <div><p class="eyebrow">CAREPLUS STORE</p><h2 id="customer-orders-title">Store orders</h2><p>Update store order progress as it moves through fulfilment.</p></div>
+            <span class="record-count" data-orders-count>0 orders</span>
+          </div>
+          <div class="table-wrap">
+            <table class="customer-orders-table">
+              <thead><tr><th scope="col">Order</th><th scope="col">Customer</th><th scope="col">Products</th><th scope="col">Date</th><th scope="col">Delivery</th><th scope="col">Total</th><th scope="col">Payment</th><th scope="col">Status</th></tr></thead>
+              <tbody data-orders-body></tbody>
+            </table>
+            <div class="table-empty" data-orders-empty>No customer orders have been placed yet.</div>
+          </div>
+        </section>
+        <section class="panel customer-orders-panel pharmacy-admin-orders" id="pharmacy-orders" aria-labelledby="pharmacy-orders-title">
+          <div class="customer-orders-heading"><div><p class="eyebrow">MEDICINE SERVICE</p><h2 id="pharmacy-orders-title">Pharmacy orders</h2><p>Order, delivery, and commission details shared with the pharmacy workspace.</p></div><span class="record-count" data-pharmacy-orders-count>0 orders</span></div>
+          <div class="pharmacy-orders-toolbar"><label>Search<input type="search" data-pharmacy-order-search placeholder="Order, customer reference, pharmacy, medicine"></label><label>Order status<select data-pharmacy-order-filter><option value="">All statuses</option><option>Pending</option><option>Confirmed</option><option>Preparing for Delivery</option><option>Out for Delivery</option><option>Delivered</option><option>Cancelled</option></select></label></div>
+          <div class="table-wrap"><table class="customer-orders-table pharmacy-orders-table"><thead><tr><th>Order</th><th>Customer ref.</th><th>Pharmacy</th><th>Medicine / qty</th><th>Date &amp; delivery details</th><th>Medicine subtotal</th><th>CarePlus fee</th><th>Delivery fee</th><th>Customer total</th><th>Order status</th><th>Commission</th></tr></thead><tbody data-pharmacy-orders-body></tbody></table><div class="table-empty" data-pharmacy-orders-empty>No pharmacy orders have been placed yet.</div></div>
+        </section>
+      </section>
+    </main>
+  </div>
+  <div class="toast" data-toast role="status" aria-live="polite"></div>
+  <script src="../../data/careplus-data.js"></script>
+  <script src="../admin.js"></script>
+</body>
+</html>

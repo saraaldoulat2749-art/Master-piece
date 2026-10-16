@@ -1,0 +1,12 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f3f8fb"><title>My Medicine Orders | CarePlus</title><link rel="stylesheet" href="../Nav/style.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="workflow.css"><link rel="stylesheet" href="../Footer/style.css"></head>
+<body data-protected="true"><script src="../auth.js"></script><div id="nav-container"></div>
+  <main class="page order-page"><a href="index.html" class="back-to-services"><span aria-hidden="true">←</span> Find pharmacies</a>
+    <section class="order-page-heading"><p class="order-eyebrow">ORDER TRACKING</p><h1>My medicine <span>orders</span></h1><p>See the latest status from each pharmacy. When an order is Out for Delivery, confirm receipt here after it arrives.</p></section>
+    <nav class="order-progress" aria-label="Five steps in the pharmacy order process"><span class="done"><b>1</b> Search</span><i></i><span class="done"><b>2</b> Pharmacy results</span><i></i><span class="done"><b>3</b> Place order</span><i></i><span class="active"><b>4</b> Delivery</span><i></i><span><b>5</b> CarePlus commission</span></nav>
+    <section class="panel orders-panel"><div class="order-panel-title"><div><p class="order-eyebrow">YOUR REQUESTS</p><h2>Order history</h2></div><label class="order-filter">Status<select id="orderStatusFilter"><option value="">All statuses</option><option>Pending</option><option>Confirmed</option><option>Preparing for Delivery</option><option>Out for Delivery</option><option>Delivered</option><option>Cancelled</option></select></label></div><div id="myOrderRows" class="my-order-list" aria-live="polite"></div></section>
+  </main><div id="footer-container"></div>
+  <script>fetch("../Nav/index.html").then(r=>r.text()).then(html=>document.getElementById("nav-container").innerHTML=html);fetch("../Footer/index.html").then(r=>r.text()).then(html=>document.getElementById("footer-container").innerHTML=html);</script>
+  <script src="../data/careplus-data.js"></script><script src="../data/careplus-pharmacy.js"></script><script src="orders.js"></script><script src="../Footer/footer.js"></script>
+</body></html>

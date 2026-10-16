@@ -1,5 +1,5 @@
 :root {
-  --chat-teal: #08a9b8;
+  --chat-teal: #94D5D6;
   --chat-teal-dark: #078c9b;
   --chat-navy: #17395f;
   --chat-muted: #71869b;
@@ -144,6 +144,19 @@ body { margin: 0; background: #effbfb; color: var(--chat-navy); font-family: Ari
   .robot-wrap { scale: .75; margin-inline: -15px; }
   .robot-caption { min-width: 130px; }
 }
+/* Usage meter and payment gate */
+.usage-card { margin: 0 24px 12px; padding: 13px 16px; border: 1px solid #dbeaec; border-radius: 12px; background: #f8fbfb; }
+.attempts-remaining { margin: 0; color: #496574; font-size: 13px; font-weight: 700; }
+.payment-prompt { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px 18px; margin-top: 10px; padding: 14px; border: 1px solid #b8dfe2; border-radius: 12px; background: linear-gradient(120deg, #f1fbfb, #fff); }
+.payment-prompt[hidden], .payment-details[hidden] { display: none; }
+.payment-prompt h2 { margin: 0 0 4px; color: var(--chat-navy); font-size: 16px; }
+.payment-prompt p { margin: 0; color: var(--chat-muted); font-size: 12px; line-height: 1.55; }
+.payment-button { grid-column: 2; grid-row: 1; display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 0 18px; border: 0; border-radius: 12px; background: #078f9c; color: #fff; font-size: 14px; font-weight: 700; text-align: center; text-decoration: none; }
+.payment-button:hover { background: #067984; }
+.payment-details-toggle { grid-column: 1 / -1; justify-self: start; padding: 0; border: 0; background: none; color: #087f8b; font: inherit; font-size: 12px; font-weight: 700; text-decoration: underline; cursor: pointer; }
+.payment-details { grid-column: 1 / -1; padding: 11px 12px; border-radius: 8px; background: #edf7f8; }
+.toolbar-button:disabled, .suggestion-card:disabled { opacity: .5; cursor: not-allowed; }
+@media (max-width: 700px) { .usage-card { margin-inline: 14px; } .payment-prompt { grid-template-columns: 1fr; } .payment-button { grid-column: 1; grid-row: auto; justify-self: start; } }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }

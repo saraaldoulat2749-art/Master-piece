@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Payment Setup | CarePlus</title>
+  <link rel="stylesheet" href="../Nav/style.css">
+  <link rel="stylesheet" href="../Footer/style.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body data-protected="true">
+  <script src="../data/careplus-data.js"></script>
+  <script src="../auth.js"></script>
+  <div id="nav-container"></div>
+  <script>
+    fetch("../Nav/index.html")
+      .then(response => response.text())
+      .then(html => { document.getElementById("nav-container").innerHTML = html; })
+      .catch(error => console.error("Error loading navbar:", error));
+  </script>
+
+  <main class="payment-page">
+    <a class="payment-back" href="../AI/index.html"><span aria-hidden="true">&larr;</span> Back to CarePlus AI</a>
+
+    <header class="checkout-heading">
+      <div><p class="payment-eyebrow">CAREPLUS AI</p><h1 id="payment-title">Secure checkout</h1><p>Continue your AI service after using the three free attempts.</p></div>
+      <span class="demo-chip"><span aria-hidden="true">●</span> Frontend preview</span>
+    </header>
+
+    <div class="checkout-layout">
+      <section class="checkout-card" aria-labelledby="payment-method-title">
+        <div class="checkout-section-heading"><span class="checkout-step">1</span><h2 id="plan-period-title">Choose access period</h2></div>
+        <div class="ai-plan-options" role="radiogroup" aria-labelledby="plan-period-title">
+          <label class="ai-plan-option"><input type="radio" name="ai-plan" value="day" checked><span><strong>1 day</strong><small>JOD 1.00</small></span></label>
+          <label class="ai-plan-option"><input type="radio" name="ai-plan" value="week"><span><strong>1 week</strong><small>JOD 5.00</small></span></label>
+          <label class="ai-plan-option"><input type="radio" name="ai-plan" value="month"><span><strong>1 month</strong><small>JOD 15.00</small></span></label>
+        </div>
+
+        <div class="checkout-section-heading"><span class="checkout-step">2</span><h2 id="payment-method-title">Payment method</h2></div>
+        <div class="card-method" aria-label="Credit or debit card">
+          <span class="card-method-icon" aria-hidden="true">▰</span>
+          <span><strong>Credit or debit card</strong><small>Card payment</small></span>
+          <span class="card-brands" aria-label="Visa and Mastercard">VISA&nbsp; · &nbsp;MC</span>
+        </div>
+
+        <div class="demo-warning" role="note"><strong>Demo only:</strong> Payment is not connected. Do not enter real card details. Nothing on this form is sent or saved.</div>
+
+        <form id="checkout-form" novalidate>
+          <label class="field-label" for="cardholder">Name on card</label>
+          <input id="cardholder" type="text" autocomplete="off" placeholder="Cardholder name" required>
+
+          <label class="field-label" for="card-number">Card number</label>
+          <div class="input-with-icon"><input id="card-number" type="text" inputmode="numeric" autocomplete="off" maxlength="23" placeholder="1234  5678  9012  3456" required><span aria-hidden="true">▤</span></div>
+
+          <div class="field-row">
+            <div><label class="field-label" for="card-expiry">Expiry date</label><input id="card-expiry" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="MM / YY" required></div>
+            <div><label class="field-label" for="card-cvc">Security code</label><input id="card-cvc" type="password" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="CVC" required></div>
+          </div>
+
+          <label class="field-label" for="billing-country">Billing country</label>
+          <select id="billing-country"><option>Jordan</option><option>Other</option></select>
+
+          <button class="checkout-submit" type="submit">Continue to payment</button>
+          <p class="checkout-result" id="checkout-result" role="status" aria-live="polite" hidden></p>
+        </form>
+      </section>
+
+      <aside class="order-summary" aria-labelledby="summary-title">
+        <h2 id="summary-title">Order summary</h2>
+        <div class="summary-service"><span class="summary-icon" aria-hidden="true">✦</span><span><strong>CarePlus AI</strong><small>Additional service access</small></span></div>
+        <div class="summary-line"><span>Access period</span><strong id="summary-period">1 day</strong></div>
+        <div class="summary-line"><span>Service price</span><strong id="summary-price">JOD 1.00</strong></div>
+        <div class="summary-total"><span>Total due</span><strong id="summary-total">JOD 1.00</strong></div>
+        <p class="summary-note">CarePlus still needs to set the service price, connect a payment provider, and verify payments on a secure backend.</p>
+        <a class="summary-back" href="../AI/index.html">Return to AI service</a>
+        <a class="summary-services" href="../services/index.html">Back to Services</a>
+      </aside>
+    </div>
+  </main>
+
+  <div id="footer-container"></div>
+  <script>
+    fetch("../Footer/index.html")
+      .then(response => response.text())
+      .then(html => { document.getElementById("footer-container").innerHTML = html; })
+      .catch(error => console.error("Error loading footer:", error));
+  </script>
+  <script src="../Footer/footer.js"></script>
+  <script src="payment.js"></script>
+</body>
+</html>

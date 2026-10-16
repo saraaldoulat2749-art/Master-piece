@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f3f8fb"><title>Confirm Medicine Order | CarePlus</title><link rel="stylesheet" href="../Nav/style.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="workflow.css"><link rel="stylesheet" href="../Footer/style.css"></head>
+<body data-protected="true"><script src="../auth.js"></script>
+  <div id="nav-container"></div>
+  <main class="page order-page">
+    <a href="index.html" class="back-to-services"><span aria-hidden="true">←</span> Back to pharmacies</a>
+    <section class="order-page-heading"><p class="order-eyebrow">PHARMACY ORDER</p><h1>Review your <span>medicine order</span></h1><p>Review the full amount before continuing to the online payment step.</p></section>
+    <nav class="order-progress" aria-label="Five steps in the pharmacy order process"><span class="done"><b>1</b> Search</span><i></i><span class="done"><b>2</b> Pharmacy results</span><i></i><span class="active"><b>3</b> Place order</span><i></i><span><b>4</b> Delivery</span><i></i><span><b>5</b> CarePlus commission</span></nav>
+    <section class="order-layout">
+      <article class="panel order-review-panel"><div class="order-panel-title"><div><p class="order-eyebrow">YOUR SELECTION</p><h2>Order details</h2></div><span class="checkout-pharmacy-icon" aria-hidden="true">＋</span></div>
+        <div id="orderUnavailable" class="empty order-error" hidden><p id="orderErrorMessage">This selection is unavailable.</p><a class="btn btn-outline" href="index.html">Search pharmacies</a></div>
+        <div id="orderReview" hidden>
+          <div class="checkout-pharmacy"><span class="checkout-pharmacy-icon" aria-hidden="true">＋</span><div><b id="orderPharmacyName">Pharmacy</b><small id="orderPharmacyInfo"></small></div></div>
+          <form id="medicineOrderForm" novalidate>
+            <label>Medicine<select id="orderMedicine" required></select></label>
+            <label>Quantity<input id="orderQuantity" type="number" min="1" step="1" value="1" required></label>
+            <label>Delivery address<textarea id="deliveryAddress" rows="3" maxlength="300" required placeholder="Building, street, area"></textarea></label>
+            <label>Delivery area<select id="deliveryZone" required><option value="near">Nearby area</option><option value="sameCity" selected>Same city</option><option value="far">Far area</option></select><small>Choose based on the distance between your address and the pharmacy.</small></label>
+            <label>Contact phone<input id="deliveryPhone" type="tel" maxlength="30" required autocomplete="tel" placeholder="Phone for delivery updates"></label>
+            <div class="order-totals"><div><span>Unit price</span><b id="orderUnitPrice">JOD 0.00</b></div><div><span>Medicine subtotal</span><b id="orderSubtotal">JOD 0.00</b></div><div><span>CarePlus service commission (<span id="orderCommissionRate">0</span>%)</span><b id="orderCommission">JOD 0.00</b></div><div><span id="orderDeliveryLabel">Delivery · Same city</span><b id="orderDelivery">JOD 0.00</b></div><div class="order-total"><span>Total due online</span><b id="orderTotal">JOD 0.00</b></div></div>
+            <p id="orderFeedback" role="status" aria-live="polite"></p>
+            <button class="btn btn-primary order-submit" type="submit">Place order and open demo checkout</button>
+          </form>
+        </div>
+      </article>
+      <aside class="panel order-help-panel"><span class="order-help-icon" aria-hidden="true">✓</span><h2>What happens next?</h2><p>The pharmacy confirms your request and prepares it for delivery. The sale can be completed only after provider-verified payment and order fulfillment.</p><a href="orders.html">Track order status →</a></aside>
+    </section>
+  </main>
+  <div id="footer-container"></div>
+  <script>fetch("../Nav/index.html").then(r=>r.text()).then(html=>document.getElementById("nav-container").innerHTML=html);fetch("../Footer/index.html").then(r=>r.text()).then(html=>document.getElementById("footer-container").innerHTML=html);</script>
+  <script src="../data/careplus-data.js"></script><script src="../data/careplus-pharmacy.js"></script><script src="order.js"></script><script src="../Footer/footer.js"></script>
+</body></html>

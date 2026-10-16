@@ -7,9 +7,25 @@
   const sendButton = form.querySelector(".send-button");
   const robotStage = document.getElementById("robot-stage");
   const robotStateLabel = document.getElementById("robot-state-label");
+  let identity = "demo-account";
+  try { identity = sessionStorage.getItem("careplusDemoIdentity") || identity; } catch { /* Use the browser demo account when session storage is unavailable. */ }
+  const usageKey = `careplusAiAttempts:${identity.toLowerCase()}`;
+  let attemptsUsed = 0;
+  try { attemptsUsed = Math.min(3, Math.max(0, Number(localStorage.getItem(usageKey)) || 0)); } catch { /* The current tab still enforces the limit. */ }
+  const attemptsLabel = document.getElementById("attempts-remaining");
+  const paymentPrompt = document.getElementById("payment-prompt");
   let isGenerating = false;
   let responseTimer;
   let robotTimer;
+
+  function renderUsage() {
+    const remaining = Math.max(0, 3 - attemptsUsed);
+    attemptsLabel.textContent = `${remaining} free ${remaining === 1 ? "attempt" : "attempts"} remaining.`;
+    paymentPrompt.hidden = remaining !== 0;
+    input.disabled = remaining === 0 || isGenerating;
+    sendButton.disabled = remaining === 0 || isGenerating;
+    document.querySelectorAll(".suggestion-card").forEach(button => { button.disabled = remaining === 0; });
+  }
 
   function setRobotState(state, label, returnToIdleAfter = 0) {
     window.clearTimeout(robotTimer);
@@ -31,7 +47,7 @@
       const avatar = document.createElement("div");
       avatar.className = "message-avatar";
       avatar.setAttribute("aria-hidden", "true");
-      avatar.textContent = "✦";
+      avatar.textContent = "CP";
       article.append(avatar);
     }
 
@@ -39,7 +55,7 @@
     content.className = "message-content";
     const name = document.createElement("span");
     name.className = "message-name";
-    name.textContent = isUser ? "You" : "CarePlus Assistant · Demo";
+    name.textContent = isUser ? "You" : "CarePlus Assistant - Demo";
     const body = document.createElement("p");
     body.textContent = text;
     const time = document.createElement("time");
@@ -51,7 +67,7 @@
       const link = document.createElement("a");
       link.className = "message-link";
       link.href = action.href;
-      link.textContent = `${action.label} →`;
+      link.textContent = `${action.label} `;
       content.append(link);
     }
 
@@ -97,7 +113,11 @@
 
   function sendMessage(rawText) {
     const text = rawText.trim();
-    if (!text || isGenerating) return;
+    if (!text || isGenerating || attemptsUsed >= 3) return;
+
+    attemptsUsed += 1;
+    try { localStorage.setItem(usageKey, String(attemptsUsed)); } catch { /* The current tab still enforces the limit. */ }
+    renderUsage();
 
     addMessage("user", text);
     input.value = "";
@@ -116,8 +136,7 @@
       addMessage("assistant", reply.text, reply.action);
       setRobotState("ready", "Here to help", 2200);
       isGenerating = false;
-      sendButton.disabled = false;
-      input.disabled = false;
+      renderUsage();
       input.focus();
     }, Math.min(700 + text.length * 9, 1500));
   }
@@ -127,8 +146,7 @@
     window.clearTimeout(robotTimer);
     isGenerating = false;
     typing.hidden = true;
-    sendButton.disabled = false;
-    input.disabled = false;
+    renderUsage();
     conversation.querySelectorAll(".message").forEach(node => node.remove());
     addMessage("assistant", message);
     setRobotState("greeting", "Starting a fresh conversation", 2000);
@@ -167,5 +185,11 @@
     resetConversation("Your conversation has been cleared. What would you like help with?");
   });
 
+  document.getElementById("payment-details-toggle").addEventListener("click", event => {
+    const details = document.getElementById("payment-details");
+    details.hidden = !details.hidden;
+    event.currentTarget.setAttribute("aria-expanded", String(!details.hidden));
+  });
+  renderUsage();
   setRobotState("greeting", "Waving hello", 2100);
 })();

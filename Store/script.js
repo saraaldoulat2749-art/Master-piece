@@ -16,23 +16,23 @@ let products = [
   ["Portable Oxygen Equipment", "devices", "Portable oxygen equipment designed for easier transport.", 920.00, "portable,oxygen,concentrator", false],
   ["Digital Weighing Scale", "devices", "Digital body scale with a large platform display.", 19.90, "digital,medical,scale", true],
   ["Blood Pressure Monitor Cuff", "accessories", "Replacement cuff designed for compatible blood pressure monitors.", 11.50, "blood,pressure,monitor,cuff", true],
-  ["Glucose Test Strips · 50 pack", "accessories", "Pack of glucose test strips for compatible meters.", 14.25, "glucose,test,strips", true],
-  ["Safety Lancets · 100 pack", "accessories", "Single-use safety lancets for blood sampling devices.", 8.50, "medical,lancets", true],
-  ["Thermometer Probe Covers · 20 pack", "accessories", "Disposable probe covers for compatible thermometers.", 3.75, "thermometer,probe,covers", true],
+  ["Glucose Test Strips  50 pack", "accessories", "Pack of glucose test strips for compatible meters.", 14.25, "glucose,test,strips", true],
+  ["Safety Lancets  100 pack", "accessories", "Single-use safety lancets for blood sampling devices.", 8.50, "medical,lancets", true],
+  ["Thermometer Probe Covers  20 pack", "accessories", "Disposable probe covers for compatible thermometers.", 3.75, "thermometer,probe,covers", true],
   ["Nebulizer Mask & Tubing Set", "accessories", "Replacement mask and tubing set for compatible nebulizers.", 7.90, "nebulizer,mask,tubing", true],
   ["Classic White Lab Coat", "clothing", "Long-sleeve lab coat with a classic professional cut.", 27.00, "white,medical,lab,coat", true],
   ["Unisex Medical Scrubs", "clothing", "Comfortable two-piece scrub set for clinical settings.", 32.00, "medical,scrubs,uniform", true],
   ["Nursing Uniform Set", "clothing", "Practical nursing uniform set with functional pockets.", 29.50, "nurse,medical,uniform", true],
   ["Professional Medical Shoes", "clothing", "Lightweight work shoes for long shifts.", 38.00, "medical,shoes,clogs", false],
-  ["Disposable Surgical Caps · 10 pack", "clothing", "Disposable bouffant caps for clinical environments.", 4.50, "surgical,caps,medical", true],
-  ["Nitrile Medical Gloves · 100 pack", "consumables", "Powder-free nitrile examination gloves.", 8.75, "nitrile,medical,gloves", true],
-  ["Latex Medical Gloves · 100 pack", "consumables", "Disposable latex examination gloves.", 7.50, "latex,medical,gloves", true],
-  ["Surgical Masks · 50 pack", "consumables", "Disposable medical masks supplied in a 50-piece pack.", 5.90, "surgical,medical,masks", true],
+  ["Disposable Surgical Caps  10 pack", "clothing", "Disposable bouffant caps for clinical environments.", 4.50, "surgical,caps,medical", true],
+  ["Nitrile Medical Gloves  100 pack", "consumables", "Powder-free nitrile examination gloves.", 8.75, "nitrile,medical,gloves", true],
+  ["Latex Medical Gloves  100 pack", "consumables", "Disposable latex examination gloves.", 7.50, "latex,medical,gloves", true],
+  ["Surgical Masks  50 pack", "consumables", "Disposable medical masks supplied in a 50-piece pack.", 5.90, "surgical,medical,masks", true],
   ["Disposable Isolation Gown", "consumables", "Single-use protective gown for clinical environments.", 3.25, "disposable,medical,gown", true],
-  ["Sterile Gauze Pads · 25 pack", "consumables", "Individually wrapped sterile gauze pads.", 4.80, "sterile,medical,gauze", true],
+  ["Sterile Gauze Pads  25 pack", "consumables", "Individually wrapped sterile gauze pads.", 4.80, "sterile,medical,gauze", true],
   ["Elastic Bandage Roll", "consumables", "Stretch bandage roll for first-aid supply kits.", 2.25, "elastic,medical,bandage", true],
-  ["Disposable Syringes · 10 pack", "consumables", "Sterile, individually packaged disposable syringes.", 3.50, "disposable,medical,syringe", true],
-  ["Medical Paper Tape · 3 rolls", "consumables", "Paper medical tape supplied in a three-roll pack.", 2.90, "medical,tape,roll", true],
+  ["Disposable Syringes  10 pack", "consumables", "Sterile, individually packaged disposable syringes.", 3.50, "disposable,medical,syringe", true],
+  ["Medical Paper Tape  3 rolls", "consumables", "Paper medical tape supplied in a three-roll pack.", 2.90, "medical,tape,roll", true],
   ["Wound Dressing Set", "consumables", "Selection of wound dressings for a first-aid cabinet.", 9.25, "wound,dressing,medical", true],
   ["Dual-Head Stethoscope", "professional", "Classic dual-head stethoscope for clinical examination.", 24.50, "stethoscope,medical", true],
   ["Portable Otoscope Set", "professional", "Handheld otoscope supplied with a selection of specula.", 42.00, "otoscope,medical", true],
@@ -137,7 +137,7 @@ function renderCategories() {
   $("#category-cards").innerHTML = categories.map((category, index) => `
     <button class="category-card" data-category-card="${category.id}" type="button">
       <img data-category="${category.id}" src="${categoryPhotos[category.id]}" alt="${category.name}" loading="lazy">
-      <span class="category-card-shade"></span><span class="category-card-title">${category.name}<b aria-hidden="true">→</b></span>
+      <span class="category-card-shade"></span><span class="category-card-title">${category.name}<b aria-hidden="true">&gt;</b></span>
     </button>`).join("");
 }
 
@@ -161,7 +161,7 @@ function getVisibleProducts() {
 }
 
 function ratingMarkup(product) {
-  return product.rating ? `<span class="rating"><span aria-hidden="true">★</span> ${product.rating.toFixed(1)} <small>(${product.reviews} reviews)</small></span>` : "";
+  return product.rating ? `<span class="rating"><span aria-hidden="true">&#9733;</span> ${product.rating.toFixed(1)} <small>(${product.reviews} reviews)</small></span>` : "";
 }
 
 function renderProducts() {
@@ -172,7 +172,7 @@ function renderProducts() {
       <div class="product-image-wrap"><img class="product-image" data-category="${product.category}" src="${product.image}" alt="${product.name}" loading="lazy"><span class="stock-badge ${product.inStock ? "in-stock" : "out-stock"}">${product.inStock ? "In Stock" : "Out of Stock"}</span></div>
       <div class="product-info"><span class="product-category">${categoryName(product.category)}</span><h3>${product.name}</h3><p class="product-description">${product.description}</p>
         <div class="product-meta">${ratingMarkup(product)}<strong class="product-price">${money(product.price)}</strong></div>
-        <div class="product-actions"><label class="quantity-picker" aria-label="Quantity for ${product.name}"><button type="button" data-qty="${product.id}" data-delta="-1" aria-label="Decrease quantity">−</button><input type="number" min="1" value="1" id="qty-${product.id}" aria-label="Quantity"><button type="button" data-qty="${product.id}" data-delta="1" aria-label="Increase quantity">+</button></label><button type="button" class="add-button" data-add="${product.id}" ${product.inStock ? "" : "disabled"}>Add to Cart</button></div>
+        <div class="product-actions"><label class="quantity-picker" aria-label="Quantity for ${product.name}"><button type="button" data-qty="${product.id}" data-delta="-1" aria-label="Decrease quantity">-</button><input type="number" min="1" value="1" id="qty-${product.id}" aria-label="Quantity"><button type="button" data-qty="${product.id}" data-delta="1" aria-label="Increase quantity">+</button></label><button type="button" class="add-button" data-add="${product.id}" ${product.inStock ? "" : "disabled"}>Add to Cart</button></div>
         <button type="button" class="details-button" data-details="${product.id}">View Details</button>
       </div>
     </article>`).join("") : `<div class="empty-state"><strong>No products found</strong><span>Try changing your search or filters.</span></div>`;
@@ -185,7 +185,7 @@ function renderCart() {
   $("#cart-count").textContent = count;
   $("#cart-total").textContent = money(total);
   $("#cart-items").innerHTML = cart.size ? [...cart.values()].map(({ product, quantity }) => `
-    <div class="cart-row"><img class="cart-thumb" data-category="${product.category}" src="${product.image}" alt="" loading="lazy"><div><h3>${product.name}</h3><small>${money(product.price)} each</small><div class="quantity-control"><button type="button" data-cart-qty="${product.id}" data-change="-1" aria-label="Remove one">−</button><span>${quantity}</span><button type="button" data-cart-qty="${product.id}" data-change="1" aria-label="Add one">+</button></div></div><span class="cart-row-price">${money(product.price * quantity)}</span></div>`).join("") : `<div class="cart-empty">Your cart is empty.</div>`;
+    <div class="cart-row"><img class="cart-thumb" data-category="${product.category}" src="${product.image}" alt="" loading="lazy"><div><h3>${product.name}</h3><small>${money(product.price)} each</small><div class="quantity-control"><button type="button" data-cart-qty="${product.id}" data-change="-1" aria-label="Remove one">-</button><span>${quantity}</span><button type="button" data-cart-qty="${product.id}" data-change="1" aria-label="Add one">+</button></div></div><span class="cart-row-price">${money(product.price * quantity)}</span></div>`).join("") : `<div class="cart-empty">Your cart is empty.</div>`;
 }
 
 function persistCart() {

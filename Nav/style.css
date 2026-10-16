@@ -5,7 +5,7 @@
 
 .careplus-navbar {
     --cp-navy: #1B2B3B;
-    --cp-teal: #22c7d5;
+    --cp-teal: #94D5D6;
     position: relative;
     z-index: 1000;
     display: flex;
@@ -13,7 +13,7 @@
     gap: clamp(18px, 3vw, 42px);
     width: min(96%, 1460px);
     min-height: 88px;
-    margin: 18px auto;
+    margin: 10px auto 18px;
     padding: 13px clamp(18px, 2.6vw, 38px);
     border: 1px solid rgba(255, 255, 255, .1);
     border-radius: 18px;
@@ -37,11 +37,11 @@
     height: 48px;
     flex: 0 0 48px;
     place-items: center;
-    border: 1px solid rgba(34, 199, 213, .58);
+    border: 1px solid rgba(148, 213, 214,  .58);
     border-radius: 14px;
-    background: linear-gradient(145deg, rgba(34, 199, 213, .2), rgba(34, 199, 213, .055));
+    background: linear-gradient(145deg, rgba(148, 213, 214,  .2), rgba(148, 213, 214,  .055));
     color: var(--cp-teal);
-    box-shadow: 0 5px 18px rgba(34, 199, 213, .1);
+    box-shadow: 0 5px 18px rgba(148, 213, 214,  .1);
     transition: transform .22s ease, box-shadow .22s ease;
 }
 
@@ -57,7 +57,7 @@
 
 .careplus-navbar__brand:hover .careplus-navbar__logo {
     transform: translateY(-2px);
-    box-shadow: 0 8px 22px rgba(34, 199, 213, .2);
+    box-shadow: 0 8px 22px rgba(148, 213, 214,  .2);
 }
 
 .careplus-navbar__name {
@@ -121,9 +121,14 @@
     display: flex;
     flex: 0 0 auto;
     align-items: center;
+    gap: 8px;
 }
 
-.careplus-navbar__login {
+.careplus-navbar__signup-mobile { display: none !important; }
+.careplus-navbar [hidden] { display: none !important; }
+
+.careplus-navbar__login,
+.careplus-navbar__signup {
     display: inline-flex;
     min-width: 94px;
     min-height: 42px;
@@ -137,16 +142,67 @@
     font-size: 13px;
     font-weight: 700;
     text-decoration: none;
-    box-shadow: 0 5px 16px rgba(34, 199, 213, .17);
+    box-shadow: 0 5px 16px rgba(148, 213, 214,  .17);
     transition: transform .2s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease;
 }
 
+.careplus-navbar__signup {
+    border-color: rgba(148, 213, 214, .42);
+    background: linear-gradient(135deg, #041b2a, #07394b);
+    color: #fff;
+    box-shadow: 0 5px 16px rgba(4, 27, 42, .22);
+}
+
 .careplus-navbar__login:hover,
-.careplus-navbar__login:focus-visible {
+.careplus-navbar__login:focus-visible,
+.careplus-navbar__signup:hover,
+.careplus-navbar__signup:focus-visible {
     transform: translateY(-2px);
     background: #38d4de;
-    box-shadow: 0 8px 22px rgba(34, 199, 213, .28);
+    box-shadow: 0 8px 22px rgba(148, 213, 214,  .28);
 }
+
+.careplus-navbar__signup:hover,
+.careplus-navbar__signup:focus-visible {
+    border-color: var(--cp-teal);
+    background: var(--cp-teal);
+    color: var(--cp-navy);
+    box-shadow: 0 8px 22px rgba(148, 213, 214, .28);
+}
+
+.careplus-navbar__profile { position: relative; }
+.careplus-navbar__profile-trigger {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border: 1px solid var(--cp-teal);
+    border-radius: 50%;
+    background: rgba(148,213,214,.16);
+    color: var(--cp-teal);
+    cursor: pointer;
+    transition: background .2s ease, color .2s ease, transform .2s ease;
+}
+.careplus-navbar__profile-trigger:hover,
+.careplus-navbar__profile-trigger[aria-expanded="true"] { transform: translateY(-1px); background: var(--cp-teal); color: var(--cp-navy); }
+.careplus-navbar__profile-trigger svg { width: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.careplus-navbar__profile-menu {
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + 12px);
+    right: 0;
+    width: 180px;
+    padding: 7px;
+    border: 1px solid rgba(148,213,214,.3);
+    border-radius: 12px;
+    background: #1b2b3b;
+    box-shadow: 0 14px 32px rgba(4,17,28,.26);
+}
+.careplus-navbar__profile-menu a,
+.careplus-navbar__profile-menu button { display: flex; width: 100%; min-height: 39px; align-items: center; padding: 0 11px; border: 0; border-radius: 8px; background: none; color: rgba(242,247,250,.9); font: 600 13px Arial,Helvetica,sans-serif; text-align: left; text-decoration: none; cursor: pointer; }
+.careplus-navbar__profile-menu a[data-profile-link] { color: #fff; }
+.careplus-navbar__profile-menu a:hover,
+.careplus-navbar__profile-menu button:hover { background: rgba(148,213,214,.12); color: var(--cp-teal); }
 
 .careplus-navbar__toggle {
     position: absolute;
@@ -195,8 +251,8 @@
     }
 
     .careplus-navbar__menu-button:hover {
-        border-color: rgba(34, 199, 213, .6);
-        background: rgba(34, 199, 213, .08);
+        border-color: rgba(148, 213, 214,  .6);
+        background: rgba(148, 213, 214,  .08);
     }
 
     .careplus-navbar__menu-button span {
@@ -218,6 +274,22 @@
     }
 
     .careplus-navbar__actions { order: 1; }
+    .careplus-navbar__signup { display: none; }
+    .careplus-navbar__signup-mobile {
+        display: inline-flex !important;
+        justify-content: center !important;
+        margin-top: 4px;
+        border: 1px solid var(--cp-teal);
+        background: linear-gradient(135deg, #041b2a, #07394b) !important;
+        color: #fff !important;
+        font-weight: 700;
+    }
+    .careplus-navbar__signup-mobile:hover,
+    .careplus-navbar__signup-mobile:focus-visible {
+        background: var(--cp-teal) !important;
+        color: var(--cp-navy) !important;
+    }
+    .careplus-navbar__profile-trigger { width: 40px; height: 40px; }
 
     .careplus-navbar__links {
         width: 100%;
@@ -249,13 +321,14 @@
         justify-content: flex-start;
         padding-inline: 14px;
     }
+
 }
 
 @media (max-width: 480px) {
     .careplus-navbar {
         width: calc(100% - 22px);
         min-height: 70px;
-        margin: 11px auto;
+        margin: 10px auto 11px;
         padding: 9px 12px;
         border-radius: 15px;
     }
@@ -279,3 +352,16 @@
     .careplus-navbar *::before,
     .careplus-navbar *::after { transition-duration: .01ms !important; }
 }
+
+.back-to-services {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0 0 18px;
+    color: #087f91;
+    font: 700 13px/1.4 Arial, Helvetica, sans-serif;
+    text-decoration: none;
+    transition: color .2s ease, transform .2s ease;
+}
+.back-to-services:hover { color: #172536; transform: translateX(-2px); }
+.back-to-services:focus-visible { outline: 2px solid #94D5D6; outline-offset: 4px; border-radius: 3px; }

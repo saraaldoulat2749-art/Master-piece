@@ -1,0 +1,36 @@
+.register-fields { display: grid; grid-template-columns: 1fr 1fr; column-gap: 14px; }
+.signup-card { animation: signup-card-arrive .9s cubic-bezier(.18,.8,.22,1) both, signup-card-aura 6s 1s ease-in-out infinite; }
+.signup-card .secure-badge { animation: signup-item-arrive .55s .12s both; }
+.signup-card h2 { animation: signup-item-arrive .55s .2s both; }
+.signup-card .form-subtitle { margin-bottom: 17px; animation: signup-item-arrive .55s .27s both; }
+.signup-card .field-wrap { height: 54px; margin-top: 11px; }
+.register-fields .field-wrap { animation: signup-item-arrive .55s both; }
+.register-fields .field-wrap:nth-child(1) { animation-delay: .32s; }
+.register-fields .field-wrap:nth-child(2) { animation-delay: .39s; }
+.register-fields .field-wrap:nth-child(3) { animation-delay: .46s; }
+.register-fields .field-wrap:nth-child(4) { animation-delay: .53s; }
+.signup-card .field { min-width: 0; padding-right: 12px; font-size: 13px; }
+.signup-card .field-icon { left: 15px; font-size: 16px; }
+.signup-card .submit { min-height: 53px; margin-top: 16px; animation: signup-item-arrive .5s .61s both; }
+.signup-demo-note { margin: 12px 0 0; color: #8495a3; text-align: center; font-size: 10px; }
+.signup-card .create-account { margin-top: 16px; animation: signup-item-arrive .5s .68s both; }
+@keyframes signup-card-arrive { from { opacity: 0; transform: perspective(900px) rotateY(9deg) scale(.93); } to { opacity: 1; transform: perspective(900px) rotateY(0) scale(1); } }
+@keyframes signup-card-aura { 0%,100% { box-shadow: 0 25px 65px rgba(29,54,79,.1), 0 0 0 rgba(54,174,183,0); } 50% { box-shadow: 0 25px 65px rgba(29,54,79,.12), 0 0 28px rgba(54,174,183,.2); } }
+@keyframes signup-item-arrive { from { opacity: 0; translate: 16px 0; scale: .985; } to { opacity: 1; translate: 0 0; scale: 1; } }
+@keyframes signup-orbit-spin { to { rotate: 360deg; } }
+@keyframes signup-node-drift { 0%,100% { translate: 0 0; rotate: -5deg; } 50% { translate: 0 -9px; rotate: 5deg; } }
+@keyframes signup-core-float { 0%,100% { translate: 0 0; scale: 1; } 50% { translate: 0 -8px; scale: 1.035; } }
+@keyframes signup-halo { 0%,100% { scale: .88; opacity: .2; } 50% { scale: 1.22; opacity: .65; } }
+@media (max-width: 480px) {
+  .signup-card { padding: 21px 18px; }
+  .signup-card .form-card h2,.signup-card h2 { margin-top: 11px; font-size: 29px; }
+  .signup-card .form-subtitle { margin-bottom: 11px; }
+  .register-fields { grid-template-columns: 1fr; }
+  .signup-card .field-wrap { height: 44px; margin-top: 8px; }
+  .signup-card .submit { min-height: 45px; margin-top: 12px; }
+  .signup-demo-note { margin-top: 8px; }
+  .signup-card .create-account { margin-top: 11px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .signup-card,.signup-card * { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

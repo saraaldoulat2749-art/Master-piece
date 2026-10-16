@@ -52,12 +52,6 @@
   }
   function ensureProfileDemoRecords() {
     const owns = collection => dataStore.list(collection).some(matchesUser);
-    if (!owns("appointments")) dataStore.create("appointments", {
-      id: `profile-demo-${user.id}-appointment`, userId: user.id,
-      patient: user.name || "CarePlus Member", email: user.email || identity, phone: user.phone || "",
-      doctor: "Dr. Lina Haddad", specialty: "Family Medicine", date: addDays(5), time: "10:30",
-      area: "CarePlus Medical Center, Amman", status: "Confirmed", source: "profile-demo-seed"
-    });
     if (!owns("careRequests")) dataStore.create("careRequests", {
       id: `profile-demo-${user.id}-care`, userId: user.id,
       client: user.name || "CarePlus Member", elderlyName: "Nadia Haddad", email: user.email || identity,
@@ -152,7 +146,6 @@
       avatar.style.backgroundPosition = "";
     }
     byId("profile-created").textContent = `Member since ${dateFormat(user.createdAt || new Date().toISOString())}`;
-    byId("settings-contact").textContent = [user.email, user.phone].filter(Boolean).join(" · ") || "Add an email address or phone number to your profile.";
   }
 
   function renderPersonalInfo() {
@@ -211,8 +204,9 @@
       top.append(makeElement("span", "record-avatar", initials(appointment.doctor || "Doctor")));
       const copy = makeElement("div", "record-copy");
       copy.append(makeElement("h3", "", appointment.doctor || "CarePlus clinician"), makeElement("p", "", appointment.specialty || "Medical appointment"));
-      const statusLabel = String(appointment.status || "").toLowerCase() === "requested" ? "Upcoming" : appointment.status || "Upcoming";
+      const statusLabel = String(appointment.status || "").toLowerCase() === "requested" ? "Pending" : appointment.status || "Pending";
       top.append(copy, setStatusBadge(statusLabel)); card.append(top);
+      if (String(appointment.source || "").includes("demo")) card.append(makeElement("small", "demo-record-label", "Sample preview data"));
       const meta = makeElement("div", "record-meta");
       appendMeta(meta, "calendar", dateFormat(appointment.date)); appendMeta(meta, "clock", appointment.time || "Time to be confirmed");
       appendMeta(meta, "pin", appointment.area || "Clinic details to be confirmed"); card.append(meta);
@@ -280,7 +274,7 @@
 
   function orderStatus(order) {
     const status = String(order.status || "Placed").toLowerCase();
-    return ({ placed: "Processing", processing: "Processing", shipped: "Shipped", delivered: "Delivered", cancelled: "Cancelled" })[status] || order.status || "Processing";
+    return ({ placed: "Placed", processing: "Processing", shipped: "Shipped", delivered: "Delivered", cancelled: "Cancelled" })[status] || order.status || "Placed";
   }
 
   function orderItems(order) {
@@ -325,14 +319,6 @@
       const actions = makeElement("div", "record-actions");
       const details = makeElement("button", "button button--outline", "Order details"); details.type = "button";
       details.addEventListener("click", () => showOrderDetails(order)); actions.append(details);
-      if (orderStatus(order) !== "Delivered" && orderStatus(order) !== "Cancelled") {
-        const track = makeElement("button", "button button--outline", "Track order"); track.type = "button";
-        track.addEventListener("click", () => showToast(`Current order status: ${orderStatus(order)}. Live carrier tracking is not available in this demo.`)); actions.append(track);
-      }
-      if (orderStatus(order) !== "Cancelled") {
-        const reorder = makeElement("button", "button button--primary", "Reorder"); reorder.type = "button";
-        reorder.addEventListener("click", () => reorderItems(order)); actions.append(reorder);
-      }
       card.append(actions); list.append(card);
     });
   }
@@ -343,27 +329,6 @@
       return [`${product.name || "Medical product"} × ${Number(line.quantity) || 1}`, `JOD ${(Number(product.price || line.price || 0) * (Number(line.quantity) || 1)).toFixed(2)}`];
     });
     showDetails("Order details", [["Order number", order.reference || order.id], ["Order date", dateFormat(order.placedAt || order.createdAt)], ["Status", orderStatus(order)], ["Total", `JOD ${Number(order.total || 0).toFixed(2)}`], ["Delivery address", [order.customer?.address, order.customer?.area, order.customer?.city].filter(Boolean).join(", ")], ["Payment method", order.payment || "Not provided"]], items);
-  }
-
-  function reorderItems(order) {
-    const products = dataStore.list("products");
-    let cart;
-    try { cart = JSON.parse(localStorage.getItem("careplusCart") || "[]"); } catch { cart = []; }
-    if (!Array.isArray(cart)) cart = [];
-    const unavailable = [];
-    orderItems(order).forEach(line => {
-      const oldProduct = line.product || line;
-      const product = products.find(item => String(item.id) === String(oldProduct.id)) || products.find(item => item.name === oldProduct.name);
-      if (!product || product.status === "Unavailable" || product.inStock === false || Number(product.quantity ?? 1) <= 0) { unavailable.push(oldProduct.name || "An item"); return; }
-      const existing = cart.find(item => String(item.product?.id ?? item.id) === String(product.id));
-      if (existing) existing.quantity = Number(existing.quantity || 0) + (Number(line.quantity) || 1);
-      else cart.push({ product, quantity: Number(line.quantity) || 1 });
-    });
-    try { localStorage.setItem("careplusCart", JSON.stringify(cart)); }
-    catch { showToast("The cart could not be saved in this browser."); return; }
-    if (unavailable.length) showToast(`Some items are unavailable: ${unavailable.join(", ")}. Opening your cart.`);
-    else showToast("Order items added to your cart.");
-    window.setTimeout(() => { window.location.href = "../Store/index.html?cart=open"; }, 450);
   }
 
   function renderSummary() {
@@ -411,7 +376,7 @@
 
   function cancelAppointment(appointment) {
     if (!window.confirm(`Cancel your appointment with ${appointment.doctor || "this doctor"}?`)) return;
-    if (dataStore.update("appointments", appointment.id, { status: "Cancelled" })) { refreshUser(); showToast("Appointment cancelled."); }
+    if (window.CarePlusClinic?.updateAppointment(appointment.id, { status: "Cancelled" })) { refreshUser(); showToast("Appointment cancelled."); }
   }
 
   function cancelCareRequest(request) {
@@ -489,22 +454,44 @@
     event.preventDefault();
     const form = event.currentTarget;
     const id = form.elements.namedItem("appointmentId").value;
-    const updated = dataStore.update("appointments", id, { date: form.elements.namedItem("date").value, time: form.elements.namedItem("time").value, status: "Requested" });
+    const appointment = dataStore.get("appointments", id);
+    const date = form.elements.namedItem("date").value;
+    const time = form.elements.namedItem("time").value;
+    if (!appointment || !window.CarePlusClinic?.isAvailable({ doctor: appointment.doctor, date, time, ignoreId: id })) {
+      byId("reschedule-feedback").textContent = "That time is unavailable for this doctor. Choose another date and time."; return;
+    }
+    const updated = window.CarePlusClinic.updateAppointment(id, { date, time, status: "Requested" });
     if (!updated) { byId("reschedule-feedback").textContent = "Could not update this appointment."; return; }
     byId("reschedule-dialog").close(); refreshUser(); showToast("New appointment time requested.");
   });
 
   ensureProfileDemoRecords();
   renderAll();
+  let knownAppointmentStatuses = new Map(ownedRecords("appointments").map(appointment => [String(appointment.id), String(appointment.status || "Requested")]));
   let knownCareStatuses = new Map(ownedRecords("careRequests").map(request => [String(request.id), String(request.status || "").toLowerCase()]));
+  let knownOrderStatuses = new Map(ownedRecords("orders").map(order => [String(order.id), String(order.status || "Placed").toLowerCase()]));
   dataStore.subscribe(() => {
+    const appointments = ownedRecords("appointments");
+    const changedAppointment = appointments.find(appointment => {
+      const previous = knownAppointmentStatuses.get(String(appointment.id));
+      return previous !== undefined && previous !== String(appointment.status || "Requested");
+    });
+    knownAppointmentStatuses = new Map(appointments.map(appointment => [String(appointment.id), String(appointment.status || "Requested")]));
     const requests = ownedRecords("careRequests");
+    const orders = ownedRecords("orders");
     const acceptedRequest = requests.find(request => {
       const status = String(request.status || "").toLowerCase();
       return ["accepted", "approved"].includes(status) && !["accepted", "approved"].includes(knownCareStatuses.get(String(request.id)));
     });
+    const changedOrder = orders.find(order => {
+      const previousStatus = knownOrderStatuses.get(String(order.id));
+      return previousStatus !== undefined && String(order.status || "Placed").toLowerCase() !== previousStatus;
+    });
     knownCareStatuses = new Map(requests.map(request => [String(request.id), String(request.status || "").toLowerCase()]));
+    knownOrderStatuses = new Map(orders.map(order => [String(order.id), String(order.status || "Placed").toLowerCase()]));
     refreshUser();
+    if (changedAppointment) showToast(`Appointment status updated: ${changedAppointment.status || "Requested"}.`);
     if (acceptedRequest) showToast("CarePlus accepted your elderly care request.");
+    if (changedOrder) showToast(`Order ${changedOrder.reference || changedOrder.id} status updated: ${orderStatus(changedOrder)}.`);
   });
 })();

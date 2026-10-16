@@ -8,7 +8,7 @@
   const fields = {
     users: [
       { key: "name", label: "Name", required: true }, { key: "email", label: "Email", type: "email", required: true },
-      { key: "phone", label: "Phone", type: "tel" }, { key: "role", label: "Role", type: "select", options: ["Customer", "Administrator"] },
+      { key: "phone", label: "Phone", type: "tel" }, { key: "role", label: "Role", type: "select", options: ["Customer", "Nurse", "Administrator"] },
       { key: "status", label: "Status", type: "select", options: ["Active", "Inactive"] }
     ],
     appointments: [
@@ -30,12 +30,16 @@
       { key: "status", label: "Status", type: "select", options: ["Active", "Inactive"] }
     ],
     careRequests: [
-      { key: "client", label: "Client name", required: true },
+      { key: "client", label: "Family contact", required: true }, { key: "elderlyName", label: "Elderly person" },
       { key: "service", label: "Service", type: "select", options: ["Home care", "Hospital companion"] },
-      { key: "date", label: "Preferred date", type: "date" },
-      { key: "status", label: "Status", type: "select", options: ["New", "Reviewing", "Accepted", "Contacted", "Closed", "Cancelled"] },
-      { key: "paymentStatus", label: "Payment", type: "select", options: ["Not due", "Due", "Paid"] },
-      { key: "notes", label: "Notes", type: "textarea", wide: true }
+      { key: "date", label: "Preferred date", type: "date" }, { key: "time", label: "Preferred time", type: "time" },
+      { key: "duration", label: "Duration (hours)", type: "number", min: "1", max: "24" },
+      { key: "careCommissionRate", label: "CarePlus rate (%)", type: "number", step: "0.01", readOnly: true },
+      { key: "careCommissionAmount", label: "CarePlus fee (JOD)", type: "number", step: "0.01", readOnly: true },
+      { key: "estimatedTotal", label: "Estimated total (JOD)", type: "number", step: "0.01", readOnly: true },
+      { key: "area", label: "Area" }, { key: "assignedNurseId", label: "Assigned nurse ID" },
+      { key: "status", label: "Status", readOnly: true },
+      { key: "notes", label: "Family instructions", type: "textarea", wide: true },
     ],
     orders: [
       { key: "reference", label: "Order reference" }, { key: "customerName", label: "Customer", required: true },
@@ -54,6 +58,7 @@
     users: '<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
     appointments: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 15h3"/>',
     products: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5M12 13v8"/>',
+    orders: '<path d="M6 3h12a2 2 0 0 1 2 2v16l-4-2-4 2-4-2-4 2V5a2 2 0 0 1 2-2Z"/><path d="M8 8h8m-8 4h8m-8 4h4"/>',
     pharmacies: '<path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/><path d="M10 9h4M12 7v4"/>',
     carerequests: '<path d="M20.8 8.6c0 5.4-8.8 11-8.8 11s-8.8-5.6-8.8-11A4.6 4.6 0 0 1 12 6.2a4.6 4.6 0 0 1 8.8 2.4Z"/><path d="M8 12h8M12 8v8"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
@@ -186,13 +191,6 @@
       });
       const actions = document.createElement("td");
       actions.className = "row-actions";
-      if (moduleName === "careRequests" && !["accepted", "closed"].includes(String(record.status || "").toLowerCase())) {
-        const accept = document.createElement("button");
-        accept.type = "button"; accept.dataset.action = "accept"; accept.dataset.id = String(record.id);
-        accept.textContent = "Accept"; accept.className = "text-button accept";
-        accept.setAttribute("aria-label", `Accept request from ${record.client || record.id}`);
-        actions.append(accept);
-      }
       const edit = document.createElement("button");
       edit.type = "button"; edit.dataset.action = "edit"; edit.dataset.id = String(record.id); edit.textContent = "Edit"; edit.className = "text-button";
       edit.setAttribute("aria-label", `Edit ${record.name || record.patient || record.id}`);
@@ -226,6 +224,7 @@
       if (field.step !== undefined) input.step = field.step;
     }
     input.name = field.key; input.value = value; input.required = Boolean(field.required);
+    input.readOnly = Boolean(field.readOnly);
     label.append(input);
     return label;
   }
@@ -261,6 +260,8 @@
       const count = document.getElementById(`count-${key}`);
       if (count) count.textContent = records[key].length;
     });
+    renderServiceAnalytics();
+    renderRecentOrders();
     const recent = document.getElementById("recent-appointments");
     if (!recent) return;
     const appointments = [...records.appointments].slice(-4).reverse();
@@ -280,6 +281,320 @@
       item.append(name, detail); list.append(item);
     });
     recent.replaceChildren(list);
+  }
+
+  function renderRecentOrders() {
+    const recent = document.getElementById("recent-orders");
+    if (!recent) return;
+    const orders = [...dataStore.list("orders")].sort((a, b) => new Date(b.placedAt || b.createdAt || 0) - new Date(a.placedAt || a.createdAt || 0)).slice(0, 5);
+    recent.replaceChildren();
+    if (!orders.length) {
+      const icon = document.createElement("span"); icon.textContent = "▧";
+      const title = document.createElement("strong"); title.textContent = "No order records";
+      const message = document.createElement("p"); message.textContent = "New store and pharmacy orders will appear here.";
+      recent.append(icon, title, message);
+      return;
+    }
+    const list = document.createElement("div"); list.className = "recent-list";
+    orders.forEach(order => {
+      const item = document.createElement("div"); item.className = "recent-item";
+      const title = document.createElement("strong"); title.textContent = order.reference || order.id || "Order";
+      const kind = order.source === "pharmacy-order" ? "Pharmacy" : "Store";
+      const amount = Number.isFinite(Number(order.total)) ? `JOD ${Number(order.total).toFixed(2)}` : "";
+      const detail = document.createElement("span"); detail.textContent = [kind, order.customerReference || order.customerName || order.customer?.fullName, amount, order.status || "Pending"].filter(Boolean).join(" · ");
+      item.append(title, detail); list.append(item);
+    });
+    recent.replaceChildren(list);
+  }
+
+  // Store checkout orders and pharmacy orders share the same repository.
+  // This table intentionally includes only non-pharmacy orders.
+  function renderStoreOrders() {
+    const body = document.querySelector("[data-orders-body]");
+    if (!body) return;
+    const empty = document.querySelector("[data-orders-empty]");
+    const count = document.querySelector("[data-orders-count]");
+    const storeOrders = dataStore.list("orders")
+      .filter(order => order.source !== "pharmacy-order")
+      .sort((a, b) => new Date(b.placedAt || b.createdAt || 0) - new Date(a.placedAt || a.createdAt || 0));
+    const money = value => `JOD ${Number(value || 0).toFixed(2)}`;
+    const addCell = (row, text, className = "") => {
+      const td = document.createElement("td");
+      if (className) td.className = className;
+      td.textContent = text || "—";
+      row.append(td);
+      return td;
+    };
+    const statusOptions = ["Placed", "Processing", "Out for Delivery", "Delivered", "Cancelled"];
+
+    body.replaceChildren();
+    storeOrders.forEach(order => {
+      const row = document.createElement("tr");
+      const refCell = addCell(row, order.reference || order.id || "Order");
+      if (order.demo || order.source === "demo-seed") {
+        const note = document.createElement("small");
+        note.className = "pharmacy-admin-demo";
+        note.textContent = "Sample preview";
+        refCell.append(note);
+      }
+
+      const customer = order.customer || {};
+      const customerCell = document.createElement("td");
+      const customerName = document.createElement("strong");
+      customerName.textContent = order.customerName || customer.fullName || "Customer";
+      customerCell.append(customerName);
+      const contact = [customer.phone, customer.email].filter(Boolean).join(" · ");
+      if (contact) {
+        const details = document.createElement("small");
+        details.className = "pharmacy-admin-demo";
+        details.textContent = contact;
+        customerCell.append(details);
+      }
+      row.append(customerCell);
+
+      const products = Array.isArray(order.items) ? order.items.map(item => {
+        const product = item.product || item;
+        return `${product.name || product.productName || "Product"} × ${Number(item.quantity || 1)}`;
+      }).join(", ") : "";
+      addCell(row, products || "No product details", "pharmacy-order-items");
+
+      const placedAt = order.placedAt || order.createdAt;
+      const date = placedAt ? new Date(placedAt) : null;
+      addCell(row, date && !Number.isNaN(date.getTime()) ? date.toLocaleString() : "—");
+      const delivery = [order.deliveryMethod, order.customer?.address, order.customer?.area, order.customer?.city].filter(Boolean).join(" · ");
+      addCell(row, delivery || "—");
+      addCell(row, money(order.total));
+      addCell(row, `${order.paymentStatus || "Pending"}${order.payment ? ` · ${order.payment}` : ""}`);
+
+      const statusCell = document.createElement("td");
+      const select = document.createElement("select");
+      select.className = "store-order-status-select";
+      select.setAttribute("aria-label", `Update status for ${order.reference || order.id}`);
+      const currentStatus = order.status || "Placed";
+      if (!statusOptions.includes(currentStatus)) statusOptions.unshift(currentStatus);
+      [...new Set([currentStatus, ...statusOptions])].forEach(status => {
+        const option = document.createElement("option");
+        option.value = status;
+        option.textContent = status;
+        select.append(option);
+      });
+      select.value = currentStatus;
+      select.addEventListener("change", () => {
+        const updated = dataStore.update("orders", order.id, { status: select.value });
+        if (!updated) {
+          select.value = currentStatus;
+          showToast("Could not update the order status.", true);
+          return;
+        }
+        showToast(`Order ${order.reference || order.id} updated.`);
+      });
+      statusCell.append(select);
+      row.append(statusCell);
+      body.append(row);
+    });
+    if (count) count.textContent = `${storeOrders.length} ${storeOrders.length === 1 ? "order" : "orders"}`;
+    if (empty) empty.hidden = storeOrders.length > 0;
+  }
+
+  function renderServiceAnalytics() {
+    const activityChart = document.getElementById("activity-chart");
+    const mixSegments = document.getElementById("service-mix-segments");
+    if (!activityChart || !mixSegments) return;
+
+    const now = new Date();
+    const months = Array.from({ length: 6 }, (_, index) => new Date(now.getFullYear(), now.getMonth() - 5 + index, 1));
+    const series = [
+      { key: "appointments", label: "Appointments", color: "#4d82ed", date: item => item.date || item.createdAt },
+      { key: "careRequests", label: "Care requests", color: "#48c96b", date: item => item.date || item.createdAt },
+      { key: "orders", label: "Orders", color: "#f5bd2e", date: item => item.placedAt || item.date || item.createdAt }
+    ];
+    const monthKey = date => `${date.getFullYear()}-${date.getMonth()}`;
+    const totals = Object.fromEntries(series.map(item => [item.key, 0]));
+    const buckets = months.map(() => Object.fromEntries(series.map(item => [item.key, 0])));
+    series.forEach(item => {
+      const rows = item.key === "orders" ? records.orders : records[item.key];
+      rows.forEach(record => {
+        const rawDate = item.date(record);
+        if (!rawDate) return;
+        const date = new Date(rawDate);
+        if (Number.isNaN(date.getTime())) return;
+        totals[item.key] += 1;
+        const bucket = months.findIndex(month => monthKey(month) === monthKey(date));
+        if (bucket >= 0) buckets[bucket][item.key] += 1;
+      });
+    });
+
+    const svgNode = (tag, attrs = {}, content = "") => {
+      const node = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      Object.entries(attrs).forEach(([key, value]) => node.setAttribute(key, String(value)));
+      if (content) node.textContent = content;
+      return node;
+    };
+    const bottom = 204, top = 24, left = 48, right = 748, chartHeight = bottom - top;
+    const maxValue = Math.max(1, ...buckets.flatMap(bucket => series.map(item => bucket[item.key])));
+    const tickStep = Math.max(1, Math.ceil(maxValue / 4));
+    const scaleMax = tickStep * 4;
+    const chartNodes = [];
+    for (let tick = 0; tick <= 4; tick += 1) {
+      const value = scaleMax - tick * tickStep;
+      const y = top + tick * chartHeight / 4;
+      chartNodes.push(svgNode("line", { x1: left, x2: right, y1: y, y2: y, class: "chart-gridline" }));
+      chartNodes.push(svgNode("text", { x: left - 9, y: y + 4, "text-anchor": "end", class: "chart-axis-label" }, value));
+    }
+    const groupWidth = (right - left) / months.length;
+    const barWidth = 19;
+    buckets.forEach((bucket, index) => {
+      const center = left + groupWidth * index + groupWidth / 2;
+      series.forEach((item, seriesIndex) => {
+        const value = bucket[item.key];
+        const height = value ? value / scaleMax * chartHeight : 0;
+        const x = center + (seriesIndex - 1) * (barWidth + 5) - barWidth / 2;
+        const bar = svgNode("rect", { x, y: bottom - height, width: barWidth, height: Math.max(height, value ? 2 : 0), rx: 4, fill: item.color, class: "chart-bar" });
+        const title = svgNode("title", {}, `${item.label}: ${value}`);
+        bar.append(title);
+        chartNodes.push(bar);
+      });
+      chartNodes.push(svgNode("text", { x: center, y: 232, "text-anchor": "middle", class: "chart-month-label" }, months[index].toLocaleDateString(undefined, { month: "short" })));
+    });
+    if (!series.some(item => totals[item.key] > 0)) {
+      chartNodes.push(svgNode("text", { x: (left + right) / 2, y: 120, "text-anchor": "middle", class: "chart-axis-label" }, "No service activity recorded yet"));
+    }
+    activityChart.replaceChildren(...chartNodes);
+
+    const circumference = 2 * Math.PI * 48;
+    const grandTotal = series.reduce((sum, item) => sum + totals[item.key], 0);
+    let offset = 0;
+    const segments = [];
+    series.forEach(item => {
+      const portion = grandTotal ? totals[item.key] / grandTotal * circumference : 0;
+      if (portion > 0) {
+        segments.push(svgNode("circle", {
+          cx: 70, cy: 70, r: 48, fill: "none", stroke: item.color, "stroke-width": 17,
+          "stroke-dasharray": `${portion} ${circumference - portion}`, "stroke-dashoffset": -offset,
+          "stroke-linecap": "butt", class: "service-mix-segment"
+        }));
+        offset += portion;
+      }
+    });
+    mixSegments.replaceChildren(...segments);
+    const totalLabel = document.getElementById("service-mix-total");
+    if (totalLabel) totalLabel.textContent = String(grandTotal);
+    const legend = document.getElementById("service-mix-legend");
+    if (legend) {
+      legend.replaceChildren(...series.map(item => {
+        const line = document.createElement("div"); line.className = "service-mix-item";
+        const dot = document.createElement("i"); dot.style.backgroundColor = item.color;
+        const label = document.createElement("span"); label.textContent = item.label;
+        const count = document.createElement("strong"); count.textContent = String(totals[item.key]);
+        line.append(dot, label, count);
+        return line;
+      }));
+    }
+  }
+
+  // Pharmacy orders use the same shared order records as the customer and
+  // pharmacy pages. Keep this view read-only; order fulfilment stays with the
+  // pharmacy and commission review stays in Admin/Commissions.
+  function renderPharmacyOrders() {
+    const body = document.querySelector("[data-pharmacy-orders-body]");
+    if (!body) return;
+    const empty = document.querySelector("[data-pharmacy-orders-empty]");
+    const count = document.querySelector("[data-pharmacy-orders-count]");
+    const search = document.querySelector("[data-pharmacy-order-search]");
+    const statusFilter = document.querySelector("[data-pharmacy-order-filter]");
+    const pharmacies = dataStore.list("pharmacies");
+    const query = String(search?.value || "").trim().toLocaleLowerCase();
+    const selectedStatus = String(statusFilter?.value || "");
+    const pharmacyOrders = dataStore.list("orders").filter(order => order.source === "pharmacy-order");
+    const shown = pharmacyOrders.filter(order => {
+      const pharmacy = pharmacies.find(item => String(item.id) === String(order.pharmacyId));
+      const itemText = (Array.isArray(order.items) ? order.items : []).map(item => `${item.name || item.medicineName || ""} ${item.quantity ?? ""}`).join(" ");
+      const haystack = [order.reference, order.id, order.customerReference, order.pharmacyName, pharmacy?.name, itemText, order.deliveryAddress, order.deliveryPhone]
+        .filter(Boolean).join(" ").toLocaleLowerCase();
+      return (!query || haystack.includes(query)) && (!selectedStatus || String(order.status || "Pending") === selectedStatus);
+    }).sort((a, b) => new Date(b.placedAt || b.createdAt || 0) - new Date(a.placedAt || a.createdAt || 0));
+
+    const makeCell = (value, className) => {
+      const td = document.createElement("td");
+      if (className) td.className = className;
+      td.textContent = value == null || value === "" ? "—" : String(value);
+      return td;
+    };
+    const money = value => `JOD ${Number(value || 0).toFixed(2)}`;
+    const makeBadge = (value, kind = "") => {
+      const badge = document.createElement("span");
+      badge.className = `pharmacy-admin-status${kind ? ` ${kind}` : ""}`;
+      badge.textContent = value || "—";
+      return badge;
+    };
+    const formatDate = value => {
+      if (!value) return "—";
+      const date = new Date(value);
+      return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString();
+    };
+
+    body.replaceChildren();
+    shown.forEach(order => {
+      const pharmacy = pharmacies.find(item => String(item.id) === String(order.pharmacyId));
+      const row = document.createElement("tr");
+      const orderCell = document.createElement("td");
+      const orderRef = document.createElement("strong");
+      orderRef.textContent = order.reference || order.id || "Order";
+      orderCell.append(orderRef);
+      if (order.demo) {
+        const demo = document.createElement("small");
+        demo.className = "pharmacy-admin-demo";
+        demo.textContent = "Sample preview";
+        orderCell.append(demo);
+      }
+      row.append(orderCell);
+      row.append(makeCell(order.customerReference || "Customer", "pharmacy-order-customer"));
+      row.append(makeCell(order.pharmacyName || pharmacy?.name || "Unknown pharmacy"));
+
+      const itemCell = document.createElement("td");
+      itemCell.className = "pharmacy-order-items";
+      const items = Array.isArray(order.items) ? order.items : [];
+      itemCell.textContent = items.length ? items.map(item => `${item.name || item.medicineName || "Medicine"} × ${Number(item.quantity || 0)}`).join(", ") : "No medicine details";
+      row.append(itemCell);
+
+      const detailsCell = document.createElement("td");
+      const details = document.createElement("details");
+      details.className = "pharmacy-delivery-details";
+      const summary = document.createElement("summary");
+      summary.textContent = formatDate(order.placedAt || order.createdAt);
+      const address = document.createElement("p"); address.textContent = `Address: ${order.deliveryAddress || "Not provided"}`;
+      const phone = document.createElement("p"); phone.textContent = `Phone: ${order.deliveryPhone || "Not provided"}`;
+      details.append(summary, address, phone); detailsCell.append(details); row.append(detailsCell);
+
+      row.append(makeCell(money(order.subtotal ?? order.total)));
+      row.append(makeCell(money(order.customerCommissionAmount)));
+      row.append(makeCell(money(order.deliveryFee)));
+      const totalCell = makeCell(money(order.total));
+      const paymentMethod = document.createElement("small");
+      paymentMethod.className = "pharmacy-admin-demo";
+      paymentMethod.textContent = order.paymentMethod === "cash-on-delivery" ? "Cash on delivery" : order.paymentMethod === "online-gateway" ? "Online" : (order.paymentMethod || "");
+      totalCell.append(paymentMethod); row.append(totalCell);
+
+      const orderStatusCell = document.createElement("td");
+      const orderStatus = order.status || "Pending";
+      orderStatusCell.append(makeBadge(orderStatus, ["Delivered", "Completed"].includes(orderStatus) ? "good" : orderStatus === "Cancelled" ? "bad" : ""));
+      if (order.cancelReason) { const reason = document.createElement("small"); reason.className = "pharmacy-admin-demo"; reason.textContent = `Reason: ${order.cancelReason}`; orderStatusCell.append(reason); }
+      row.append(orderStatusCell);
+
+      const commissionCell = document.createElement("td");
+      commissionCell.append(makeBadge(order.commissionStatus || "Not Eligible", order.commissionStatus === "Payable" || order.commissionStatus === "Paid" ? "good" : order.commissionStatus === "Reversed" ? "bad" : ""));
+      const commissionValue = document.createElement("small"); commissionValue.className = "pharmacy-admin-demo";
+      commissionValue.textContent = `${Number(order.commissionRate || 0)}% · ${money(order.commissionAmount)}`;
+      commissionCell.append(commissionValue); row.append(commissionCell);
+      body.append(row);
+    });
+    if (count) count.textContent = `${shown.length} ${shown.length === 1 ? "order" : "orders"}`;
+    if (empty) {
+      empty.hidden = shown.length > 0;
+      empty.textContent = pharmacyOrders.length && (query || selectedStatus)
+        ? "No pharmacy orders match your search or status filter."
+        : "No pharmacy orders have been placed yet.";
+    }
   }
 
   document.querySelectorAll(".menu-toggle").forEach(button => button.addEventListener("click", () => {
@@ -305,16 +620,14 @@
   });
   document.querySelector("[data-action='add']")?.addEventListener("click", () => openEditor());
   page.querySelector("[data-search]")?.addEventListener("input", renderTable);
+  document.querySelector("[data-pharmacy-order-search]")?.addEventListener("input", renderPharmacyOrders);
+  document.querySelector("[data-pharmacy-order-filter]")?.addEventListener("change", renderPharmacyOrders);
   page.querySelector("[data-table-body]")?.addEventListener("click", event => {
     const button = event.target.closest("button[data-action]");
     if (!button) return;
     const index = records[moduleName].findIndex(record => String(record.id) === button.dataset.id);
     if (index < 0) return;
     if (button.dataset.action === "edit") openEditor(records[moduleName][index]);
-    if (button.dataset.action === "accept" && moduleName === "careRequests") {
-      const updated = dataStore.update(moduleName, button.dataset.id, { status: "Accepted", paymentStatus: "Due" });
-      if (updated) { refreshRecords(); renderTable(); renderDashboard(); showToast("Care request accepted."); }
-    }
     if (button.dataset.action === "delete" && window.confirm("Delete this temporary demo record?")) {
       if (dataStore.remove(moduleName, button.dataset.id)) { refreshRecords(); renderTable(); renderDashboard(); showToast("Shared demo record deleted."); }
     }
@@ -346,7 +659,9 @@
     else document.querySelector("[data-form-feedback]").textContent = "Could not save this demo record in this browser.";
   });
 
-  dataStore.subscribe(() => { refreshRecords(); renderTable(); renderDashboard(); });
+  dataStore.subscribe(() => { refreshRecords(); renderTable(); renderDashboard(); renderStoreOrders(); renderPharmacyOrders(); });
   renderTable();
   renderDashboard();
+  renderStoreOrders();
+  renderPharmacyOrders();
 })();

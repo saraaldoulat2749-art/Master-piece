@@ -55,21 +55,52 @@ let selectedTime = "";
 const errorMessage = document.getElementById("errorMessage");
 const continueButton = document.getElementById("continueButton");
 
-document.querySelectorAll(".time-slot").forEach(button => {
-    button.addEventListener("click", function () {
-        // إزالة التحديد عن الأوقات الأخرى
-        document.querySelectorAll(".time-slot").forEach(slot => {
-            slot.classList.remove("selected");
-        });
-
-        // تحديد الوقت المختار
+function renderAvailableSlots() {
+    const schedule = window.CarePlusClinic?.getSchedule();
+    const grid = document.getElementById("timeGrid");
+    if (!schedule || !doctor) return;
+    const date = dateInput.value;
+    const day = new Date(`${date}T12:00:00`).getDay();
+    const dayHours = schedule.dayHours?.[day];
+    const start = dayHours?.start || schedule.start || "09:00";
+    const end = dayHours?.end || schedule.end || "17:00";
+    const duration = Math.max(15, Number(schedule.duration) || 30);
+    const unavailable = (schedule.holidays || []).some(item => item.date === date);
+    const slots = [];
+    if (!unavailable && (schedule.days || [0,1,2,3,4,5,6]).includes(day) && start < end) {
+        let cursor = Number(start.slice(0, 2)) * 60 + Number(start.slice(3, 5));
+        const finish = Number(end.slice(0, 2)) * 60 + Number(end.slice(3, 5));
+        const breakStart = schedule.breakStart ? Number(schedule.breakStart.slice(0,2))*60 + Number(schedule.breakStart.slice(3,5)) : -1;
+        const breakEnd = schedule.breakEnd ? Number(schedule.breakEnd.slice(0,2))*60 + Number(schedule.breakEnd.slice(3,5)) : -1;
+        while (cursor + duration <= finish) {
+            const slot = `${String(Math.floor(cursor / 60)).padStart(2, "0")}:${String(cursor % 60).padStart(2, "0")}`;
+            const duringBreak = breakStart >= 0 && cursor < breakEnd && cursor + duration > breakStart;
+            const labelHour = Math.floor(cursor / 60) % 12 || 12;
+            const labelSuffix = Math.floor(cursor / 60) >= 12 ? "PM" : "AM";
+            const slotLabel = `${String(labelHour).padStart(2, "0")}:${String(cursor % 60).padStart(2, "0")} ${labelSuffix}`;
+            if (!duringBreak && window.CarePlusClinic.isAvailable({ doctor, date, time: slotLabel })) slots.push(slot);
+            cursor += duration;
+        }
+    }
+    selectedTime = "";
+    grid.innerHTML = slots.length ? slots.map(slot => {
+        const [hour, minute] = slot.split(":").map(Number);
+        const labelHour = hour % 12 || 12;
+        const suffix = hour >= 12 ? "PM" : "AM";
+        return `<button type="button" class="time-slot">${String(labelHour).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${suffix}</button>`;
+    }).join("") : `<p class="time-hint">No available times for this date. Choose another date.</p>`;
+    grid.querySelectorAll(".time-slot").forEach(button => button.addEventListener("click", function () {
+        grid.querySelectorAll(".time-slot").forEach(slot => slot.classList.remove("selected"));
         this.classList.add("selected");
         selectedTime = this.textContent.trim();
-
         errorMessage.textContent = "";
         errorMessage.style.display = "none";
-    });
-});
+    }));
+}
+
+dateInput.addEventListener("change", renderAvailableSlots);
+window.CarePlusClinic?.subscribe(renderAvailableSlots);
+renderAvailableSlots();
 
 // إظهار رسالة الخطأ
 function showError(message) {

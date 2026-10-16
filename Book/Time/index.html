@@ -63,15 +63,15 @@ fetch("../../Nav/index.html")
                 </p>
                 <hr class="doctor-divider">
                 <div class="doctor-detail">
-                    <span class="detail-icon">♙</span>
+                    <span class="detail-icon"></span>
                     <span id="doctorArea">Area not selected</span>
                 </div>
                 <div class="doctor-detail">
-                    <span class="detail-icon">▣</span>
+                    <span class="detail-icon"></span>
                     <span>30 minutes per appointment</span>
                 </div>
                 <div class="doctor-detail">
-                    <span class="detail-icon">✓</span>
+                    <span class="detail-icon"></span>
                     <span>
                         Appointment details will be reviewed before confirmation.
                     </span>
@@ -88,7 +88,7 @@ fetch("../../Nav/index.html")
                     <!-- Date card -->
                     <div class="selection-card">
                         <h3>
-                            <span class="heading-icon">▣</span>
+                            <span class="heading-icon"></span>
                             Select Date
                         </h3>
                         <label class="field-label" for="appointmentDate">
@@ -107,7 +107,7 @@ fetch("../../Nav/index.html")
                     <!-- Time slots card -->
                     <div class="selection-card">
                         <h3>
-                            <span class="heading-icon">◷</span>
+                            <span class="heading-icon"></span>
                             Available Time Slots
                         </h3>
                         <div class="time-grid" id="timeGrid">
@@ -127,7 +127,7 @@ fetch("../../Nav/index.html")
                 </div>
                 <!-- Appointment information -->
                 <div class="information">
-                    <h4>ⓘ Appointment Information</h4>
+                    <h4> Appointment Information</h4>
                     <p>
                         Please arrive 10 minutes before your appointment.
                         Your booking will be confirmed in the next step.
@@ -135,13 +135,13 @@ fetch("../../Nav/index.html")
                 </div>
                 <div class="error-message" id="errorMessage" role="alert"></div>
                 <div class="form-actions">
-                    <a href="../index.html"class="back-button">← Back</a>
+                    <a href="../index.html"class="back-button"> Back</a>
                     <a
                         href="../Review/index.html"
                         class="continue-button"
                         id="continueButton"
                     >
-                        Continue to Review →
+                        Continue to Review
                 </a>
                 </div>
             </section>
@@ -157,7 +157,7 @@ fetch("../../Nav/index.html")
         })
         .catch(error => console.error("Error loading footer:", error));
 </script>
-<script src="script.js"></script>
+<script src="../../data/careplus-data.js"></script><script src="../../data/careplus-clinic.js"></script><script src="script.js"></script>
     <script src="../../Footer/footer.js"></script>
 </body>
 </html>

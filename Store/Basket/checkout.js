@@ -45,7 +45,7 @@ function renderCheckoutItems() {
       <article class="order-item" data-item-id="${product.id}">
         <img src="${product.image}" alt="${product.name}" loading="lazy">
         <div class="order-item-copy"><strong>${product.name}</strong><span>${money(product.price)} each</span>
-          <div class="order-item-controls"><button type="button" data-action="decrease" data-id="${product.id}" aria-label="Decrease ${product.name} quantity">−</button><span>${quantity}</span><button type="button" data-action="increase" data-id="${product.id}" aria-label="Increase ${product.name} quantity">+</button><button class="remove-item" type="button" data-action="remove" data-id="${product.id}">Remove</button></div>
+          <div class="order-item-controls"><button type="button" data-action="decrease" data-id="${product.id}" aria-label="Decrease ${product.name} quantity">-</button><span>${quantity}</span><button type="button" data-action="increase" data-id="${product.id}" aria-label="Increase ${product.name} quantity">+</button><button class="remove-item" type="button" data-action="remove" data-id="${product.id}">Remove</button></div>
         </div><strong class="order-item-subtotal">${money(product.price * quantity)}</strong>
       </article>`).join("");
   }
@@ -70,16 +70,28 @@ function loadDraft() {
     const choice = document.querySelector(`input[name="delivery"][value="${draft.delivery}"]`);
     if (choice) choice.checked = true;
   }
+  if (draft.payment) {
+    const choice = document.querySelector(`input[name="payment"][value="${draft.payment}"]`);
+    if (choice) {
+      choice.checked = true;
+      byId("card-entry").hidden = choice.value !== "demo-card";
+    }
+  }
 }
 
 function saveDraft() {
   const draft = Object.fromEntries([...document.querySelectorAll("#checkout-form [name]")].filter(field => field.type !== "radio").map(field => [field.name, field.value]));
   draft.delivery = document.querySelector('input[name="delivery"]:checked')?.value || "standard";
+  draft.payment = document.querySelector('input[name="payment"]:checked')?.value || "demo-card";
   sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
 }
 
 function setFieldError(field, message) {
-  const error = document.querySelector(`[data-error="${field.name}"]`);
+  const cardErrorKey = field.matches("[data-card-number]") ? "cardNumber"
+    : field.matches("[data-card-name]") ? "cardName"
+      : field.matches("[data-card-expiry]") ? "cardExpiry"
+        : field.matches("[data-card-cvv]") ? "cardCvv" : "";
+  const error = document.querySelector(`[data-error="${field.name || cardErrorKey}"]`);
   if (error) error.textContent = message;
   field.setAttribute("aria-invalid", message ? "true" : "false");
 }
@@ -94,6 +106,17 @@ function validateForm() {
     else if (field.name === "email" && !field.validity.valid) message = "Enter a valid email address.";
     else if (field.name === "phone" && !/^(?:\+962|00962|0)?7[789]\d{7}$/.test(field.value.replace(/[\s-]/g, ""))) message = "Enter a valid Jordanian mobile number.";
     else if (field.name === "address" && field.value.trim().length < 8) message = "Please enter a complete delivery address.";
+    else if (field.matches("[data-card-number]") && (field.value.replace(/\D/g, "").length < 12 || field.value.replace(/\D/g, "").length > 19)) message = "Enter a valid demo card number.";
+    else if (field.matches("[data-card-name]") && field.value.trim().length < 2) message = "Enter the name shown on the demo card.";
+    else if (field.matches("[data-card-expiry]")) {
+      const match = field.value.trim().match(/^(0[1-9]|1[0-2])\/(\d{2})$/);
+      if (!match) message = "Enter the expiry date as MM/YY.";
+      else {
+        const expiryMonth = Number(match[1]); const expiryYear = 2000 + Number(match[2]); const now = new Date();
+        if (expiryYear < now.getFullYear() || (expiryYear === now.getFullYear() && expiryMonth < now.getMonth() + 1)) message = "The demo card expiry date has passed.";
+      }
+    }
+    else if (field.matches("[data-card-cvv]") && !/^\d{3,4}$/.test(field.value)) message = "Enter a 3 or 4 digit demo security code.";
     setFieldError(field, message);
     if (message && !firstInvalid) firstInvalid = field;
   }
@@ -112,6 +135,7 @@ function submitOrder(event) {
   }
   if (!validateForm()) return;
   const formData = new FormData(byId("checkout-form"));
+  const paymentMethod = "Card payment (demo)";
   const deliveryMethod = formData.get("delivery") || "standard";
   const subtotal = cart.reduce((sum, item) => sum + Number(item.product.price) * Number(item.quantity), 0);
   const deliveryFee = DELIVERY_FEES[deliveryMethod];
@@ -122,7 +146,7 @@ function submitOrder(event) {
       fullName: formData.get("fullName").trim(), email: formData.get("email").trim(), phone: formData.get("phone").trim(),
       city: formData.get("city"), area: formData.get("area").trim(), address: formData.get("address").trim(), instructions: formData.get("instructions").trim()
     },
-    deliveryMethod, deliveryFee, payment: "Cash on Delivery", subtotal, total: subtotal + deliveryFee,
+    deliveryMethod, deliveryFee, payment: paymentMethod, paymentStatus: "Pending", subtotal, total: subtotal + deliveryFee,
     placedAt: new Date().toISOString()
   };
   const signedInIdentity = String(sessionStorage.getItem("careplusDemoIdentity") || "").trim().toLowerCase();
@@ -131,7 +155,7 @@ function submitOrder(event) {
   const sharedOrder = window.CarePlusData?.create("orders", {
     reference: order.reference, customerName: order.customer.fullName, items: order.items, customer: order.customer,
     userId: orderOwner?.id || "",
-    deliveryMethod, deliveryFee, payment: order.payment, subtotal, total: order.total,
+    deliveryMethod, deliveryFee, payment: order.payment, paymentStatus: "Pending", paymentVerified: false, subtotal, total: order.total,
     placedAt: order.placedAt, status: "Placed", source: "store-checkout"
   });
   if (!sharedOrder) {
@@ -143,6 +167,8 @@ function submitOrder(event) {
   sessionStorage.setItem(ORDER_KEY, JSON.stringify(order));
   sessionStorage.removeItem(DRAFT_KEY);
   localStorage.removeItem(CART_KEY);
+  // Keep demo card data only in the current form interaction; never store it with an order.
+  document.querySelectorAll("[data-card-number], [data-card-name], [data-card-expiry], [data-card-cvv]").forEach(field => { field.value = ""; });
   window.location.href = "confirmation.html";
 }
 
@@ -151,13 +177,13 @@ function renderConfirmation() {
   if (!order) { byId("confirmation-card").hidden = true; byId("no-order").hidden = false; return; }
   byId("order-reference").textContent = order.reference;
   byId("confirmed-items").innerHTML = order.items.map(({ product, quantity }) => `
-    <article class="order-item confirmed-item"><img src="${product.image}" alt="${product.name}" loading="lazy"><div class="order-item-copy"><strong>${product.name}</strong><span>${money(product.price)} × ${quantity}</span></div><strong class="order-item-subtotal">${money(product.price * quantity)}</strong></article>`).join("");
+    <article class="order-item confirmed-item"><img src="${product.image}" alt="${product.name}" loading="lazy"><div class="order-item-copy"><strong>${product.name}</strong><span>${money(product.price)}  ${quantity}</span></div><strong class="order-item-subtotal">${money(product.price * quantity)}</strong></article>`).join("");
   byId("confirmed-subtotal").textContent = money(order.subtotal);
   byId("confirmed-delivery-fee").textContent = `${money(order.deliveryFee)} (${order.deliveryMethod === "express" ? "Express" : "Standard"})`;
   byId("confirmed-total").textContent = money(order.total);
   const customer = order.customer;
   byId("delivery-details").innerHTML = `<dt>Name</dt><dd>${escapeHtml(customer.fullName)}</dd><dt>Phone</dt><dd>${escapeHtml(customer.phone)}</dd><dt>Email</dt><dd>${escapeHtml(customer.email)}</dd><dt>Address</dt><dd>${escapeHtml(customer.address)}, ${escapeHtml(customer.area)}, ${escapeHtml(customer.city)}</dd>${customer.instructions ? `<dt>Instructions</dt><dd>${escapeHtml(customer.instructions)}</dd>` : ""}`;
-  byId("confirmed-payment").textContent = order.payment;
+  byId("confirmed-payment").textContent = `${order.payment} · ${order.paymentStatus || "Pending"}`;
 }
 
 function escapeHtml(value) {
@@ -182,7 +208,24 @@ if (isConfirmationPage()) {
     saveCart(); renderCheckoutItems();
   });
   document.querySelectorAll('input[name="delivery"]').forEach(input => input.addEventListener("change", () => { updateTotals(); saveDraft(); }));
-  byId("checkout-form").addEventListener("input", event => { if (event.target.name) { setFieldError(event.target, ""); saveDraft(); } });
+  const cardEntry = byId("card-entry");
+  document.querySelectorAll('input[name="payment"]').forEach(input => input.addEventListener("change", () => {
+    cardEntry.hidden = input.value !== "demo-card" || !input.checked;
+    saveDraft();
+  }));
+  byId("card-entry")?.addEventListener("input", event => {
+    const field = event.target;
+    if (field.matches("[data-card-number]")) field.value = field.value.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
+    if (field.matches("[data-card-expiry]")) {
+      const digits = field.value.replace(/\D/g, "").slice(0, 4);
+      field.value = digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
+    }
+    if (field.matches("[data-card-cvv]")) field.value = field.value.replace(/\D/g, "").slice(0, 4);
+  });
+  byId("checkout-form").addEventListener("input", event => {
+    if (event.target.name || event.target.matches("[data-card-number], [data-card-name], [data-card-expiry], [data-card-cvv]")) setFieldError(event.target, "");
+    if (event.target.name) saveDraft();
+  });
   byId("checkout-form").addEventListener("change", event => { if (event.target.name) saveDraft(); });
   byId("checkout-form").addEventListener("submit", submitOrder);
 }

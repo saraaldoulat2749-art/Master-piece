@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f8fb">
+  <title>Sign Up | CarePlus</title>
+  <link rel="stylesheet" href="login.css">
+  <link rel="stylesheet" href="register.css">
+</head>
+<body>
+  <main class="login-shell register-shell">
+    <section class="welcome-panel" aria-labelledby="welcome-title">
+      <a class="brand" href="../Home/Master.html" aria-label="CarePlus home">
+        <span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><path d="M24 41S6 29 6 17.5C6 10.8 10.8 7 16.1 7c3.4 0 6.1 1.8 7.9 4.8C25.8 8.8 28.5 7 31.9 7 37.2 7 42 10.8 42 17.5 42 29 24 41 24 41Z"/><path d="M11 24h7l3-6 5.5 13 4-8H37"/></svg></span>
+        <span class="brand-word">Care<span class="brand-plus">Plus</span></span>
+      </a>
+      <div class="welcome-copy">
+        <p class="welcome-eyebrow">CAREPLUS HEALTHCARE</p>
+        <h1 id="welcome-title">A healthier journey<br><span>starts here</span></h1>
+        <p class="welcome-description">Create your CarePlus account to keep your appointments and healthcare services close at hand.</p>
+      </div>
+      <div class="health-visual" aria-hidden="true">
+        <div class="visual-line"><svg class="heartbeat-svg" viewBox="0 0 700 100" preserveAspectRatio="none"><path class="heartbeat-track" d="M0 50H700"/><path class="heartbeat-pulse" d="M0 50H195L218 50L238 20L259 83L282 36L298 50H700"/></svg></div>
+        <div class="orbit orbit-one"></div><div class="orbit orbit-two"></div><div class="orbit orbit-three"></div>
+        <div class="health-core"><svg viewBox="0 0 48 48" focusable="false"><path d="M24 41S6 29 6 17.5C6 10.8 10.8 7 16.1 7c3.4 0 6.1 1.8 7.9 4.8C25.8 8.8 28.5 7 31.9 7 37.2 7 42 10.8 42 17.5 42 29 24 41 24 41Z"/><path d="M11 24h7l3-6 5.5 13 4-8H37"/></svg><i></i></div>
+        <span class="health-node node-calendar"><svg viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="16" rx="3"/><path d="M8 3v4m8-4v4M4 10h16m-11 5 2 2 4-4"/></svg></span>
+        <span class="health-node node-care"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/></svg></span>
+        <span class="health-node node-stethoscope"><svg viewBox="0 0 24 24"><path d="M6 3v5a5 5 0 0 0 10 0V3M4 3h4m6 0h4m-7 10v2a5 5 0 0 0 10 0v-1"/><circle cx="18" cy="12" r="2"/></svg></span>
+        <span class="health-node node-heart"><svg viewBox="0 0 24 24"><path d="M3 12h5l2-5 4 10 2-5h5"/></svg></span>
+        <span class="health-node node-eye"><svg viewBox="0 0 24 24"><path d="M3 12s3.2-6 9-6 9 6 9 6-3.2 6-9 6-9-6-9-6Z"/><circle cx="12" cy="12" r="2.5"/></svg></span>
+        <span class="health-node node-pill"><svg viewBox="0 0 24 24"><path d="M8 4a5 5 0 0 1 7.1 0l4.9 4.9a5 5 0 0 1-7.1 7.1L8 11.1A5 5 0 0 1 8 4Z"/><path d="m9.5 12.5 7.1-7.1"/></svg></span>
+        <span class="health-node node-syringe"><svg viewBox="0 0 24 24"><path d="m14 5 5 5M12 7l5 5m-9 9 11-11-5-5L3 16m0 0v5h5M4 15l5 5M16 3l5 5"/></svg></span>
+        <span class="health-node node-shield"><svg viewBox="0 0 24 24"><path d="M12 3 20 6v5c0 5-3.4 8.3-8 10-4.6-1.7-8-5-8-10V6l8-3Z"/><path d="M12 8v7m-3.5-3.5h7"/></svg></span>
+        <div class="info-chip appointment-chip"><span class="chip-icon">+</span><span><strong>One account</strong><small>Your care in one place</small></span></div>
+        <div class="info-chip care-chip"><span class="chip-icon">♡</span><span><strong>CarePlus community</strong><small>Here for every generation</small></span></div>
+      </div>
+    </section>
+
+    <section class="form-side" aria-labelledby="signup-title">
+      <div class="form-card signup-card">
+        <div class="secure-badge"><span aria-hidden="true">◆</span> Join CarePlus</div>
+        <h2 id="signup-title">Create Account</h2>
+        <p class="form-subtitle">Start your health journey with us.</p>
+        <form id="register-form" novalidate>
+          <div class="register-fields">
+            <label class="field-wrap" for="register-name"><span class="field-icon" aria-hidden="true">♙</span><input class="field" id="register-name" name="name" type="text" autocomplete="name" placeholder="Full name" required></label>
+            <label class="field-wrap" for="register-email"><span class="field-icon" aria-hidden="true">✉</span><input class="field" id="register-email" name="email" type="email" autocomplete="email" placeholder="Email address" required></label>
+            <label class="field-wrap" for="register-phone"><span class="field-icon" aria-hidden="true">⌕</span><input class="field" id="register-phone" name="phone" type="tel" autocomplete="tel" placeholder="Phone number"></label>
+            <label class="field-wrap" for="register-password"><span class="field-icon" aria-hidden="true">▣</span><input class="field" id="register-password" name="password" type="password" autocomplete="new-password" minlength="8" placeholder="Create password" required></label>
+          </div>
+          <p class="notice" id="register-message" role="alert" aria-live="polite" hidden></p>
+          <button class="submit" id="register-submit" type="submit"><span class="button-label">Create account</span><span class="spinner" aria-hidden="true"></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></button>
+        </form>
+        <p class="signup-demo-note">Prototype account · Saved in this browser</p>
+        <p class="create-account">Already have an account? <a href="login.html">Sign in</a></p>
+      </div>
+    </section>
+  </main>
+  <script src="../auth.js"></script>
+  <script src="../data/careplus-data.js"></script>
+  <script src="register.js"></script>
+</body>
+</html>

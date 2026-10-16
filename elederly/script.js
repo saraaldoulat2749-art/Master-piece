@@ -61,11 +61,12 @@ if (!reduceMotion && "IntersectionObserver" in window) {
 const form = document.getElementById("care-form");
 if (form) {
   // Editable prototype rates; these do not represent live provider quotes.
-  const PRICING = Object.freeze({ homeHourlyJod: 8, companionHourlyJod: 7, platformFeeJod: 1, sampleReturnFeeJod: 5 });
+  const PRICING = Object.freeze({ homeHourlyJod: 8, companionHourlyJod: 7, sampleReturnFeeJod: 5 });
   const isHome = form.dataset.service === "home";
   const duration = form.elements.namedItem("duration");
   const tripOption = form.elements.namedItem("tripOption");
   const money = amount => `JOD ${amount.toFixed(2)}`;
+  const commissionRate = () => Number(window.CarePlusPharmacy?.settings().careCommissionRate) || 0;
   const sharedPanel = document.createElement("section");
   sharedPanel.className = "shared-request-panel";
   sharedPanel.setAttribute("aria-live", "polite");
@@ -83,7 +84,7 @@ if (form) {
     requests.slice().reverse().forEach(request => {
       const item = document.createElement("article"); item.className = "shared-request-item";
       const title = document.createElement("strong"); title.textContent = request.service;
-      const detail = document.createElement("span"); detail.textContent = `Preferred date: ${request.date || "Not specified"}`;
+      const detail = document.createElement("span"); detail.textContent = `Preferred date: ${request.date || "Not specified"}${Number.isFinite(Number(request.estimatedTotal)) ? ` · Estimate: ${money(Number(request.estimatedTotal))}` : ""}`;
       const status = document.createElement("b");
       const rawStatus = String(request.status || "New");
       status.textContent = ["accepted", "approved"].includes(rawStatus.toLowerCase()) ? "Accepted by CarePlus" : rawStatus;
@@ -97,13 +98,17 @@ if (form) {
     const hours = Math.max(1, Number(duration.value) || 1);
     const base = hours * (isHome ? PRICING.homeHourlyJod : PRICING.companionHourlyJod);
     const returnFee = !isHome && tripOption.value === "roundtrip" ? PRICING.sampleReturnFeeJod : 0;
-    const total = base + returnFee + PRICING.platformFeeJod;
+    const rate = commissionRate();
+    const commission = Math.round(base * rate) / 100;
+    const total = base + returnFee + commission;
     document.getElementById("base-label").textContent = `${isHome ? "Home care" : "Companion service"} · ${hours} ${hours === 1 ? "hour" : "hours"}`;
     document.getElementById("base-price").textContent = money(base);
     document.getElementById("return-fee-row").hidden = returnFee === 0;
     document.getElementById("return-fee").textContent = money(returnFee);
-    document.getElementById("service-fee").textContent = money(PRICING.platformFeeJod);
+    document.getElementById("care-commission-rate").textContent = rate.toFixed(2).replace(/\.00$/, "");
+    document.getElementById("care-commission-amount").textContent = money(commission);
     document.getElementById("total-price").textContent = money(total);
+    return { base, returnFee, rate, commission, total };
   }
 
   form.addEventListener("input", updateEstimate);
@@ -118,6 +123,7 @@ if (form) {
     if (!form.reportValidity()) return;
 
     const values = new FormData(form);
+    const estimate = updateEstimate();
     const request = window.CarePlusData?.create("careRequests", {
       client: String(values.get("customerName") || "").trim(),
       elderlyName: String(values.get("elderlyName") || "").trim(),
@@ -144,6 +150,11 @@ if (form) {
       tasks: values.getAll("tasks"),
       notes: String(values.get("instructions") || "").trim(),
       duration: Number(duration.value) || 1,
+      estimatedBaseAmount: estimate.base,
+      estimatedReturnFee: estimate.returnFee,
+      careCommissionRate: estimate.rate,
+      careCommissionAmount: estimate.commission,
+      estimatedTotal: estimate.total,
       status: "New", source: "user-request",
       userId: window.CarePlusData?.list("users").find(user => user.email?.toLowerCase() === sessionStorage.getItem("careplusDemoIdentity")?.toLowerCase() || user.phone === sessionStorage.getItem("careplusDemoIdentity"))?.id || ""
     });
@@ -157,5 +168,7 @@ if (form) {
     document.getElementById("form-feedback").textContent = "Your request has been saved and appears in My Care Requests. CarePlus will review it and confirm availability.";
   });
 
+  window.addEventListener("careplus:commission", updateEstimate);
+  window.addEventListener("storage", event => { if (!event.key || event.key.includes("Commission") || event.key.includes("commission")) updateEstimate(); });
   updateEstimate();
 }

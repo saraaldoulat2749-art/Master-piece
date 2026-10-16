@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Doctor Dashboard | CarePlus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dashboard.css">
+  <link rel="stylesheet" href="logout.css">
+</head>
+<body data-doctor-protected="true">
+  <script src="../auth.js"></script>
+  <div class="shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="../Home/Master.html" aria-label="CarePlus home"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><path d="M24 41S6 29 6 17.5C6 10.8 10.8 7 16.1 7c3.4 0 6.1 1.8 7.9 4.8C25.8 8.8 28.5 7 31.9 7 37.2 7 42 10.8 42 17.5 42 29 24 41 24 41Z"/><path d="M11 24h7l3-6 5.5 13 4-8H37"/></svg></span><span>Care<span class="brand-green">Plus</span><small>DOCTOR PORTAL</small></span></a>
+      <nav class="nav" aria-label="Doctor dashboard">
+        <button class="nav-link active" data-page="dashboard"><span>⌂</span>Dashboard</button>
+        <button class="nav-link" data-page="appointments"><span>▦</span>My Appointments</button>
+        <button class="nav-link" data-page="patients"><span>♧</span>My Patients</button>
+        <button class="nav-link" data-page="schedule"><span>◷</span>My Schedule</button>
+        <button class="nav-link" data-page="profile"><span>♙</span>My Profile</button>
+      </nav>
+      <div class="side-bottom">
+        <button class="side-notification" id="notificationButton"><span>♧</span>Notifications<i id="notificationDot"></i></button>
+        <a class="site-link" href="../Home/Master.html">← Back to CarePlus</a>
+        <a class="logout-link" href="../Home/Master.html" data-auth-toggle>LOG OUT</a>
+      </div>
+    </aside>
+    <main class="main">
+      <div class="content">
+        <div class="mobile-toolbar"><button class="mobile-menu" id="menuButton" aria-label="Open navigation">☰</button><span id="crumb">Dashboard</span></div>
+        <section class="page active" id="page-dashboard"><div class="page-heading"><div><p class="eyebrow" id="todayLabel">TODAY</p><h1>Good morning, <span data-first-name>Doctor</span></h1><p>Here’s your practice at a glance.</p></div></div>
+          <div class="stat-grid"><article class="stat-card"><span class="stat-icon blue">▦</span><span>Today’s appointments</span><b id="statToday">0</b><small>Scheduled for today</small></article><article class="stat-card"><span class="stat-icon mint">♧</span><span>Total patients</span><b id="statPatients">0</b><small>Seen in your practice</small></article><article class="stat-card"><span class="stat-icon violet">◷</span><span>Upcoming appointments</span><b id="statUpcoming">0</b><small>Confirmed and requested</small></article><article class="stat-card"><span class="stat-icon amber">✉</span><span>Booking requests</span><b id="statPending">0</b><small>Waiting for your response</small></article></div>
+          <div class="dashboard-grid"><section class="panel"><div class="panel-head"><div><h2>Today’s appointments</h2><p>Your schedule for today</p></div><button class="text-button" data-go-appointments>View all →</button></div><div id="todayList" class="appointment-list"></div></section><section class="panel"><div class="panel-head"><div><h2>Notifications</h2><p>Updates that need your attention</p></div><span class="live-dot"></span></div><div id="noticeList" class="notice-list"></div><div class="quick-actions"><h3>Quick actions</h3><button data-go-appointments>Review booking requests <span>→</span></button><button data-go-schedule>Update availability <span>→</span></button></div></section></div>
+        </section>
+        <section class="page" id="page-appointments"><div class="page-heading"><div><p class="eyebrow">YOUR PRACTICE</p><h1>My Appointments</h1><p>Review and manage your patient bookings.</p></div><span class="count-pill" id="appointmentCount">0 appointments</span></div><section class="panel records-panel"><div class="filter-row"><label class="search"><span>⌕</span><input id="appointmentSearch" type="search" placeholder="Search patients" aria-label="Search appointments"></label><label class="date-filter">Date <input id="appointmentDateFilter" type="date"></label></div><div class="tabs" id="statusTabs"><button class="selected" data-status="All">All</button><button data-status="Requested">Pending</button><button data-status="Confirmed">Confirmed</button><button data-status="Completed">Completed</button><button data-status="Cancelled">Cancelled</button></div><div class="table-wrap"><table><thead><tr><th>Patient</th><th>Appointment date</th><th>Time</th><th>Status</th><th>Actions</th></tr></thead><tbody id="appointmentRows"></tbody></table><div class="empty-state" id="appointmentEmpty" hidden>No appointments match these filters.</div></div></section></section>
+        <section class="page" id="page-patients"><div class="page-heading"><div><p class="eyebrow">CONTINUITY OF CARE</p><h1>My Patients</h1><p>Patients who have booked an appointment with you.</p></div><span class="count-pill" id="patientCount">0 patients</span></div><section class="panel records-panel"><label class="search patient-search"><span>⌕</span><input id="patientSearch" type="search" placeholder="Find a patient by name" aria-label="Search patients"></label><div id="patientList" class="patient-grid"></div><div class="empty-state" id="patientEmpty" hidden>No patients found.</div></section></section>
+        <section class="page" id="page-schedule"><div class="page-heading"><div><p class="eyebrow">PRACTICE HOURS</p><h1>My Schedule</h1><p>Set the hours patients can book with you.</p></div><button class="button primary" id="saveSchedule">Save schedule</button></div><div class="schedule-grid"><section class="panel"><div class="panel-head"><div><h2>Working days &amp; hours</h2><p>Availability is used by the appointment booking page.</p></div></div><div class="weekdays" id="weekdays"></div><div class="time-fields"><label>Start time<input id="startTime" type="time"></label><label>End time<input id="endTime" type="time"></label><label>Appointment duration<select id="duration"><option value="15">15 minutes</option><option value="20">20 minutes</option><option value="30">30 minutes</option><option value="45">45 minutes</option><option value="60">60 minutes</option></select></label></div><div class="break-fields"><h3>Break time <small>(optional)</small></h3><div class="time-fields"><label>Break starts<input id="breakStart" type="time"></label><label>Break ends<input id="breakEnd" type="time"></label></div></div></section><section class="panel"><div class="panel-head"><div><h2>Time away</h2><p>Dates when patients cannot book.</p></div></div><form id="holidayForm" class="holiday-form"><label>Date<input id="holidayDate" type="date" required></label><label>Note<input id="holidayNote" maxlength="80" placeholder="e.g. Annual leave"></label><button class="button secondary" type="submit">Add date</button></form><div id="holidayList" class="holiday-list"></div></section></div></section>
+        <section class="page" id="page-profile"><div class="page-heading"><div><p class="eyebrow">YOUR DETAILS</p><h1>My Profile</h1><p>Keep your professional information up to date.</p></div><button class="button primary" form="profileForm">Save changes</button></div><form id="profileForm" class="panel profile-form" novalidate><div class="form-grid"><label>Full name<input name="name" required minlength="2" autocomplete="name"></label><label>Medical specialty<input name="specialty" required></label><label>Qualifications<input name="qualifications" placeholder="e.g. MD, Board Certified"></label><label>Years of experience<input name="experience" type="number" min="0" max="70"></label><label>Professional license<input name="license" placeholder="License number"></label><label>Workplace / clinic<input name="workplace"></label><label>Contact email<input name="email" type="email" autocomplete="email"></label><label>Contact phone<input name="phone" type="tel" autocomplete="tel"></label><label>Consultation fee (JOD)<input name="fee" type="number" min="0" step="0.01"></label></div><p class="form-message" id="profileMessage" role="status"></p></form></section>
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+    </main>
+  </div>
+  <script src="../data/careplus-data.js"></script><script src="../data/careplus-clinic.js"></script><script src="dashboard.js"></script>
+</body></html>

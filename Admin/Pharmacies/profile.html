@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pharmacy profile | CarePlus Admin</title>
+  <link rel="stylesheet" href="../admin.css"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="profile.css"><link rel="stylesheet" href="profile-overrides.css">
+</head>
+<body data-protected="true" data-admin-protected="true">
+  <script src="../../auth.js"></script>
+  <div class="admin-layout">
+    <aside class="sidebar" id="admin-sidebar">
+      <a class="brand" href="../index.html"><span class="brand-mark">+</span><span>Care<span>Plus</span><small>ADMIN</small></span></a>
+      <nav class="side-nav" aria-label="Admin sections">
+        <a href="../index.html"><span></span>Dashboard</a><a href="../Users/index.html"><span></span>Users</a><a href="../Appointments/index.html"><span></span>Appointments</a><a href="../Products/index.html"><span></span>Products</a><a class="active" href="index.html"><span></span>Pharmacies</a><a href="../CareRequests/index.html"><span></span>Care requests</a><a href="../Orders/index.html"><span></span>Orders</a><a href="../Commissions/index.html"><span></span>Commission management</a>
+      </nav><div class="sidebar-bottom"><p>Admin workspace</p><a href="../../Home/Master.html">View CarePlus site</a><a href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar"><button class="menu-toggle" type="button" aria-label="Open admin navigation" aria-controls="admin-sidebar" aria-expanded="false">Menu</button><div class="topbar-copy"><span class="eyebrow">CAREPLUS MANAGEMENT</span><h1>Pharmacy profile</h1></div></header>
+      <section class="page-content profile-page" id="profile-root">
+        <a class="back-link" href="index.html">← Back to Pharmacies</a>
+        <div class="profile-empty" data-profile-empty hidden><h2>Pharmacy not found</h2><p>The selected pharmacy ID does not match a saved pharmacy.</p><a class="primary-button" href="index.html">Return to Pharmacies</a></div>
+        <div data-profile-content hidden>
+          <div class="profile-heading"><div class="pharmacy-avatar" data-logo aria-hidden="true">+</div><div class="profile-title"><p class="eyebrow">PHARMACY PROFILE</p><h2 data-name></h2><div class="profile-meta"><span data-id></span><span data-status class="status-badge"></span></div></div><button class="primary-button" type="button" data-edit-profile>Edit Pharmacy</button></div>
+          <div class="profile-stats" data-stats></div>
+          <section class="panel info-panel"><div class="section-heading"><div><p class="eyebrow">PHARMACY INFORMATION</p><h3>Contact & operations</h3></div></div><div class="info-grid" data-details></div></section>
+          <section class="panel info-panel"><div class="section-heading"><div><p class="eyebrow">INVENTORY</p><h3>Pharmacy Medicines</h3></div><button class="primary-button" type="button" data-add-medicine>Add Medicine</button></div><div class="table-wrap"><table><thead><tr><th>Medicine</th><th>Category</th><th>Ingredient</th><th>Price</th><th>Availability</th><th>Stock</th><th>Updated</th><th>Actions</th></tr></thead><tbody data-medicines></tbody></table><div class="table-empty" data-medicines-empty hidden>No medicines are registered for this pharmacy.</div></div></section>
+          <section class="panel info-panel"><div class="section-heading"><div><p class="eyebrow">ORDER ACTIVITY</p><h3>Recent Pharmacy Orders</h3><p class="orders-demo-note">Payment status is browser demo data and is not a verified payment record.</p></div><a class="text-button" href="../Orders/index.html#pharmacy-orders">Open order management</a></div><div class="table-wrap"><table><thead><tr><th>Order ID</th><th>Customer</th><th>Medicines</th><th>Order date</th><th>Total</th><th>Order status</th><th>Payment</th><th>Manage</th></tr></thead><tbody data-orders></tbody></table><div class="table-empty" data-orders-empty hidden>No orders are linked to this pharmacy yet.</div></div></section>
+        </div>
+      </section>
+    </main>
+  </div>
+  <dialog class="record-dialog profile-dialog" data-pharmacy-dialog><form data-pharmacy-form novalidate><div class="dialog-heading"><div><p class="eyebrow" data-dialog-eyebrow>PHARMACY</p><h2 data-dialog-title></h2></div><button type="button" class="icon-button" data-close aria-label="Close dialog">×</button></div><div class="form-fields" data-form-fields></div><p class="form-feedback" data-form-feedback role="alert"></p><div class="dialog-actions"><button type="button" class="secondary-button" data-close>Cancel</button><button type="submit" class="primary-button">Save Changes</button></div></form></dialog>
+  <dialog class="record-dialog" data-order-dialog><div class="dialog-heading"><h2>Order details</h2><button type="button" class="icon-button" data-close aria-label="Close dialog">×</button></div><div data-order-detail></div><div class="dialog-actions"><button type="button" class="secondary-button" data-close>Close</button></div></dialog>
+  <div class="toast" data-toast role="status" aria-live="polite"></div>
+  <script src="../../data/careplus-data.js"></script><script src="../../data/careplus-pharmacy.js"></script><script src="profile.js"></script>
+</body>
+</html>

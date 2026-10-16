@@ -26,8 +26,8 @@
         .success-icon {
             width: 85px;
             height: 85px;
-            background: #0aa6a6;
-            color: white;
+            background: #94D5D6;
+            color: #172536;
             border-radius: 50%;
             display: flex;
             justify-content: center;
@@ -35,6 +35,15 @@
             font-size: 45px;
             margin: 0 auto 20px;
             box-shadow: 0 8px 25px rgba(10, 166, 166, 0.2);
+        }
+        .success-icon svg {
+            width: 46px;
+            height: 46px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 2.7;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
         .success-header h1 {
             color: #087f86;
@@ -86,7 +95,7 @@
             margin-top: 6px;
         }
         .specialty {
-            color: #0aa6a6 !important;
+            color: #94D5D6 !important;
             font-weight: bold;
         }
         .details-title {
@@ -118,6 +127,15 @@
             justify-content: center;
             align-items: center;
             font-size: 21px;
+        }
+        .detail-icon svg {
+            width: 21px;
+            height: 21px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
         .detail-text span {
             display: block;
@@ -157,15 +175,15 @@
             transition: 0.3s;
         }
         .btn-primary {
-            background: #0aa6a6;
-            color: white;
+            background: #94D5D6;
+            color: #172536;
         }
         .btn-primary:hover {
             background: #087f86;
             transform: translateY(-2px);
         }
         .btn-secondary {
-            border: 1px solid #0aa6a6;
+            border: 1px solid #94D5D6;
             color: #087f86;
             background: white;
         }

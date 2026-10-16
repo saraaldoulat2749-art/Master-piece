@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#123b4d">
+  <title>Nurse Dashboard | CarePlus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../Doctor/dashboard.css">
+  <link rel="stylesheet" href="nurse.css">
+</head>
+<body data-nurse-protected="true">
+  <div class="shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="../Home/Master.html" aria-label="CarePlus home"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M24 41S6 29 6 17.5C6 10.8 10.8 7 16.1 7c3.4 0 6.1 1.8 7.9 4.8C25.8 8.8 28.5 7 31.9 7 37.2 7 42 10.8 42 17.5 42 29 24 41 24 41Z"/><path d="M11 24h7l3-6 5.5 13 4-8H37"/></svg></span><span>Care<span class="brand-green">Plus</span><small>NURSE PORTAL</small></span></a>
+      <nav class="nav" aria-label="Nurse dashboard pages">
+        <button class="nav-link active" type="button" data-page="dashboard"><span>▦</span>Dashboard</button>
+        <button class="nav-link" type="button" data-page="requests"><span>▤</span>Care Requests</button>
+        <button class="nav-link" type="button" data-page="visits"><span>◷</span>My Visits</button>
+        <button class="nav-link" type="button" data-page="patient-care"><span>♡</span>Patient Care</button>
+        <button class="nav-link" type="button" data-page="profile"><span>♙</span>My Profile</button>
+      </nav>
+      <div class="side-bottom"><a class="site-link nurse-logout" href="../Home/Master.html" data-auth-toggle aria-label="Log out">LOG OUT</a></div>
+    </aside>
+    <main class="main">
+      <button class="mobile-menu nurse-mobile-menu" id="menuToggle" type="button" aria-label="Open navigation">☰</button>
+      <div class="content">
+        <section class="page active" id="page-dashboard">
+          <div class="page-heading"><div><p class="eyebrow">ELDERLY HOME CARE</p><h1>Welcome, <span id="welcomeName">Nurse</span></h1><p>Your visits and care requests at a glance.</p></div></div>
+          <div class="stat-grid">
+            <article class="stat-card"><i class="stat-icon blue">◷</i><span>Visits today</span><b id="visitsToday">0</b><small>Accepted or in progress</small></article>
+            <article class="stat-card"><i class="stat-icon amber">▤</i><span>New care requests</span><b id="newRequests">0</b><small>Available to review</small></article>
+            <article class="stat-card"><i class="stat-icon violet">↗</i><span>Upcoming visits</span><b id="upcomingVisits">0</b><small>Next 7 days</small></article>
+            <article class="stat-card"><i class="stat-icon mint">✓</i><span>Completed visits</span><b id="completedVisits">0</b><small>Visit records</small></article>
+            <article class="stat-card"><i class="stat-icon blue">⌚</i><span>Working hours</span><b id="workingHours">0.0</b><small>Recorded from completed visits</small></article>
+          </div>
+          <div class="dashboard-grid"><section class="panel"><div class="panel-head"><div><h2>Upcoming visits</h2><p>Your next scheduled home-care visits.</p></div><button class="text-button" type="button" data-open-page="visits">View visits →</button></div><div class="appointment-list" id="dashboardVisits"></div></section><section class="panel"><div class="panel-head"><div><h2>Notifications &amp; reminders</h2><p>Items that may need your attention.</p></div><span class="count-pill" id="notificationCount">0 new</span></div><div class="notice-list" id="notificationsList"></div><div class="quick-actions"><h3>Quick actions</h3><button type="button" data-open-page="requests">Review available requests <span>→</span></button><button type="button" data-open-page="patient-care">Open patient care notes <span>→</span></button></div></section></div>
+        </section>
+
+        <section class="page" id="page-requests" hidden>
+          <div class="page-heading"><div><p class="eyebrow">REQUEST INBOX</p><h1>Care Requests</h1><p>Requests available to a nurse or assigned to your account.</p></div><span class="count-pill" id="requestCount">0 requests</span></div>
+          <section class="panel records-panel"><div class="filter-row"><label class="search"><span>⌕</span><input id="requestSearch" type="search" placeholder="Search name, service, or area" aria-label="Search care requests"></label><label class="select-filter">Status<select id="requestStatus"><option value="all">All requests</option><option>New</option><option>Reviewing</option><option>Contacted</option><option>Accepted</option><option>Rejected</option><option>In Progress</option><option>Completed</option></select></label><label class="date-filter">Date<input id="requestDate" type="date" aria-label="Filter by date"></label></div><div class="table-wrap"><table><thead><tr><th>Request / Elderly person</th><th>Service</th><th>Date &amp; time</th><th>Duration</th><th>Location</th><th>Status</th><th>Actions</th></tr></thead><tbody id="requestRows"></tbody></table><div class="empty-state" id="requestEmpty" hidden>No care requests match these filters.</div></div></section>
+        </section>
+
+        <section class="page" id="page-visits" hidden>
+          <div class="page-heading"><div><p class="eyebrow">SCHEDULE &amp; VISITS</p><h1>My Visits</h1><p>Manage visits accepted by or assigned to you.</p></div><label class="select-filter">View<select id="visitRange"><option value="daily">Today</option><option value="weekly">This week</option><option value="all">All visits</option></select></label></div>
+          <section class="panel records-panel"><div class="filter-row"><label class="search"><span>⌕</span><input id="visitSearch" type="search" placeholder="Search patient or location" aria-label="Search visits"></label><label class="select-filter">Status<select id="visitStatus"><option value="all">All statuses</option><option>Accepted</option><option>In Progress</option><option>Completed</option><option>Cancelled</option></select></label></div><div class="table-wrap"><table><thead><tr><th>Elderly person</th><th>Visit date</th><th>Time</th><th>Duration</th><th>Home address</th><th>Status</th><th>Actions</th></tr></thead><tbody id="visitRows"></tbody></table><div class="empty-state" id="visitEmpty" hidden>No visits match this view.</div></div></section>
+        </section>
+
+        <section class="page" id="page-patient-care" hidden>
+          <div class="page-heading"><div><p class="eyebrow">AUTHORIZED CARE RECORDS</p><h1>Patient Care</h1><p>Care instructions and notes for visits assigned to you.</p></div></div>
+          <div class="patient-care-layout"><section class="panel"><div class="panel-head"><div><h2>Assigned patients</h2><p>Patient details are limited to your assigned visits.</p></div></div><label class="search patient-search"><span>⌕</span><input id="patientSearch" type="search" placeholder="Find an assigned patient" aria-label="Search assigned patients"></label><div class="patient-grid" id="patientCards"></div><div class="empty-state" id="patientEmpty" hidden>No assigned patient records are available.</div></section><section class="panel care-detail-panel" id="careDetail"><div class="care-detail-empty"><span>♡</span><h2>Select an assigned patient</h2><p>Visit-specific care instructions, selected support tasks, notes, and history will appear here.</p></div></section></div>
+        </section>
+
+        <section class="page" id="page-profile" hidden>
+          <div class="page-heading"><div><p class="eyebrow">NURSE ACCOUNT</p><h1>My Profile</h1><p>Update your contact and availability details.</p></div></div>
+          <form class="panel profile-form" id="profileForm" novalidate><div class="profile-photo-row"><span class="photo-preview" id="photoPreview">N</span><div><b>Profile picture</b><p>Provide an image URL for this browser demo.</p></div><label class="field photo-url">Image URL<input name="photo" type="url" placeholder="https://example.test/photo.jpg"></label></div><div class="form-grid"><label>Full name<input name="name" required minlength="2" autocomplete="name"></label><label>Professional specialty<input name="specialty" placeholder="Elderly home care"></label><label>Experience (years)<input name="experience" type="number" min="0" max="70"></label><label>Phone number<input name="phone" type="tel" autocomplete="tel"></label><label>Email address<input name="email" type="email" readonly aria-readonly="true"></label><label>Availability / working hours<input name="availability" maxlength="120" placeholder="e.g. Sun–Thu, 8:00–16:00"></label></div><p class="form-message" id="profileMessage" role="status" aria-live="polite"></p><div class="form-actions"><button class="button secondary" type="button" id="cancelProfile">Cancel</button><button class="button primary" type="submit">Save changes</button></div></form>
+        </section>
+        <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      </div>
+    </main>
+  </div>
+  <dialog class="record-dialog" id="requestDialog"><div class="dialog-content"><div class="panel-head"><div><p class="eyebrow">CARE REQUEST DETAILS</p><h2 id="dialogTitle">Request details</h2></div><button class="dialog-close" type="button" data-close-dialog aria-label="Close">×</button></div><div id="dialogBody"></div><div class="dialog-actions"><button class="button secondary" type="button" data-close-dialog>Close</button></div></div></dialog>
+  <script src="../data/careplus-data.js"></script>
+  <script src="../auth.js?v=nurse-dashboard-1"></script>
+  <script src="dashboard.js?v=nurse-1"></script>
+</body>
+</html>

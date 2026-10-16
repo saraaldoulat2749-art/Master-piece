@@ -35,12 +35,35 @@ if (!prefersReducedMotion) {
       logo.style.setProperty("--logo-y", "0px");
     });
   });
+  const healthVisual = document.querySelector(".health-visual");
+  if (healthVisual) {
+    const nodes = [...healthVisual.querySelectorAll(".health-node")];
+    healthVisual.addEventListener("pointermove", event => {
+      if (event.pointerType !== "mouse") return;
+      const bounds = healthVisual.getBoundingClientRect();
+      const x = (event.clientX - bounds.left) / bounds.width - 0.5;
+      const y = (event.clientY - bounds.top) / bounds.height - 0.5;
+      nodes.forEach((node, index) => {
+        const depth = 0.35 + (index % 4) * 0.18;
+        node.style.setProperty("--mouse-x", `${x * 30 * depth}px`);
+        node.style.setProperty("--mouse-y", `${y * 24 * depth}px`);
+      });
+    });
+    healthVisual.addEventListener("pointerleave", () => {
+      nodes.forEach(node => {
+        node.style.setProperty("--mouse-x", "0px");
+        node.style.setProperty("--mouse-y", "0px");
+      });
+    });
+  }
 }
 
 function showMessage(state) {
   message.dataset.state = state;
   message.hidden = !state;
 }
+
+if (new URLSearchParams(window.location.search).get("registered") === "1") showMessage("success");
 
 document.getElementById("toggle-password").addEventListener("click", () => {
   password.type = password.type === "password" ? "text" : "password";
@@ -54,26 +77,48 @@ if (forgotLink) {
   });
 }
 
-form.addEventListener("submit", event => {
+form.addEventListener("submit", async event => {
   event.preventDefault();
   showMessage("");
   const identity = document.getElementById("identity");
-  if (!identity.value.trim() || !password.value) {
+  const email = identity.value.trim().toLowerCase();
+  if (!email || !password.value || !/^\S+@\S+\.\S+$/.test(email)) {
     showMessage("required");
     (!identity.value.trim() ? identity : password).focus();
     return;
   }
   button.disabled = true;
   button.classList.add("is-loading");
-  window.setTimeout(() => {
-    const role = form.querySelector('input[name="role"]:checked')?.value || "user";
-    if (window.CarePlusAuth?.startDemoSession(role, identity.value.trim())) {
-      const destination = role === "admin" ? "../Admin/index.html" : "../Home/Master.html";
-      window.location.assign(new URL(destination, document.baseURI).href);
-    } else {
+  try {
+    await window.CarePlusAuth?.ensureDemoAdmin();
+    const result = await window.CarePlusAuth?.loginCustomer(email, password.value);
+    if (!result?.ok) {
       button.disabled = false;
       button.classList.remove("is-loading");
-      showMessage("unavailable");
+      const invalidMessage = message.querySelector(".notice-invalid");
+      if (invalidMessage && result?.error) invalidMessage.textContent = result.error;
+      showMessage("invalid");
+      password.focus();
+      return;
     }
-  }, 250);
+    const destinations = { admin: "../Admin/index.html", doctor: "../Doctor/index.html", pharmacy: "../Pharmacy/dashboard.html", nurse: "../Nurse/index.html" };
+    let destination = new URL(destinations[result.role] || "../Home/Master.html", document.baseURI);
+    if (result.role === "user") {
+      const requested = new URLSearchParams(window.location.search).get("returnTo");
+      if (requested) {
+        try {
+          const safeTarget = new URL(requested, window.location.href);
+          const path = safeTarget.pathname.toLowerCase();
+          const roleDashboard = /\/(admin|doctor|nurse)(\/|$)/.test(path) || /\/pharmacy\/dashboard\.html$/.test(path);
+          const authPage = /\/log%20in\/(login|register)\.html$/.test(path);
+          if (safeTarget.origin === window.location.origin && !roleDashboard && !authPage) destination = safeTarget;
+        } catch {}
+      }
+    }
+    window.location.assign(destination.href);
+  } catch {
+    button.disabled = false;
+    button.classList.remove("is-loading");
+    showMessage("invalid");
+  }
 });

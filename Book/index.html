@@ -25,7 +25,7 @@ fetch("../Nav/index.html")
     <!-- Hero -->
     <section class="hero">
         <div class="hero-text">
-            <a href="../services/index.html" class="back-link">← Back to Services</a>
+            <a href="../services/index.html" class="back-to-services"><span aria-hidden="true">&larr;</span> Back to Services</a>
             <h1>Book an <span>Appointment</span></h1>
             <p>
                 Find the right doctor and schedule your visit
@@ -37,7 +37,7 @@ fetch("../Nav/index.html")
                 <span class="art-orbit orbit-one"></span>
                 <span class="art-orbit orbit-two"></span>
                 <span class="medical-cross">+</span>
-                <span class="float-icon heart-icon">♥</span>
+                <span class="float-icon heart-icon"></span>
                 <span class="float-icon clock-icon"><i></i></span>
                 <span class="float-icon mini-cross">+</span>
                 <div class="calendar-card">
@@ -47,7 +47,7 @@ fetch("../Nav/index.html")
                     <div class="calendar-days"><span>12</span><span>13</span><span class="date-active">14</span><span>15</span><span>16</span><span>17</span><span>18</span></div>
                     <div class="calendar-days muted-days"><span>19</span><span>20</span><span>21</span><span>22</span><span>23</span><span>24</span><span>25</span></div>
                 </div>
-                <div class="appointment-confirmation"><span class="confirm-check">✓</span><span><b>Appointment</b><small>Confirmed · 10:30 AM</small></span></div>
+                <div class="appointment-confirmation"><span class="confirm-check"></span><span><b>Appointment</b><small>Confirmed  10:30 AM</small></span></div>
             </div>
         </div>
     </section>
@@ -81,7 +81,7 @@ fetch("../Nav/index.html")
         <form id="bookingForm">
             <div class="form-grid">
                 <div class="form-group">
-                    <label for="area">⌖ &nbsp; Select Area</label>
+                    <label for="area"> &nbsp; Select Area</label>
                     <select id="area" required>
                         <option value="">Choose an area</option>
                         <option>Amman</option>
@@ -92,7 +92,7 @@ fetch("../Nav/index.html")
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="specialty">♧ &nbsp; Select Specialty</label>
+                    <label for="specialty"> &nbsp; Select Specialty</label>
                     <select id="specialty" required>
                         <option value="">Choose a specialty</option>
                         <option>General Medicine</option>
@@ -105,17 +105,15 @@ fetch("../Nav/index.html")
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="doctor">♙ &nbsp; Select Doctor</label>
+                    <label for="doctor"> &nbsp; Select Doctor</label>
                     <select id="doctor" required>
                         <option value="">Choose a doctor</option>
-                        <option>Dr. Sara Al-Masri</option>
-                        <option>Dr. Ahmad Khaled</option>
-                        <option>Dr. Lina Hassan</option>
                     </select>
                 </div>
             </div>
+            <section class="doctor-profile-preview" id="doctor-profile-preview" aria-live="polite" hidden></section>
           <a href="Time/index.html" class="find-button">
-    ⌕ &nbsp; Find Available Time &nbsp; →
+    Find Available Time
 </a>
         </form>
         <!-- Popular Specialties -->
@@ -123,27 +121,27 @@ fetch("../Nav/index.html")
             <h2>Popular Specialties</h2>
             <div class="specialty-grid">
                 <div class="specialty" data-specialty="General Medicine">
-                    <div class="specialty-icon">♡</div>
+                    <div class="specialty-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v10M7 12h10"/></svg></div>
                     <span>General Medicine</span>
                 </div>
                 <div class="specialty" data-specialty="Cardiology">
-                    <div class="specialty-icon">♡</div>
+                    <div class="specialty-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.5 8.8c0 5.1-8.5 10.2-8.5 10.2S3.5 13.9 3.5 8.8A4.7 4.7 0 0 1 12 6.4a4.7 4.7 0 0 1 8.5 2.4Z"/><path d="M5 12h4l2-3 2.2 6 1.8-3h4"/></svg></div>
                     <span>Cardiology</span>
                 </div>
                 <div class="specialty" data-specialty="Dentistry">
-                    <div class="specialty-icon">♧</div>
+                    <div class="specialty-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 4.5c2-1.3 3.6.2 5 .2s3-1.5 5-.2c2.3 1.5 1.8 4.3.8 6.5-.8 1.8-1.3 7.2-3.1 8.2-1.7 1-1.5-4.1-2.7-4.1s-1 5.1-2.7 4.1c-1.8-1-2.3-6.4-3.1-8.2C5.2 8.8 4.7 6 7 4.5Z"/></svg></div>
                     <span>Dentistry</span>
                 </div>
                 <div class="specialty" data-specialty="Pediatrics">
-                    <div class="specialty-icon">♙</div>
+                    <div class="specialty-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4.5 21a7.5 7.5 0 0 1 15 0M9 8h.01M15 8h.01m-4 2a2 2 0 0 0 2 0"/></svg></div>
                     <span>Pediatrics</span>
                 </div>
                 <div class="specialty" data-specialty="Orthopedics">
-                    <div class="specialty-icon">✧</div>
+                    <div class="specialty-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7.5 5.5a2.5 2.5 0 1 0-3.6 3.5l9.7 9.7a2.5 2.5 0 1 0 3.5-3.6l-9.6-9.6Zm0 0a2.5 2.5 0 0 1 3.6-3.6l.7.7m4.7 15.4a2.5 2.5 0 0 0 3.6 3.6l.7-.7"/></svg></div>
                     <span>Orthopedics</span>
                 </div>
                 <div class="specialty" data-specialty="Gynecology">
-                    <div class="specialty-icon">♡</div>
+                    <div class="specialty-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="5"/><path d="M12 13v8m-3-3h6"/></svg></div>
                     <span>Gynecology</span>
                 </div>
             </div>
@@ -160,7 +158,7 @@ fetch("../Nav/index.html")
         })
         .catch(error => console.error("Error loading footer:", error));
 </script>
-<script src="script.js"></script>
+<script src="../data/careplus-data.js"></script><script src="../data/careplus-clinic.js"></script><script src="script.js"></script>
     <script src="../Footer/footer.js"></script>
 </body>
 </html>

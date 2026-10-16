@@ -1,6 +1,6 @@
 
 :root {
-  --teal: #08a9b8;
+  --teal: #94D5D6;
   --navy: #17395f;
   --muted: #6d829d;
   --line: #dcebf0;
@@ -236,10 +236,10 @@ input:focus, select:focus {
   display: grid;
   place-items: center;
   background: var(--teal);
-  color: white;
-  font-size: 36px;
+  color: #172536;
   border-radius: 12px;
 }
+.pharmacy-icon svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 
 .pharmacy-title { flex: 1; min-width: 0; }
 
@@ -286,7 +286,8 @@ input:focus, select:focus {
   line-height: 1.5;
 }
 
-.ico { color: var(--teal); }
+.ico { width: 20px; height: 20px; flex: 0 0 20px; display: inline-grid; place-items: center; color: var(--teal); }
+.ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
 .available {
   color: var(--green);
@@ -319,7 +320,7 @@ input:focus, select:focus {
 }
 
 .btn-primary {
-  color: white;
+  color: #172536;
   background: var(--teal);
 }
 
@@ -344,3 +345,19 @@ input:focus, select:focus {
   .fields, .cards { grid-template-columns: 1fr; }
   .panel { padding: 18px; }
 }
+
+.medicine-order-dialog { width: min(500px, calc(100% - 28px)); padding: 0; border: 1px solid #dce8ed; border-radius: 18px; color: #203746; box-shadow: 0 24px 70px rgba(6,37,54,.28); }
+.medicine-order-dialog::backdrop { background: rgba(6,37,54,.62); backdrop-filter: blur(3px); }
+.medicine-order-dialog form { display: grid; gap: 14px; padding: 24px; }
+.order-dialog-heading { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.order-dialog-heading h2 { margin: 0; color: #062536; font-size: 21px; }
+.order-eyebrow { display: block; margin-bottom: 6px; color: #168f9b; font-size: 10px; font-weight: 700; letter-spacing: 1.4px; }
+.order-dialog-heading button { width: 32px; height: 32px; border: 0; border-radius: 9px; background: #eff5f6; color: #526a78; font-size: 22px; }
+.medicine-order-dialog label { display: grid; gap: 7px; color: #617782; font-size: 11px; font-weight: 600; }
+.medicine-order-dialog input,.medicine-order-dialog select { width: 100%; min-height: 41px; padding: 8px 10px; border: 1px solid #d5e1e6; border-radius: 8px; background: #fff; color: #365563; font: 12px Arial,sans-serif; }
+.order-customer-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+#orderFeedback { min-height: 16px; margin: 0; color: #16836d; font-size: 11px; line-height: 1.5; }
+#orderFeedback.error { color: #b95459; }
+.order-submit:disabled { opacity: .65; cursor: wait; }
+@media(max-width:520px) { .order-customer-fields { grid-template-columns: 1fr; } .medicine-order-dialog form { padding: 19px; } }
+.pharmacy-expanded-details{display:grid;gap:9px;margin-top:13px;padding:13px;border:1px solid #e2eef0;border-radius:11px;background:#f6fbfb}.pharmacy-expanded-details[hidden]{display:none}.pharmacy-detail-medicine{display:grid;grid-template-columns:1fr auto;gap:4px 10px;color:#385563;font-size:11px}.pharmacy-detail-medicine span{text-align:right;font-weight:700}.pharmacy-detail-medicine small{grid-column:1/-1;color:#7b8f98;font-size:10px}.actions{flex-wrap:wrap}.checkout-pharmacy{display:flex;align-items:center;gap:11px;padding:12px;border:1px solid #e2eef0;border-radius:11px;background:#f6fbfb}.checkout-pharmacy-icon{display:grid;width:38px;height:38px;place-items:center;border-radius:11px;background:#e3f5f3;color:#168f9b;font-size:22px}.checkout-pharmacy b,.checkout-pharmacy small{display:block}.checkout-pharmacy b{color:#234452;font-size:13px}.checkout-pharmacy small{margin-top:4px;color:#748992;font-size:10px}.order-totals{display:grid;gap:8px;padding:13px;border:1px solid #e4ecef;border-radius:10px;background:#fbfdfd}.order-totals>div{display:flex;justify-content:space-between;gap:10px;color:#70828b;font-size:11px}.order-totals b{color:#365563}.order-totals .order-total{margin-top:4px;padding-top:9px;border-top:1px solid #e3ecef;color:#203746;font-size:13px;font-weight:700}.order-totals .order-total b{color:#16836d;font-size:15px}.payment-choice{display:grid;gap:4px;padding:11px;border-radius:9px;background:#fff8e9;color:#715b35;font-size:11px}.payment-choice span{font-size:10px;line-height:1.5}.order-submit{min-height:44px!important}.my-pharmacy-orders{margin:20px 0 35px;padding:22px;border:1px solid #dfe9ec;border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(6,37,54,.05)}.my-orders-heading{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}.my-orders-heading h2{margin:0;color:#203746;font-size:20px}.my-orders-heading>span:last-child{color:#778993;font-size:11px}.customer-order-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:15px;padding:14px 0;border-top:1px solid #edf1f3}.customer-order-row strong,.customer-order-row small{display:block}.customer-order-row strong{color:#31515e;font-size:12px}.customer-order-row small{margin-top:4px;color:#7d8f98;font-size:10px;line-height:1.5}.customer-order-status{display:inline-block;padding:5px 9px;border-radius:16px;background:#fff5e6;color:#a86c13;font-size:10px;font-weight:700}.customer-order-row>button{padding:7px 10px;border:1px solid #f0dddd;border-radius:7px;background:white;color:#b95459;font-size:10px;font-weight:700}.my-orders-empty{margin:0;padding:18px;color:#87979e;font-size:12px;text-align:center}@media(max-width:650px){.my-pharmacy-orders{padding:16px}.customer-order-row{grid-template-columns:1fr auto;gap:8px}.customer-order-state{grid-column:1}.customer-order-row>button{grid-column:2;grid-row:1/3}}

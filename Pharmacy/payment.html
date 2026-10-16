@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#f3f8fb"><title>Demo Payment | CarePlus</title>
+  <link rel="stylesheet" href="../Nav/style.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="workflow.css"><link rel="stylesheet" href="../Footer/style.css">
+  <style>
+    .demo-payment-card{max-width:720px;margin:0 auto;padding:clamp(20px,4vw,34px);border:1px solid #e0ecee;border-radius:17px;background:#fff;box-shadow:0 9px 27px rgba(8,62,79,.06)}
+    .demo-payment-warning{margin:0 0 20px;padding:13px 15px;border:1px solid #ead8ac;border-radius:10px;background:#fff9e9;color:#665831;font-size:12px;line-height:1.6}
+    .demo-payment-warning strong{display:block;margin-bottom:3px;color:#564519}
+    .demo-payment-summary{display:grid;gap:9px;margin-bottom:20px;padding:15px;border:1px solid #e3edef;border-radius:11px;background:#f7fbfb;color:#607783;font-size:12px}
+    .demo-payment-summary>div{display:flex;justify-content:space-between;gap:12px}.demo-payment-summary b{color:#315462}.demo-payment-summary .due{padding-top:10px;border-top:1px solid #dce9eb;font-size:15px}
+    .demo-payment-form{display:grid;grid-template-columns:1fr 1fr;gap:13px}.demo-payment-form label{display:grid;gap:6px;color:#546f7c;font-size:12px;font-weight:700}.demo-payment-form .wide{grid-column:1/-1}.demo-payment-form input{width:100%;min-height:43px;padding:9px 11px;border:1px solid #d7e5e8;border-radius:9px;background:#fff;color:#264c5a;font:13px 'DM Sans',Arial,sans-serif}.demo-payment-form button,.demo-payment-form .after-payment{grid-column:1/-1;width:100%;min-height:45px}.demo-payment-message{min-height:18px;margin:0;color:#16836d;font-size:12px;line-height:1.5}.demo-payment-message.error{color:#b95459}.demo-payment-note{margin:14px 0 0;color:#85949b;font-size:10px;line-height:1.6}
+    @media(max-width:520px){.demo-payment-form{grid-template-columns:1fr}.demo-payment-form .wide{grid-column:auto}}
+  </style>
+</head>
+<body data-protected="true"><script src="../auth.js"></script><div id="nav-container"></div>
+  <main class="page order-page">
+    <a href="orders.html" class="back-to-services"><span aria-hidden="true">←</span> My orders</a>
+    <section class="order-page-heading"><p class="order-eyebrow">STEP 3 · DEMO CHECKOUT</p><h1>Pay for your <span>medicine order</span></h1><p>This page demonstrates the future online checkout for CarePlus.</p></section>
+    <nav class="order-progress" aria-label="Five steps in the pharmacy order process"><span class="done"><b>1</b> Search</span><i></i><span class="done"><b>2</b> Pharmacy results</span><i></i><span class="active"><b>3</b> Place order</span><i></i><span><b>4</b> Delivery</span><i></i><span><b>5</b> CarePlus commission</span></nav>
+    <section class="demo-payment-card" id="paymentCard" hidden>
+      <div class="demo-payment-summary"><div><span>Order</span><b id="paymentOrderRef">—</b></div><div><span>Pharmacy</span><b id="paymentPharmacy">—</b></div><div><span>Medicine</span><b id="paymentItems">—</b></div><div><span>Medicine subtotal</span><b id="paymentSubtotal">JOD 0.00</b></div><div><span>CarePlus commission</span><b id="paymentCommission">JOD 0.00</b></div><div><span id="paymentDeliveryLabel">Delivery</span><b id="paymentDelivery">JOD 0.00</b></div><div class="due"><span>Total</span><b id="paymentTotal">JOD 0.00</b></div></div>
+      <form class="demo-payment-form" id="demoPaymentForm" autocomplete="off" novalidate>
+        <label class="wide">Name on card<input id="cardholder" type="text" maxlength="80" required placeholder="Demo User" autocomplete="off"></label>
+        <label class="wide">Test card number<input id="cardNumber" type="text" inputmode="numeric" maxlength="23" required placeholder="4242 4242 4242 4242" autocomplete="off"></label>
+        <label>Expiry date<input id="cardExpiry" type="text" inputmode="numeric" maxlength="5" required placeholder="MM/YY" autocomplete="off"></label>
+        <label>Security code<input id="cardCvv" type="password" inputmode="numeric" maxlength="4" required placeholder="123" autocomplete="new-password"></label>
+        <p class="demo-payment-message" id="demoPaymentMessage" role="status" aria-live="polite"></p>
+        <button class="btn btn-primary" type="submit" id="simulatePaymentButton">Simulate demo payment</button>
+        <a class="btn btn-outline after-payment" id="continueAfterPayment" href="#" hidden>Continue to order confirmation</a>
+      </form>
+      <p class="demo-payment-note">This frontend simulation does not process money or verify a payment. A real checkout requires a payment gateway and a secure server notification.</p>
+    </section>
+    <div class="empty order-error" id="paymentUnavailable" hidden><p id="paymentErrorText">This order is unavailable.</p><a class="btn btn-outline" href="orders.html">View my orders</a></div>
+  </main>
+  <div id="footer-container"></div>
+  <script>fetch("../Nav/index.html").then(r=>r.text()).then(html=>document.getElementById("nav-container").innerHTML=html);fetch("../Footer/index.html").then(r=>r.text()).then(html=>document.getElementById("footer-container").innerHTML=html);</script>
+  <script src="../data/careplus-data.js"></script><script src="../data/careplus-pharmacy.js"></script><script src="payment.js"></script><script src="../Footer/footer.js"></script>
+</body>
+</html>

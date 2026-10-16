@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#172536">
@@ -42,16 +42,14 @@
             <label class="form-wide">Additional instructions<textarea name="instructions" rows="3" maxlength="400" placeholder="Share non-urgent trip or accessibility details."></textarea></label>
           </div>
           <label class="consent-field"><input type="checkbox" name="authorization" required><span>I am authorized to request this service for myself or the family member named in this request.</span></label>
-          <div class="care-notice trip-disclaimer"><span aria-hidden="true">!</span><p>Companions provide non-clinical support only. This service is not medical transportation. A vehicle or wheelchair-accessible vehicle must be arranged through a separately qualified transport provider. Distance and travel time are not calculated here.</p></div>
-          <p class="estimate-disclaimer">Sample estimate only. No companion, transportation, appointment, or payment is confirmed by this page.</p>
           <button class="button button-primary submit-button" type="submit">Submit care request <span aria-hidden="true">&rarr;</span></button><p class="form-feedback" id="form-feedback" role="status" aria-live="polite"></p>
         </form>
 
-        <aside class="price-card" aria-live="polite"><span class="eyebrow">SAMPLE ESTIMATE</span><h3>Companion total</h3><div class="price-row"><span id="base-label">Companion service Â· 3 hours</span><strong id="base-price">JOD 21.00</strong></div><div class="price-row" id="return-fee-row" hidden><span>Sample return-trip fee</span><strong id="return-fee">JOD 5.00</strong></div><div class="price-row"><span>Sample service fee</span><strong id="service-fee">JOD 1.00</strong></div><div class="price-total"><span>Estimate</span><strong id="total-price">JOD 22.00</strong></div><p>Editable sample rate used for this prototype. Final rate and any transport costs require confirmation.</p><div class="price-config"><span>Hourly sample rate</span><strong>JOD 7</strong></div><div class="price-config"><span>Sample round-trip fee</span><strong>JOD 5</strong></div></aside>
+        <aside class="price-card" aria-live="polite"><span class="eyebrow">SAMPLE ESTIMATE</span><h3>Companion total</h3><div class="price-row"><span id="base-label">Companion service &middot; 3 hours</span><strong id="base-price">JOD 21.00</strong></div><div class="price-row" id="return-fee-row" hidden><span>Sample return-trip fee</span><strong id="return-fee">JOD 5.00</strong></div><div class="price-row"><span>CarePlus commission (<span id="care-commission-rate">10</span>%)</span><strong id="care-commission-amount">JOD 2.10</strong></div><div class="price-total"><span>Estimate</span><strong id="total-price">JOD 23.10</strong></div><p>Editable sample rates. This is an estimate only; payment is not enabled and CarePlus must confirm final pricing.</p><div class="price-config"><span>Hourly sample rate</span><strong>JOD 7</strong></div><div class="price-config"><span>Sample round-trip fee</span><strong>JOD 5</strong></div></aside>
       </div>
     </section>
   </main>
-  <div id="footer-container"></div><script src="../data/careplus-data.js"></script><script src="script.js"></script>
+  <div id="footer-container"></div><script src="../data/careplus-data.js"></script><script src="../data/careplus-pharmacy.js"></script><script src="script.js"></script>
   <script src="../Footer/footer.js"></script>
 </body>
 </html>

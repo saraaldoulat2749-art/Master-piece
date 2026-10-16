@@ -1,5 +1,5 @@
 :root{
-  --checkout-teal:#08a9b8;
+  --checkout-teal:#94D5D6;
   --checkout-navy:#17395f;
   --checkout-ink:#172536;
   --checkout-muted:#72849b;
@@ -49,7 +49,7 @@ body{margin:0;background:#f5f8f9;color:var(--checkout-ink);font-family:Arial,san
 .form-field{display:grid;align-content:start;gap:7px;color:#435a6d;font-size:11px;font-weight:700}
 .form-field input,.form-field select,.form-field textarea{width:100%;min-height:43px;padding:11px 12px;border:1px solid #dce6e9;border-radius:9px;background:white;color:var(--checkout-ink);font:400 13px Arial,sans-serif;outline:none;resize:vertical}
 .form-field textarea{min-height:79px}
-.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--checkout-teal);box-shadow:0 0 0 3px #22c7d51c}
+.form-field input:focus,.form-field select:focus,.form-field textarea:focus{border-color:var(--checkout-teal);box-shadow:0 0 0 3px #94D5D61c}
 .form-field input[aria-invalid="true"],.form-field select[aria-invalid="true"],.form-field textarea[aria-invalid="true"]{border-color:#c94949}
 .full-width{grid-column:1/-1}
 .optional{color:#91a0ad;font-size:10px;font-weight:400}
@@ -58,7 +58,7 @@ body{margin:0;background:#f5f8f9;color:var(--checkout-ink);font-family:Arial,san
 .field-error{min-height:0;color:#bd3838}
 .choice-list{display:grid;gap:10px}
 .choice-card{min-height:64px;position:relative;display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--checkout-line);border-radius:11px;background:white;cursor:pointer}
-.choice-card:has(input:checked){border-color:var(--checkout-teal);background:#f4fcfc;box-shadow:0 0 0 2px #22c7d514}
+.choice-card:has(input:checked){border-color:var(--checkout-teal);background:#f4fcfc;box-shadow:0 0 0 2px #94D5D614}
 .choice-card input{position:absolute;opacity:0;pointer-events:none}
 .choice-radio{width:17px;height:17px;flex:none;border:1.5px solid #b8c6cc;border-radius:50%;display:grid;place-items:center}
 .choice-card input:checked+.choice-radio{border-color:#08a9b8}

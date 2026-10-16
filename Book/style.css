@@ -37,7 +37,7 @@
             color: #10364d;
         }
         .hero h1 span {
-            color: #05b9ca;
+            color: #94D5D6;
         }
         .hero p {
             color: #52758b;
@@ -67,7 +67,7 @@
         .art-orbit {
             position: absolute;
             z-index: -1;
-            border: 1px solid rgba(5, 185, 202, .16);
+            border: 1px solid rgba(148, 213, 214,  .16);
             border-radius: 50%;
         }
         .orbit-one { width: 210px; height: 210px; animation: orbit-turn 22s linear infinite; }
@@ -96,7 +96,7 @@
             display: flex;
             align-items: center;
             gap: 5px;
-            background: linear-gradient(110deg, #078ba2, #05b9ca);
+            background: linear-gradient(110deg, #078ba2, #94D5D6);
             color: white;
         }
         .calendar-top > span { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.7); }
@@ -115,7 +115,7 @@
         .calendar-days span:nth-child(5) { animation-delay: .24s; }
         .calendar-days span:nth-child(6) { animation-delay: .3s; }
         .calendar-days span:nth-child(7) { animation-delay: .36s; }
-        .date-active { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: #05b9ca; color: white; box-shadow: 0 4px 10px rgba(5,185,202,.32); }
+        .date-active { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: #94D5D6; color: #172536; box-shadow: 0 4px 10px rgba(148, 213, 214, .32); }
         .calendar-days .date-active { animation: date-pulse 2.8s ease-in-out infinite; }
         .muted-days { color: #afbec7; }
         .appointment-confirmation {
@@ -137,7 +137,7 @@
             position: absolute;
             inset: 0;
             border-radius: inherit;
-            background: linear-gradient(110deg, transparent 25%, rgba(5,185,202,.1) 48%, transparent 70%);
+            background: linear-gradient(110deg, transparent 25%, rgba(148, 213, 214, .1) 48%, transparent 70%);
             transform: translateX(-110%);
             animation: confirmation-shine 5s ease-in-out 1.5s infinite;
             pointer-events: none;
@@ -149,7 +149,7 @@
         .medical-cross { position: absolute; top: 16px; left: 36px; width: 27px; height: 27px; display: grid; place-items: center; border-radius: 9px; background: #fff; color: #05aebe; box-shadow: 0 7px 16px rgba(16,54,77,.1); font-size: 22px; font-weight: 500; animation: cross-pulse 3s ease-in-out infinite; }
         @keyframes calendar-float { 0%, 100% { transform: translateY(2px) rotate(-2deg); } 50% { transform: translateY(-7px) rotate(0deg); } }
         @keyframes confirmation-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-        @keyframes date-pulse { 0%, 100% { box-shadow: 0 4px 10px rgba(5,185,202,.25); } 50% { box-shadow: 0 0 0 5px rgba(5,185,202,.12), 0 4px 10px rgba(5,185,202,.25); } }
+        @keyframes date-pulse { 0%, 100% { box-shadow: 0 4px 10px rgba(148, 213, 214, .25); } 50% { box-shadow: 0 0 0 5px rgba(148, 213, 214, .12), 0 4px 10px rgba(148, 213, 214, .25); } }
         @keyframes cross-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
         @keyframes orbit-turn { to { rotate: 360deg; } }
         @keyframes icon-drift { 0%, 100% { translate: 0 0; } 50% { translate: 0 -8px; } }
@@ -211,9 +211,9 @@
             font-weight: bold;
         }
         .step.active .step-number {
-            background: #05b9ca;
-            color: white;
-            border-color: #05b9ca;
+            background: #94D5D6;
+            color: #172536;
+            border-color: #94D5D6;
         }
         /* Form */
         .section-title {
@@ -255,7 +255,7 @@
             outline: none;
         }
         .form-group select:focus {
-            border-color: #05b9ca;
+            border-color: #94D5D6;
         }
         /* Button */
         .find-button {
@@ -277,6 +277,10 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 18px rgba(0, 174, 190, 0.2);
         }
+        .back-link { color: #94D5D6; }
+        .form-group select:focus { border-color: #94D5D6; }
+        .find-button { background: #94D5D6; color: #172536; }
+        .find-button:hover { background: #94D5D6; box-shadow: 0 6px 18px rgba(148, 213, 214,  .2); }
         /* Specialties */
         .specialties {
             margin-top: 32px;
@@ -303,7 +307,7 @@
         }
         .specialty:hover,
         .specialty.selected {
-            border-color: #05b9ca;
+            border-color: #94D5D6;
             background: #e0f9fb;
             transform: translateY(-3px);
         }
@@ -318,6 +322,15 @@
             align-items: center;
             justify-content: center;
             font-size: 23px;
+        }
+        .specialty-icon svg {
+            width: 23px;
+            height: 23px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
         }
         /* Responsive */
         @media (max-width: 900px) {
@@ -377,3 +390,7 @@
                 font-size: 31px;
             }
         }
+        .doctor-profile-preview { margin: -4px 0 20px; padding: 13px 15px; border: 1px solid #dfedf2; border-radius: 10px; background: #fafdfe; color: #254b62; }
+        .doctor-profile-preview[hidden] { display: none; }
+        .doctor-profile-preview strong { display: block; font-size: 14px; }
+        .doctor-profile-preview p { margin: 5px 0 0; color: #66869a; font-size: 12px; line-height: 1.55; }

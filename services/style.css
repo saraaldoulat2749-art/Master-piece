@@ -4,8 +4,8 @@
     box-sizing: border-box;
 }
 :root {
-    --cyan: #22c7d5;
-    --cyan-light: #52e4ed;
+    --cyan: #008c95;
+    --cyan-light: #008c95;
     --navy: #041d2d;
     --navy-light: #0b354c;
     --white: #ffffff;
@@ -55,7 +55,7 @@ header {
     place-items: center;
     border-radius: 13px;
     background: var(--cyan);
-    box-shadow: 0 0 25px rgba(34,199,213,.2);
+    box-shadow: 0 0 25px rgba(148, 213, 214, .2);
     font-size: 31px;
 }
 .logo h2 {
@@ -118,7 +118,7 @@ nav a.active::after {
 }
 .header-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 0 18px rgba(34,199,213,.25);
+    box-shadow: 0 0 18px rgba(148, 213, 214, .25);
 }
 /* =========================
    SERVICES SECTION
@@ -199,9 +199,9 @@ nav a.active::after {
     justify-content: center;
     gap: 10px;
     padding: 8px 17px;
-    border: 1px solid rgba(34,199,213,.35);
+    border: 1px solid rgba(148, 213, 214, .35);
     border-radius: 30px;
-    background: rgba(34,199,213,.08);
+    background: rgba(148, 213, 214, .08);
     color: #8aeaf0;
     font-size: 11px;
     letter-spacing: 1.2px;
@@ -224,7 +224,7 @@ nav a.active::after {
 .services-header h1 span {
     display: block;
     color: var(--cyan);
-    text-shadow: 0 0 30px rgba(34,199,213,.15);
+    text-shadow: 0 0 30px rgba(148, 213, 214, .15);
 }
 .services-header p {
     font-size: 14px;
@@ -290,7 +290,7 @@ nav a.active::after {
     top: -85px;
     right: -65px;
     border-radius: 50%;
-    background: rgba(34,199,213,.08);
+    background: rgba(148, 213, 214, .08);
     transition: transform .5s ease;
     pointer-events: none;
 }
@@ -317,7 +317,7 @@ nav a.active::after {
     transform: translateY(-7px);
     border-color: var(--cyan-light);
     box-shadow: 0 18px 40px rgba(0,0,0,.25),
-                0 0 20px rgba(34,199,213,.08);
+                0 0 20px rgba(148, 213, 214, .08);
     background:
         linear-gradient(
             135deg,
@@ -359,7 +359,7 @@ nav a.active::after {
 }
 .service-card:hover .service-icon {
     transform: rotate(-6deg) scale(1.06);
-    box-shadow: 0 0 22px rgba(34,199,213,.2);
+    box-shadow: 0 0 22px rgba(148, 213, 214, .2);
 }
 .service-number {
     color: #86c7d7;
@@ -387,9 +387,9 @@ nav a.active::after {
     top: 34px;
     left: 95px;
     padding: 5px 9px;
-    border: 1px solid rgba(34,199,213,.65);
+    border: 1px solid rgba(148, 213, 214, .65);
     border-radius: 20px;
-    background: rgba(34,199,213,.08);
+    background: rgba(148, 213, 214, .08);
     color: #60e9f1;
     font-size: 8px;
     letter-spacing: .7px;
@@ -402,7 +402,7 @@ nav a.active::after {
         rgba(9,98,124,.9),
         rgba(6,47,70,.95)
     );
-    box-shadow: 0 0 18px rgba(34,199,213,.12);
+    box-shadow: 0 0 18px rgba(148, 213, 214, .12);
 }
 .service-ai::after {
     width: 100%;
@@ -441,7 +441,7 @@ nav a.active::after {
 }
 .service-card:hover .service-arrow {
     transform: rotate(45deg);
-    background: rgba(34,199,213,.15);
+    background: rgba(148, 213, 214, .15);
 }
 /* =========================
    FOOTER DECORATION
@@ -612,12 +612,122 @@ nav a.active::after {
     }
 }
 
+/* Use the Home page turquoise consistently on service accents. */
+.services-page { --cyan: #008c95; --cyan-light: #008c95; }
+.services-page .service-icon { color: #062536; background: var(--cyan); border-color: var(--cyan); }
+.services-page .service-number, .services-page .service-bottom { color: var(--cyan); }
+.services-page .ai-badge { border-color: var(--cyan); background: rgba(148, 213, 214,  .12); color: var(--cyan); }
+.services-page .service-ai { border-color: var(--cyan); }
+.services-page .service-ai::after { background: linear-gradient(90deg, transparent, var(--cyan), transparent); }
+
 /* Give the area behind the shared navbar a soft service-page teal glow. */
 .services-page #nav-container {
     position: relative;
-    isolation: isolate;
+    z-index: 1001;
     padding: 1px 0;
     background:
-        radial-gradient(ellipse at 50% 0%, rgba(34, 199, 213, .14), transparent 64%),
+        radial-gradient(ellipse at 50% 0%, rgba(0, 140, 149, .14), transparent 64%),
         linear-gradient(180deg, #0b354c 0%, #041d2d 100%);
 }
+
+/* Keep every service-page accent on the same teal used by Home. */
+.services-page .section-tag { color: var(--cyan); border-color: rgba(0, 140, 149, .35); }
+.services-page .service-card { border-color: rgba(0, 140, 149, .48); }
+.services-page .service-icon {
+    background: linear-gradient(135deg, #008c95, #087f86);
+    border-color: rgba(0, 140, 149, .5);
+}
+.services-page .service-number,
+.services-page .service-bottom,
+.services-page .ai-badge { color: var(--cyan); }
+.services-page .ai-badge { border-color: rgba(0, 140, 149, .65); }
+.services-page .service-ai { border-color: var(--cyan); }
+.services-page .service-ai::after { background: linear-gradient(90deg, transparent, var(--cyan), transparent); }
+.services-page .wave { background: linear-gradient(110deg, #d9f2f2, #008c95); opacity: .55; }
+.services-page .services-section {
+    background:
+        radial-gradient(circle at 5% 20%, rgba(0, 140, 149, .1), transparent 23%),
+        radial-gradient(circle at 95% 55%, rgba(0, 140, 149, .075), transparent 24%),
+        linear-gradient(135deg, #021823, #042535 55%, #021823);
+}
+.services-page .glow { background: rgba(0, 140, 149, .11); }
+.services-page .service-card {
+    border-color: rgba(0, 140, 149, .38);
+    background: linear-gradient(135deg, rgba(18, 66, 88, .65), rgba(5, 35, 53, .86));
+}
+.services-page .service-card.visible:hover {
+    background: linear-gradient(135deg, rgba(14, 73, 96, .82), rgba(4, 36, 54, .96));
+    box-shadow: 0 16px 36px rgba(0, 0, 0, .28), 0 0 16px rgba(0, 140, 149, .07);
+}
+
+/* Match the Services page to the light How It Works section on Home. */
+body.services-page { color: #102c3b; background: #f2f9f9; }
+body.services-page #nav-container {
+    background: radial-gradient(ellipse at 10% 8%, #d5e6fb 0, transparent 38%),
+                #f2f9f9;
+}
+body.services-page .services-section {
+    background: radial-gradient(ellipse at 10% 12%, #d5e6fb 0, transparent 38%),
+                radial-gradient(ellipse at 98% 98%, #e4f5f2 0, transparent 29%),
+                #f2f9f9;
+}
+body.services-page .services-header h1 {
+    color: #102c3b;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: clamp(42px, 5vw, 60px);
+    font-weight: 700;
+    letter-spacing: -1.5px;
+}
+body.services-page .services-header h1 span { color: #102c3b; text-shadow: none; }
+body.services-page .section-tag {
+    color: #008c95;
+    background: rgba(0, 140, 149, .07);
+    border-color: rgba(0, 140, 149, .25);
+}
+body.services-page .service-card,
+body.services-page .service-ai {
+    min-height: 270px;
+    padding: 25px 24px;
+    color: #102c3b;
+    background: rgba(255, 255, 255, .94);
+    border: 1px solid #d2e8e9;
+    border-radius: 28px;
+    box-shadow: 0 14px 30px rgba(25, 73, 83, .08);
+}
+body.services-page .service-card::before { background: rgba(0, 140, 149, .05); }
+body.services-page .service-card h2 { color: #102c3b; font-size: 19px; }
+body.services-page .service-card p { color: #536d7b; font-size: 14px; }
+body.services-page .service-icon {
+    width: 78px;
+    height: 78px;
+    border-radius: 50%;
+    color: #008c95;
+    background: #eaf4f4;
+    border: 1px solid #9dd2d5;
+    box-shadow: none;
+}
+body.services-page .service-number,
+body.services-page .service-bottom,
+body.services-page .ai-badge { color: #008c95; }
+body.services-page .service-bottom { border-top-color: #e0eeee; font-size: 13px; }
+body.services-page .service-arrow { border-color: #008c95; }
+body.services-page .ai-badge { background: rgba(0, 140, 149, .07); border-color: rgba(0, 140, 149, .32); }
+body.services-page .service-ai { border-width: 1px; border-color: rgba(0, 140, 149, .45); }
+body.services-page .service-ai::after { background: linear-gradient(90deg, transparent, #008c95, transparent); }
+body.services-page .service-card.visible:hover {
+    transform: translateY(-10px);
+    background: #fff;
+    border-color: #8bcdd0;
+    box-shadow: 0 18px 38px rgba(25, 73, 83, .13);
+}
+body.services-page .service-card:hover .service-icon,
+body.services-page .service-card.visible:hover .service-icon {
+    background: #008c95;
+    border-color: #008c95;
+    color: #fff;
+    box-shadow: 0 0 24px rgba(0, 140, 149, .18);
+}
+body.services-page .services-footer p { color: #536d7b; }
+body.services-page .footer-line { background: linear-gradient(90deg, transparent, #008c95); }
+body.services-page .wave { opacity: .35; }
+

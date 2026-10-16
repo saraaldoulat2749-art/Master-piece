@@ -6,6 +6,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CarePlus | Your Health, Our Priority</title>
+    <link rel="preconnect" href="https://player.vimeo.com">
+    <link rel="preconnect" href="https://i.vimeocdn.com" crossorigin>
     <link rel="stylesheet" href="Master.css">
         <link rel="stylesheet" href="../Footer/style.css">
 <link rel="stylesheet" href="../Nav/style.css">
@@ -17,6 +19,7 @@
 </head>
 
 <body>
+    <script src="../data/careplus-data.js"></script>
     <script src="../auth.js"></script>
 
     <!-- ================= HERO SECTION ================= -->
@@ -29,6 +32,7 @@
     frameborder="0"
     allow="autoplay; fullscreen; picture-in-picture"
     loading="eager"
+    fetchpriority="high"
     title="CarePlus Hero Video">
 </iframe>
 
@@ -40,9 +44,15 @@
         <div id="nav-container"></div>
 <script>
 fetch("../Nav/index.html")
-  .then(response => response.text())
-  .then(data => {
-    document.getElementById("nav-container").innerHTML = data;
+  .then(response => {
+    if (!response.ok) throw new Error(`Navbar request failed: ${response.status}`);
+    return response.text();
+  })
+  .then(markup => {
+    const parsed = new DOMParser().parseFromString(markup, "text/html");
+    const navbar = parsed.querySelector(".careplus-navbar");
+    if (!navbar) throw new Error("Navbar markup was not found.");
+    document.getElementById("nav-container").replaceChildren(navbar);
   })
   .catch(error => console.error("Error loading navbar:", error));
 </script>
@@ -63,12 +73,6 @@ fetch("../Nav/index.html")
                 elderly care — all in one place.
             </p>
 
-            <!-- SEARCH -->
-            <form class="search-box" id="search">
-                <span class="magnify" aria-hidden="true">⌕</span>
-                <input type="search" id="searchInput" placeholder="Search doctors, medicines, and services..." aria-label="Search for a doctor, medicine, or service">
-                <button type="submit" aria-label="Search">⌕</button>
-            </form>
 
             <!-- FEATURES -->
             <div class="features">
@@ -256,16 +260,16 @@ fetch("../Nav/index.html")
 
             <div class="section-label">
                 <i class="fa-solid fa-heart-pulse"></i>
-                <span>Simple Steps</span>
+                <span>CarePlus Services</span>
             </div>
 
             <h2>
-                How <span>CarePlus</span> Works
+                What <span class="careplus-highlight">CarePlus</span> Offers
             </h2>
 
             <p>
-                Your healthcare journey made simple.
-                Access trusted medical services in just four easy steps.
+                Discover the tools and care options CarePlus brings together
+                to support your everyday health needs.
             </p>
 
         </div>
@@ -280,11 +284,11 @@ fetch("../Nav/index.html")
 
                 <div class="step-number">01</div>
 
-                <h3>Search &amp; Explore</h3>
+                <h3>Find Health Services</h3>
 
                 <p>
-                    Find the right doctor, healthcare service,
-                    or medicine that meets your needs.
+                    Explore doctor appointments, nearby pharmacies,
+                    medicine search, and healthcare services.
                 </p>
             </article>
 
@@ -296,11 +300,11 @@ fetch("../Nav/index.html")
 
                 <div class="step-number">02</div>
 
-                <h3>Book &amp; Confirm</h3>
+                <h3>Book Care Easily</h3>
 
                 <p>
-                    Choose your preferred date and time,
-                    then complete your booking with ease.
+                    Schedule appointments or request home care
+                    and a companion for clinic visits.
                 </p>
             </article>
 
@@ -312,11 +316,11 @@ fetch("../Nav/index.html")
 
                 <div class="step-number">03</div>
 
-                <h3>Get Confirmation</h3>
+                <h3>Get Helpful Guidance</h3>
 
                 <p>
-                    Receive your booking details and stay
-                    informed with helpful reminders.
+                    Use AI symptom guidance and find medical
+                    essentials through the CarePlus store.
                 </p>
             </article>
 
@@ -328,11 +332,11 @@ fetch("../Nav/index.html")
 
                 <div class="step-number">04</div>
 
-                <h3>Receive Quality Care</h3>
+                <h3>Stay Connected to Care</h3>
 
                 <p>
-                    Enjoy convenient access to trusted
-                    healthcare professionals and services.
+                    Keep your care options together, including
+                    personalized support for older adults.
                 </p>
             </article>
 
@@ -352,6 +356,17 @@ fetch("../Nav/index.html")
         })
         .catch(error => console.error("Error loading footer:", error));
 </script>    <!-- ================= JAVASCRIPT ================= -->
+    <script src="https://player.vimeo.com/api/player.js"></script>
+    <script>
+        const heroVideoFrame = document.querySelector(".hero-video-bg iframe");
+        if (heroVideoFrame && window.Vimeo?.Player) {
+            const heroVideoPlayer = new Vimeo.Player(heroVideoFrame);
+            heroVideoPlayer.ready()
+                .then(() => heroVideoPlayer.setPlaybackRate(1.5).catch(() => null))
+                .then(() => heroVideoPlayer.play())
+                .catch(() => {});
+        }
+    </script>
     <script src="Master.js"></script>
 
     <script src="../Footer/footer.js"></script>

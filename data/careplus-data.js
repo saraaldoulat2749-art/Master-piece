@@ -69,6 +69,22 @@
     { id: "pharmacy-2", name: "CarePoint Pharmacy", area: "Amman", distance: "1.4 km away", address: "Prince Hasan St., Amman", phone: "+962 6 591 2045", hours: "Open until 10:30 PM", open: true, medicines: ["panadol", "vitamin c", "ibuprofen"], status: "Active" },
     { id: "pharmacy-3", name: "Al Hayat Pharmacy", area: "Zarqa", distance: "0.6 km away", address: "King Hussein St., Zarqa", phone: "+962 5 390 1456", hours: "Open until 10:00 PM", open: true, medicines: ["panadol", "paracetamol", "vitamin c"], status: "Active" }
   ], "careplusPharmaciesSeededV1");
+  const carePointRestoreMarker = "careplusCarePointRestoreV1";
+  try {
+    if (localStorage.getItem(carePointRestoreMarker) !== "1") {
+      const carePoint = data.pharmacies.find(pharmacy => String(pharmacy.name || "").trim().toLowerCase() === "carepoint pharmacy");
+      if (carePoint) {
+        const needsRestore = carePoint.status !== "Active" || carePoint.deleted === true;
+        carePoint.status = "Active";
+        delete carePoint.deleted;
+        if (needsRestore && !write()) throw new Error("Could not save pharmacy restoration");
+      } else {
+        data.pharmacies.push({ id: "pharmacy-2", name: "CarePoint Pharmacy", area: "Amman", distance: "1.4 km away", address: "Prince Hasan St., Amman", phone: "+962 6 591 2045", hours: "Open until 10:30 PM", open: true, medicines: ["panadol", "vitamin c", "ibuprofen"], status: "Active" });
+        if (!write()) throw new Error("Could not save pharmacy restoration");
+      }
+      localStorage.setItem(carePointRestoreMarker, "1");
+    }
+  } catch (error) { console.error("CarePoint Pharmacy restoration could not be saved", error); }
   seedDemoCollection("careRequests", [
     { id: "demo-care-request-001", userId: "demo-user-001", client: "Maya Haddad", elderlyName: "Nadia Haddad", email: "maya.haddad@example.test", phone: "+962 7 9000 1001", service: "Home care", date: "2026-10-14", createdAt: "2026-10-01T09:00:00.000Z", time: "09:00", duration: 3, schedule: "Recurring daily", city: "Amman", area: "Al Rabieh", address: "Al Rabieh, Amman", emergencyName: "Rana Haddad", emergencyPhone: "+962 7 9000 1006", status: "Accepted", notes: "Companionship and assistance with daily activities." },
     { id: "demo-care-request-002", userId: "demo-user-002", client: "Omar Khalil", elderlyName: "Salma Khalil", email: "omar.khalil@example.test", phone: "+962 7 9000 1002", service: "Hospital companion", date: "2026-10-16", createdAt: "2026-10-03T09:00:00.000Z", time: "10:00", duration: 4, schedule: "One-time visit", city: "Amman", area: "Shmeisani", address: "Shmeisani, Amman", emergencyName: "Rana Khalil", emergencyPhone: "+962 7 9000 1012", status: "Reviewing", notes: "Companion for a scheduled hospital visit." },
@@ -91,11 +107,11 @@
   };
   data.users.forEach(user => { if (demoUserDetails[user.id]) fillMissing(user, demoUserDetails[user.id]); });
   const sampleAppointments = {
-    "demo-appt-001": { userId: "demo-user-001", time: "10:30", area: "CarePlus Medical Center, Amman" },
-    "demo-appt-002": { userId: "demo-user-002", time: "12:00", area: "Jordan Heart Clinic, Amman" },
-    "demo-appt-003": { userId: "demo-user-003", time: "09:15", area: "CarePlus Medical Center, Amman" },
-    "demo-appt-004": { userId: "demo-user-004", time: "11:00", area: "Al Hayat Clinic, Zarqa" },
-    "demo-appt-005": { userId: "demo-user-001", time: "14:00", area: "CarePlus Medical Center, Amman" }
+    "demo-appt-001": { userId: "demo-user-001", time: "10:30", area: "CarePlus Medical Center, Amman", source: "demo-seed" },
+    "demo-appt-002": { userId: "demo-user-002", time: "12:00", area: "Jordan Heart Clinic, Amman", source: "demo-seed" },
+    "demo-appt-003": { userId: "demo-user-003", time: "09:15", area: "CarePlus Medical Center, Amman", source: "demo-seed" },
+    "demo-appt-004": { userId: "demo-user-004", time: "11:00", area: "Al Hayat Clinic, Zarqa", source: "demo-seed" },
+    "demo-appt-005": { userId: "demo-user-001", time: "14:00", area: "CarePlus Medical Center, Amman", source: "demo-seed" }
   };
   data.appointments.forEach(appointment => { if (sampleAppointments[appointment.id]) fillMissing(appointment, sampleAppointments[appointment.id]); });
   const sampleCareRequests = {

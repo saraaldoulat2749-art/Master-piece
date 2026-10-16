@@ -1,0 +1,36 @@
+.card-brands {
+  color: #17395f;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .4px;
+  white-space: nowrap;
+}
+.card-entry[hidden] { display: none; }
+.card-entry {
+  padding: 16px;
+  border: 1px solid var(--checkout-line);
+  border-radius: 12px;
+  background: #f8fbfc;
+}
+.card-demo-note {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid #f0d99b;
+  border-radius: 8px;
+  background: #fff9e9;
+  color: #725c22;
+  font-size: 11px;
+  line-height: 1.55;
+}
+.card-entry-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+.card-number-field { grid-column: 1 / -1; }
+.card-entry .form-field input { background: #fff; }
+@media (max-width: 480px) {
+  .card-entry { padding: 12px; }
+  .card-entry-grid { grid-template-columns: 1fr; gap: 10px; }
+  .card-number-field { grid-column: auto; }
+}

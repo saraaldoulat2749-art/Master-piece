@@ -1,0 +1,10 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f3f8fb"><title>Order Submitted | CarePlus</title><link rel="stylesheet" href="../Nav/style.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="workflow.css"><link rel="stylesheet" href="../Footer/style.css"></head>
+<body data-protected="true"><script src="../auth.js"></script><div id="nav-container"></div>
+  <main class="page order-page"><a href="index.html" class="back-to-services"><span aria-hidden="true">←</span> Back to pharmacies</a>
+    <section class="order-success-card panel"><span class="order-success-mark" aria-hidden="true">✓</span><p class="order-eyebrow">REQUEST SUBMITTED</p><h1>Your reservation is <span>on its way</span></h1><p id="orderSuccessMessage">The pharmacy will review your request. Online payment remains pending until verified by a connected provider.</p><div class="order-reference"><small>ORDER REFERENCE</small><strong id="confirmedOrderReference">Loading…</strong><span id="confirmedOrderStatus">Pending</span></div><div class="pharmacy-flow-links"><a class="btn btn-primary" href="orders.html">Track my order</a></div></section>
+  </main><div id="footer-container"></div>
+  <script>fetch("../Nav/index.html").then(r=>r.text()).then(html=>document.getElementById("nav-container").innerHTML=html);fetch("../Footer/index.html").then(r=>r.text()).then(html=>document.getElementById("footer-container").innerHTML=html);</script>
+  <script src="../data/careplus-data.js"></script><script src="../data/careplus-pharmacy.js"></script><script src="order-confirmed.js"></script><script src="../Footer/footer.js"></script>
+</body></html>

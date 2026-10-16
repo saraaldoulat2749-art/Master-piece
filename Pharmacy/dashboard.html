@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#062536"><title>Pharmacy Dashboard | CarePlus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="dashboard.css?v=medicine-add-page-1">
+</head>
+<body data-pharmacy-protected="true">
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="../Home/Master.html" aria-label="CarePlus home"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><path d="M24 41S6 29 6 17.5C6 10.8 10.8 7 16.1 7c3.4 0 6.1 1.8 7.9 4.8C25.8 8.8 28.5 7 31.9 7 37.2 7 42 10.8 42 17.5 42 29 24 41 24 41Z"/><path d="M11 24h7l3-6 5.5 13 4-8H37"/></svg></span><span>Care<span>Plus</span></span></a>
+      <nav class="side-nav" aria-label="Pharmacy dashboard">
+        <button class="nav-link active" data-page="overview"><span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg></span>Dashboard</button>
+        <button class="nav-link" data-page="medicines"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v4l2 2v11a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9l2-2V3Z"/><path d="M8 7h8m-4 5v6m-3-3h6"/></svg></span>Manage Medicines</button>
+        <button class="nav-link" data-page="inventory"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 7 9-4 9 4v10l-9 4-9-4V7Z"/><path d="m3 7 9 4 9-4M12 11v10m-4-12 8-4"/></svg></span>Inventory &amp; Expiry</button>
+        <button class="nav-link" data-page="orders"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h12a2 2 0 0 1 2 2v16l-4-2-4 2-4-2-4 2V5a2 2 0 0 1 2-2Z"/><path d="M8 8h8m-8 4h8m-8 4h4"/></svg></span>Orders<i id="pendingDot" hidden></i></button>
+        <a class="nav-link" href="profile.html"><span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span>My Profile</a>
+      </nav>
+      <a class="pharmacy-logout" href="../Home/Master.html" data-auth-toggle aria-label="Log out">LOG OUT</a>
+    </aside>
+    <main class="main-area">
+      <div class="page-content">
+        <div class="mobile-toolbar"><button class="menu-toggle" id="menuToggle" aria-label="Open navigation">☰</button><span id="pageTitle">Dashboard</span></div>
+        <section class="view active" id="view-overview">
+          <div class="welcome-row"><div><p class="eyebrow">PHARMACY OVERVIEW</p><h2>Welcome to <span data-pharmacy-name>Al Shifa Pharmacy</span></h2><p>Keep your medicine stock and customer orders up to date.</p></div></div>
+          <div class="stats-grid">
+            <article class="stat-card"><span class="stat-top"><i class="stat-icon blue">▤</i>All medicines</span><strong id="totalMedicines">0</strong><small>Items in your catalog</small></article>
+            <article class="stat-card"><span class="stat-top"><i class="stat-icon green">✓</i>Available</span><strong id="availableMedicines">0</strong><small>In stock and listed</small></article>
+            <article class="stat-card"><span class="stat-top"><i class="stat-icon amber">!</i>Low stock</span><strong id="lowMedicines">0</strong><small>At or below 5 units</small></article>
+            <article class="stat-card"><span class="stat-top"><i class="stat-icon red">×</i>Out of stock</span><strong id="outMedicines">0</strong><small>Needs a restock</small></article>
+            <article class="stat-card"><span class="stat-top"><i class="stat-icon violet">▣</i>Pending orders</span><strong id="pendingOrders">0</strong><small>Waiting for your review</small></article>
+          </div>
+          <div class="overview-grid"><section class="panel"><div class="panel-heading"><div><p class="eyebrow">LATEST ACTIVITY</p><h3>Recent orders</h3></div><button class="subtle-button" data-open-page="orders">View all →</button></div><div class="recent-orders" id="recentOrders"></div></section><section class="panel"><div class="panel-heading"><div><p class="eyebrow">ATTENTION</p><h3>Stock alerts</h3></div><span class="alert-count" id="alertCount">0</span></div><div class="stock-alerts" id="stockAlerts"></div></section></div>
+        </section>
+        <section class="view" id="view-medicines">
+          <div class="section-heading"><div><p class="eyebrow">CATALOG</p><h2>Manage Medicines</h2><p>Add products and keep availability accurate for customers.</p></div><a class="primary-button" id="addMedicineButton" href="add-medicine.html">＋ Add medicine</a></div>
+          <section class="panel table-panel"><div class="toolbar"><label class="search-box"><span>⌕</span><input id="medicineSearch" type="search" placeholder="Search medicines" aria-label="Search medicines"></label><label class="select-filter">Category<select id="categoryFilter"><option value="">All categories</option></select></label></div><div class="table-scroll"><table><thead><tr><th>Medicine</th><th>Category</th><th>Price (JOD)</th><th>Quantity</th><th>Expiry date</th><th>Status</th><th>Actions</th></tr></thead><tbody id="medicineRows"></tbody></table><div class="empty-state" id="medicineEmpty" hidden>No medicines match this search.</div></div></section>
+        </section>
+        <section class="view" id="view-inventory">
+          <div class="section-heading"><div><p class="eyebrow">STOCK CONTROL</p><h2>Inventory &amp; Expiry</h2><p>Track current quantities and upcoming expiry dates.</p></div><span class="soft-chip" id="inventorySummary">0 items</span></div>
+          <div class="inventory-alerts" id="inventoryAlerts"></div><section class="panel table-panel"><div class="table-scroll"><table><thead><tr><th>Medicine</th><th>Category</th><th>Current stock</th><th>Expiry date</th><th>Stock status</th><th>Expiry status</th><th>Update stock</th></tr></thead><tbody id="inventoryRows"></tbody></table></div></section>
+        </section>
+        <section class="view" id="view-orders">
+          <div class="section-heading"><div><p class="eyebrow">CUSTOMER REQUESTS</p><h2>Orders</h2><p>Review requests placed through the CarePlus pharmacy search page.</p></div><span class="soft-chip" id="orderCount">0 orders</span></div>
+          <section class="panel table-panel"><div class="toolbar"><label class="search-box"><span>⌕</span><input id="orderSearch" type="search" placeholder="Search order or customer reference" aria-label="Search orders"></label><label class="select-filter">Status<select id="orderStatusFilter"><option value="">All statuses</option><option>Pending</option><option>Confirmed</option><option>Preparing for Delivery</option><option>Out for Delivery</option><option>Delivered</option><option>Cancelled</option></select></label></div><div class="table-scroll"><table><thead><tr><th>Order ID</th><th>Customer ref.</th><th>Medicine / quantity</th><th>Order date</th><th>Total (JOD)</th><th>Payment</th><th>Order status</th><th>Commission</th><th>Actions</th></tr></thead><tbody id="orderRows"></tbody><div class="empty-state" id="orderEmpty" hidden>No orders match these filters.</div></div></section>
+        </section>
+        <section class="view" id="view-profile">
+          <div class="section-heading"><div><p class="eyebrow">ACCOUNT &amp; PHARMACY DETAILS</p><h2>My Profile</h2><p>Manage your account details and the pharmacy information shown to customers.</p></div></div>
+          <p class="profile-load-message" id="profileLoadMessage" role="status" hidden></p>
+          <form class="panel profile-form" id="profileForm" novalidate>
+            <div class="account-profile-block"><div class="profile-section-heading"><p class="eyebrow">MY ACCOUNT</p><h3>Personal details</h3><p>Changing this email updates your sign-in and pharmacy contact email.</p></div><div class="form-grid account-grid"><label>Your name<input id="accountName" required maxlength="90"></label><label>Sign-in email<input id="accountEmail" type="email" autocomplete="email" required maxlength="120"></label><label>Personal phone<input id="accountPhone" type="tel" maxlength="30"></label></div></div>
+            <div class="profile-section-heading pharmacy-public-heading"><p class="eyebrow">CUSTOMER-FACING LISTING</p><h3>Pharmacy details</h3><p>These details are displayed on the CarePlus pharmacy search page.</p></div>
+            <div class="profile-head"><span class="profile-logo">＋</span><div><strong data-pharmacy-name>Al Shifa Pharmacy</strong><small>CarePlus pharmacy listing</small></div><label class="toggle-label"><input id="openToggle" type="checkbox"><span class="toggle"></span><b id="openLabel">Open</b></label></div>
+            <div class="form-grid"><label>Pharmacy name<input id="profileName" required maxlength="90"></label><label>Responsible pharmacist<input id="profileResponsible" maxlength="90" placeholder="Pharmacist name"></label><label>License number<input id="profileLicense" maxlength="60" placeholder="Pharmacy license"></label><label>Phone number<input id="profilePhone" required type="tel" maxlength="30"></label><label>Contact email<input id="profileEmail" type="email" maxlength="120" placeholder="hello@pharmacy.jo"></label><label>Address<input id="profileAddress" required maxlength="150"></label><label>City / area<input id="profileArea" required maxlength="80"></label><label>Map location<input id="profileLocation" maxlength="120" placeholder="City or neighborhood"></label><label>Opening hours<input id="profileHours" required maxlength="80" placeholder="08:00–23:00"></label><label>Distance shown to customers<input id="profileDistance" maxlength="50" placeholder="0.8 km away"></label><label class="check-field"><input id="profileEmergency" type="checkbox"><span>Emergency / 24-hour service</span></label><label class="wide-field">About this pharmacy<textarea id="profileDescription" rows="3" maxlength="240" placeholder="A short introduction for customers"></textarea></label></div>
+            <div class="profile-record-meta"><span>Profile added <strong id="profileCreatedAt">—</strong></span><span>Last updated <strong id="profileUpdatedAt">—</strong></span></div>
+            <p class="form-message" id="profileMessage" role="status" aria-live="polite"></p><button class="primary-button" type="submit">Save profile changes</button>
+          </form>
+        </section>
+      </div>
+    </main>
+  </div>
+  <dialog class="medicine-dialog" id="medicineDialog"><form id="medicineForm" novalidate><div class="dialog-heading"><div><p class="eyebrow">MEDICINE DETAILS</p><h2 id="medicineDialogTitle">Add medicine</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">×</button></div><input id="medicineId" type="hidden"><div class="form-grid"><label>Medicine name<input id="medicineName" required maxlength="100"></label><label>Category<input id="medicineCategory" required maxlength="60" list="medicineCategories"><datalist id="medicineCategories"><option>Pain relief</option><option>Vitamins</option><option>Allergy</option><option>Digestive health</option><option>First aid</option></datalist></label><label>Price (JOD)<input id="medicinePrice" type="number" min="0.01" step="0.01" required></label><label>Quantity<input id="medicineQuantity" type="number" min="0" step="1" required></label><label>Expiry date<input id="medicineExpiry" type="date" required></label><label class="check-field"><input id="medicineAvailable" type="checkbox" checked><span>Available to customers</span></label></div><p class="form-message" id="medicineMessage" role="status" aria-live="polite"></p><div class="dialog-actions"><button type="button" class="secondary-button" data-close-dialog>Cancel</button><button class="primary-button" type="submit">Save medicine</button></div></form></dialog>
+  <dialog class="confirm-dialog" id="deleteDialog"><form method="dialog"><div class="dialog-heading"><div><p class="eyebrow">REMOVE ITEM</p><h2>Delete this medicine?</h2></div><button type="button" class="dialog-close" data-close-delete aria-label="Close">×</button></div><p>This medicine will be removed from your catalog and availability listing.</p><div class="dialog-actions"><button type="button" class="secondary-button" data-close-delete>Keep medicine</button><button class="danger-button" id="confirmDelete" value="delete">Delete medicine</button></div></form></dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="../data/careplus-data.js"></script><script src="../data/careplus-pharmacy.js"></script><script src="../auth.js"></script><script src="dashboard.js?v=medicine-add-page-1"></script>
+</body>
+</html>

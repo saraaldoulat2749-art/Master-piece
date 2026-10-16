@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#172536">
   <title>Checkout | CarePlus</title>
-  <link rel="stylesheet" href="../../Nav/style.css"><link rel="stylesheet" href="../../Footer/style.css"><link rel="stylesheet" href="checkout.css">
+  <link rel="stylesheet" href="../../Nav/style.css"><link rel="stylesheet" href="../../Footer/style.css"><link rel="stylesheet" href="checkout.css"><link rel="stylesheet" href="checkout-card.css">
 </head>
 <body data-protected="true"><script src="../../auth.js"></script>
   <div id="nav-container"></div>
   <main class="checkout-page">
-    <a class="back-link" href="../index.html?cart=open">← Back to cart</a>
+    <a class="back-link" href="../index.html?cart=open"> Back to cart</a>
     <header class="checkout-heading"><span class="eyebrow">CAREPLUS MEDICAL STORE</span><h1>Checkout</h1><p>Review your order and enter your delivery details.</p></header>
     <div class="checkout-layout">
       <form id="checkout-form" novalidate>
@@ -35,23 +35,30 @@
         <section class="checkout-panel">
           <div class="panel-heading"><div><span class="step-number">03</span><div><h2>Delivery method</h2><p>Choose the option that works for you.</p></div></div></div>
           <div class="choice-list">
-            <label class="choice-card"><input type="radio" name="delivery" value="standard" checked><span class="choice-radio"></span><span class="choice-copy"><strong>Standard Delivery</strong><small>Estimated 2–4 business days</small></span><strong class="choice-price">JOD 2.50</strong></label>
-            <label class="choice-card"><input type="radio" name="delivery" value="express"><span class="choice-radio"></span><span class="choice-copy"><strong>Express Delivery</strong><small>Estimated 1–2 business days</small></span><strong class="choice-price">JOD 5.00</strong></label>
+            <label class="choice-card"><input type="radio" name="delivery" value="standard" checked><span class="choice-radio"></span><span class="choice-copy"><strong>Standard Delivery</strong><small>Estimated 2-4 business days</small></span><strong class="choice-price">JOD 2.50</strong></label>
+            <label class="choice-card"><input type="radio" name="delivery" value="express"><span class="choice-radio"></span><span class="choice-copy"><strong>Express Delivery</strong><small>Estimated 1-2 business days</small></span><strong class="choice-price">JOD 5.00</strong></label>
           </div>
         </section>
 
         <section class="checkout-panel">
-          <div class="panel-heading"><div><span class="step-number">04</span><div><h2>Payment method</h2><p>Choose how you would like to pay.</p></div></div></div>
+          <div class="panel-heading"><div><span class="step-number">04</span><div><h2>Payment method</h2><p>Pay for your items and delivery together.</p></div></div></div>
           <div class="choice-list">
-            <label class="choice-card payment-choice"><input type="radio" name="payment" value="Cash on Delivery" checked><span class="choice-radio"></span><span class="choice-copy"><strong>Cash on Delivery</strong><small>Pay when your order arrives.</small></span><span class="cash-icon" aria-hidden="true">JOD</span></label>
-            <div class="choice-card disabled-choice"><span class="choice-radio"></span><span class="choice-copy"><strong>Credit / Debit Card</strong><small>Secure card payment is not configured yet.</small></span><span class="lock-icon" aria-hidden="true">🔒</span></div>
+            <label class="choice-card payment-choice selected"><input type="radio" name="payment" value="demo-card" checked><span class="choice-radio"></span><span class="choice-copy"><strong>Card payment</strong><small>Demo card · delivery included in total</small></span><span class="card-brands" aria-label="Card payment">CARD</span></label>
+            <div class="card-entry" id="card-entry">
+              <div class="card-entry-grid">
+                <label class="form-field card-number-field">Card number<input type="text" inputmode="numeric" autocomplete="off" maxlength="19" placeholder="0000 0000 0000 0000" data-card-number aria-label="Demo card number" required><small class="field-error" data-error="cardNumber"></small></label>
+                <label class="form-field">Name on card<input type="text" autocomplete="off" placeholder="Name as shown on card" data-card-name required><small class="field-error" data-error="cardName"></small></label>
+                <label class="form-field">Expiry date<input type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="MM/YY" data-card-expiry required><small class="field-error" data-error="cardExpiry"></small></label>
+                <label class="form-field">Security code<input type="password" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="CVV" data-card-cvv required><small class="field-error" data-error="cardCvv"></small></label>
+              </div>
+            </div>
           </div>
         </section>
         <div id="form-message" class="form-message" role="alert" hidden></div>
-        <button class="place-order-button" id="place-order" type="submit">Place Order <span>→</span></button>
+        <button class="place-order-button" id="place-order" type="submit">Place Order</button>
         <p class="secure-note">Your order and delivery details are used to prepare this order.</p>
       </form>
-      <aside class="checkout-side-note"><div class="side-icon" aria-hidden="true">✓</div><h2>CarePlus delivery</h2><p>We’ll use your contact and address details to coordinate delivery of your medical supplies.</p><a href="mailto:info@careplus.com">Questions? Contact our team</a></aside>
+      <aside class="checkout-side-note"><div class="side-icon" aria-hidden="true">CarePlus</div><h2>CarePlus delivery</h2><p>We'll use your contact and address details to coordinate delivery of your medical supplies.</p><a href="mailto:info@careplus.com">Questions? Contact our team</a></aside>
     </div>
   </main>
   <div id="footer-container"></div>

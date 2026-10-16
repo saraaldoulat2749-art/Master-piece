@@ -1,12 +1,13 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Find Medicine | CarePlus Pharmacy</title>
     <link rel="stylesheet" href="../Nav/style.css">
 
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="workflow.css">
        <link rel="stylesheet" href="../Footer/style.css">
 </head>
 <body data-protected="true"><script src="../auth.js"></script>
@@ -21,8 +22,7 @@ fetch("../Nav/index.html")
 </script>
     <main class="page">
 
- <a href="../services/index.html" class="back">â† Back to Services</a>
-
+ <a href="../services/index.html" class="back-to-services"><span aria-hidden="true">&#8592;</span> Back to Services</a>
   <section class="hero">
     <div>
       <h1>Find Nearby <span>Pharmacies</span></h1>
@@ -39,7 +39,7 @@ fetch("../Nav/index.html")
         <span class="map-block block-one"></span><span class="map-block block-two"></span><span class="map-block block-three"></span>
         <span class="map-marker marker-one"><i></i></span><span class="map-marker marker-two"><i></i></span>
         <span class="location-pulse"></span><span class="location-pin main-pin"><i></i></span>
-        <div class="map-search-chip"><span>âŒ•</span><b>NEARBY SEARCH</b><i></i></div>
+        <div class="map-search-chip"><span aria-hidden="true">&#128269;</span><b>NEARBY SEARCH</b><i></i></div>
         <div class="pharmacy-store">
           <div class="store-sign"><b>+</b><span>PHARMACY</span></div>
           <div class="store-awning"><i></i><i></i><i></i><i></i><i></i></div>
@@ -53,25 +53,28 @@ fetch("../Nav/index.html")
     </div>
   </section>
 
+  <nav class="order-progress" aria-label="Five steps in the pharmacy order process"><span class="active"><b>1</b> Search</span><i></i><span><b>2</b> Pharmacy results</span><i></i><span><b>3</b> Place order</span><i></i><span><b>4</b> Delivery</span><i></i><span><b>5</b> CarePlus commission</span></nav>
+
   <section class="panel">
     <h2>Search for Medicine &amp; Pharmacy</h2>
     <p class="intro">
       Enter the medicine name and your area to find nearby pharmacies that have it available.
     </p>
 
-    <div class="fields">
+    <form class="fields" id="pharmacySearchForm">
       <div>
-        <label for="medicine">â™¢ Medicine Name</label>
+        <label for="medicine">Medicine Name</label>
         <input
           id="medicine"
           type="text"
+          required
           placeholder="Enter medicine name (e.g. Panadol)"
           value="Panadol"
           autocomplete="off">
       </div>
 
       <div>
-        <label for="area">ðŸ“ Your Area</label>
+        <label for="area">Your Area</label>
         <select id="area">
           <option value="Amman">Amman</option>
           <option value="Zarqa">Zarqa</option>
@@ -80,19 +83,14 @@ fetch("../Nav/index.html")
           <option value="Aqaba">Aqaba</option>
         </select>
       </div>
-    </div>
-
-    <!-- Pharmacy results update automatically. No search button. -->
-    <div class="results-head">
-      <h3>ðŸ“ <span id="resultsTitle">Available pharmacies near you</span></h3>
-      <div class="count" id="resultCount" aria-live="polite"></div>
-    </div>
-
-    <div class="cards" id="pharmacyCards"></div>
+      <button class="btn btn-primary pharmacy-search-submit" type="submit">Find available pharmacies</button>
+    </form>
   </section>
-
-
-
+  <section class="my-pharmacy-orders pharmacy-next-steps">
+    <div class="my-orders-heading"><div><span class="order-eyebrow">STEP 4 · TRACKING</span><h2>My medicine orders</h2></div></div>
+    <p>Follow the pharmacy's confirmation and delivery status.</p>
+    <div class="pharmacy-flow-links"><a class="btn btn-outline" href="orders.html">Open my orders</a></div>
+  </section>
 </main>
 <div id="footer-container"></div>
 
@@ -104,7 +102,7 @@ fetch("../Nav/index.html")
         })
         .catch(error => console.error("Error loading footer:", error));
 </script>
-<script src="../data/careplus-data.js"></script><script src="script.js"></script>
+<script src="../data/careplus-data.js"></script><script src="../data/careplus-pharmacy.js"></script><script src="script.js"></script>
     <script src="../Footer/footer.js"></script>
 </body>
 </html>

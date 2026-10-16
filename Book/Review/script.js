@@ -66,6 +66,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const errorMessage =
         document.getElementById("errorMessage");
 
+    function isCurrentAvailability() {
+        return Boolean(window.CarePlusClinic?.isAvailable({ doctor, date, time }));
+    }
+
     confirmButton.addEventListener("click", function (event) {
         event.preventDefault();
 
@@ -100,16 +104,24 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        const appointment = window.CarePlusData?.create("appointments", {
-            patient: patientName, phone: patientPhone, email: patientEmail,
-            userId: window.CarePlusData?.list("users").find(user => user.email?.toLowerCase() === sessionStorage.getItem("careplusDemoIdentity")?.toLowerCase() || user.phone === sessionStorage.getItem("careplusDemoIdentity"))?.id || "",
-            doctor, specialty, area, date, time, status: "Requested", source: "user-booking"
-        });
-        if (!appointment) {
-            errorMessage.textContent = "This browser could not save your demo appointment. Please try again.";
+        if (!isCurrentAvailability()) {
+            errorMessage.textContent = "This time is no longer available. Please return to the schedule and select another time.";
             errorMessage.style.display = "block";
             return;
         }
+
+        const userIdentity = sessionStorage.getItem("careplusDemoIdentity") || localStorage.getItem("careplusDemoIdentity") || "";
+        const matchedUser = window.CarePlusData?.list("users").find(user => user.email?.toLowerCase() === userIdentity.toLowerCase() || user.phone === userIdentity);
+        const result = window.CarePlusClinic?.createBooking({
+            patient: patientName, phone: patientPhone, email: patientEmail, userId: matchedUser?.id || "",
+            doctor, specialty, area, date, time
+        });
+        if (!result?.ok) {
+            errorMessage.textContent = result?.error || "Could not save this booking. Please try again.";
+            errorMessage.style.display = "block";
+            return;
+        }
+        const appointment = result.appointment;
 
         // تجهيز جميع المعلومات لصفحة النجاح
         const successParams = new URLSearchParams({

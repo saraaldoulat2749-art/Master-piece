@@ -23,13 +23,23 @@
         <nav class="careplus-navbar__links" aria-label="Main navigation">
             <a class="active" href="../Home/Master.html">Home</a>
             <a href="../Home/Master.html#services">Services</a>
-            <a href="../Profile/index.html" data-profile-link> Profile</a>
             <a href="../Home/Master.html#about">About</a>
             <a href="../Home/Master.html#contact">Contact</a>
+            <a class="careplus-navbar__signup-mobile" href="../log%20in/register.html">SIGN UP</a>
         </nav>
 
         <div class="careplus-navbar__actions">
-            <a class="careplus-navbar__login" href="../log%20in/login.html" data-auth-toggle>LOG IN</a>
+            <a class="careplus-navbar__signup" href="../log%20in/register.html">Sign Up</a>
+            <a class="careplus-navbar__login" href="../log%20in/login.html" data-auth-toggle>Log In</a>
+            <div class="careplus-navbar__profile" data-customer-profile hidden>
+                <button class="careplus-navbar__profile-trigger" type="button" data-profile-trigger aria-label="Open customer menu" aria-expanded="false" aria-haspopup="true">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+                </button>
+                <div class="careplus-navbar__profile-menu" data-profile-menu hidden>
+                    <a href="../Profile/index.html" data-profile-link>My Profile</a>
+                    <button type="button" data-profile-logout>Log Out</button>
+                </div>
+            </div>
         </div>
     </header>
 </body>

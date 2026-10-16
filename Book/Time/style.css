@@ -4,7 +4,7 @@
     box-sizing: border-box;
 }
 :root {
-    --primary: #0aa6a6;
+    --primary: #94D5D6;
     --dark: #18384a;
     --muted: #718795;
     --border: #e3edef;
@@ -96,7 +96,7 @@ body {
 .step.completed .step-circle {
     background: var(--primary);
     border-color: var(--primary);
-    color: white;
+    color: #172536;
 }
 .step-label {
     color: #83949e;
@@ -256,7 +256,7 @@ body {
 }
 .time-slot.selected {
     background: var(--primary);
-    color: white;
+    color: #172536;
     border-color: var(--primary);
 }
 .time-hint {

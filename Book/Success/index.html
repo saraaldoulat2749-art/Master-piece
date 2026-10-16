@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -24,7 +24,7 @@ fetch("../../Nav/index.html")
 </script> 
     <main class="success-container">
         <section class="success-header">
-            <div class="success-icon">âœ“</div>
+            <div class="success-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7" /></svg></div>
             <h1>Booking Successful!</h1>
             <p>
                 Your appointment has been booked successfully.
@@ -51,28 +51,28 @@ fetch("../../Nav/index.html")
             <h3 class="details-title">Your Appointment</h3>
             <div class="details-grid">
                 <div class="detail-item">
-                    <div class="detail-icon">ðŸ“…</div>
+                    <div class="detail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16"/></svg></div>
                     <div class="detail-text">
                         <span>Appointment Date</span>
                         <strong id="appointmentDate">Not specified</strong>
                     </div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-icon">ðŸ•’</div>
+                    <div class="detail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></div>
                     <div class="detail-text">
                         <span>Appointment Time</span>
                         <strong id="appointmentTime">Not specified</strong>
                     </div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-icon">ðŸ“</div>
+                    <div class="detail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
                     <div class="detail-text">
                         <span>Clinic Location</span>
                         <strong id="appointmentLocation">Not specified</strong>
                     </div>
                 </div>
                 <div class="detail-item">
-                    <div class="detail-icon">âœ“</div>
+                    <div class="detail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></div>
                     <div class="detail-text">
                         <span>Booking Status</span>
                         <strong id="bookingStatus">Requested</strong>
@@ -80,8 +80,7 @@ fetch("../../Nav/index.html")
                 </div>
             </div>
             <div class="confirmation-note">
-                Your appointment is confirmed. Please arrive a few minutes
-                before your scheduled time.
+                Your booking request has been sent to the doctor. The status will update here when the doctor responds.
             </div>
             <div class="buttons">
                 <a href="../Time/index.html" class="btn btn-primary">

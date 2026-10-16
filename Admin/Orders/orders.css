@@ -1,0 +1,57 @@
+.orders-page .page-content { padding-top: 18px; }
+.orders-page .welcome-row { margin: 8px 0 24px; }
+.orders-page .welcome-row h2 { font-size: clamp(22px, 2.4vw, 29px); letter-spacing: -.45px; }
+.orders-page .customer-orders-panel { overflow: hidden; margin-top: 0; padding: 0; }
+.orders-page .customer-orders-panel + .customer-orders-panel { margin-top: 20px; }
+.orders-page .customer-orders-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 20px 22px 17px; border-bottom: 1px solid #e8eff2; }
+.orders-page .customer-orders-heading .eyebrow { margin-bottom: 7px; color: #168f9b; }
+.orders-page .customer-orders-heading h2 { margin: 0; color: #062536; font-size: 18px; letter-spacing: -.2px; }
+.orders-page .customer-orders-heading p:not(.eyebrow) { margin: 6px 0 0; color: #728493; font-size: 12px; line-height: 1.5; }
+.orders-page .record-count { flex: 0 0 auto; padding: 7px 11px; border: 1px solid #dcebed; border-radius: 20px; background: #f4fbfb; color: #35747a; font-size: 11px; font-weight: 700; }
+.orders-page .table-wrap { margin: 0; scrollbar-color: #b7d2d7 #f4f8f9; scrollbar-width: thin; }
+.orders-page .customer-orders-table { min-width: 1120px; }
+.orders-page .pharmacy-orders-table { min-width: 1220px; }
+.orders-page .customer-orders-table th { position: sticky; z-index: 1; top: 0; padding: 12px 13px; border-bottom: 1px solid #e2eaed; background: #f5f9fa; color: #607987; font-size: 10px; letter-spacing: .45px; text-transform: uppercase; white-space: nowrap; }
+.orders-page .customer-orders-table td { padding: 13px; border-bottom-color: #edf2f4; color: #36515f; font-size: 11px; line-height: 1.5; vertical-align: middle; }
+.orders-page .customer-orders-table tbody tr:last-child td { border-bottom: 0; }
+.orders-page .customer-orders-table tbody tr:hover { background: #f7fbfb; }
+.orders-page .customer-orders-table td strong { color: #123949; }
+.orders-page .customer-orders-table .status-badge,
+.orders-page .pharmacy-admin-status { padding: 5px 9px; border: 1px solid #f1dfbd; background: #fff7e8; color: #986a1d; font-size: 10px; font-weight: 700; }
+.orders-page .customer-orders-table .status-badge.is-good,
+.orders-page .pharmacy-admin-status.good { border-color: #d7ebdf; background: #eaf6ef; color: #26744d; }
+.orders-page .customer-orders-table .status-badge.is-muted,
+.orders-page .pharmacy-admin-status.bad { border-color: #f0d7d7; background: #fff1f0; color: #a84d4d; }
+.orders-page .pharmacy-orders-toolbar { display: flex; align-items: end; gap: 12px; padding: 15px 22px; border-bottom: 1px solid #edf2f4; background: #fbfdfd; }
+.orders-page .pharmacy-orders-toolbar label { display: grid; gap: 6px; color: #536b79; font-size: 11px; font-weight: 700; }
+.orders-page .pharmacy-orders-toolbar input,
+.orders-page .pharmacy-orders-toolbar select { min-width: 230px; min-height: 40px; padding: 8px 11px; border: 1px solid #d8e3e8; border-radius: 9px; background: #fff; color: #294552; font: 12px Arial, sans-serif; transition: border-color .18s, box-shadow .18s; }
+.orders-page .pharmacy-orders-toolbar input:focus,
+.orders-page .pharmacy-orders-toolbar select:focus { border-color: #56aab0; outline: 0; box-shadow: 0 0 0 3px rgba(22,143,155,.12); }
+.orders-page .pharmacy-order-items { min-width: 155px; max-width: 220px; white-space: normal; }
+.orders-page .pharmacy-delivery-details { min-width: 165px; max-width: 230px; color: #607783; font-size: 11px; white-space: normal; }
+.orders-page .pharmacy-delivery-details summary { color: #147e88; font-weight: 700; cursor: pointer; }
+.orders-page .pharmacy-delivery-details p { margin: 6px 0 0; overflow-wrap: anywhere; }
+.orders-page .pharmacy-admin-demo { display: block; margin-top: 4px; color: #82939b; font-size: 9px; }
+.orders-page .store-order-status-select { min-width: 138px; min-height: 34px; padding: 6px 9px; border: 1px solid #d8e3e8; border-radius: 8px; background: #fff; color: #294552; font: 11px Arial, sans-serif; }
+.orders-page .store-order-status-select:focus { border-color: #56aab0; outline: 0; box-shadow: 0 0 0 3px rgba(22,143,155,.12); }
+.orders-page .table-empty { padding: 44px 18px; color: #778b95; font-size: 12px; }
+
+@media (max-width: 760px) {
+  .orders-page .page-content { padding: 18px 14px 32px; }
+  .orders-page .welcome-row { margin: 6px 0 18px; }
+  .orders-page .customer-orders-heading { align-items: flex-start; padding: 17px 16px 14px; }
+  .orders-page .customer-orders-heading h2 { font-size: 16px; }
+  .orders-page .customer-orders-heading p:not(.eyebrow) { max-width: 440px; font-size: 11px; }
+  .orders-page .pharmacy-orders-toolbar { align-items: stretch; flex-direction: column; padding: 13px 16px; }
+  .orders-page .pharmacy-orders-toolbar input,
+  .orders-page .pharmacy-orders-toolbar select { width: 100%; min-width: 0; }
+  .orders-page .customer-orders-table { min-width: 980px; }
+  .orders-page .pharmacy-orders-table { min-width: 1120px; }
+}
+
+@media (max-width: 420px) {
+  .orders-page .customer-orders-heading { gap: 8px; }
+  .orders-page .record-count { padding: 6px 8px; font-size: 10px; }
+  .orders-page .customer-orders-heading p:not(.eyebrow) { line-height: 1.45; }
+}

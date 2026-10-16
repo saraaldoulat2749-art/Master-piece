@@ -1,0 +1,23 @@
+.side-bottom .logout-link {
+  display: flex;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  margin: 14px 9px 0;
+  padding: 0 15px;
+  border: 1px solid rgba(255, 255, 255, .22);
+  border-radius: 9px;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 700;
+  text-decoration: none;
+  transition: background .18s, border-color .18s, color .18s;
+}
+
+.side-bottom .logout-link:hover,
+.side-bottom .logout-link:focus-visible {
+  border-color: #94d5d6;
+  background: #94d5d6;
+  color: #041b2a;
+  outline: none;
+}
