@@ -4,6 +4,7 @@ const params = new URLSearchParams(window.location.search);
 const area = params.get("area") || "";
 const specialty = params.get("specialty") || "";
 const doctor = params.get("doctor") || "";
+const doctorId = params.get("doctorId") || window.CarePlusClinic?.resolveDoctor(doctor)?.doctorId || "";
 const image = params.get("image") || "";
 
 // عرض معلومات الدكتور المختار من صفحة Book
@@ -56,7 +57,7 @@ const errorMessage = document.getElementById("errorMessage");
 const continueButton = document.getElementById("continueButton");
 
 function renderAvailableSlots() {
-    const schedule = window.CarePlusClinic?.getSchedule();
+    const schedule = window.CarePlusClinic?.getSchedule(doctorId);
     const grid = document.getElementById("timeGrid");
     if (!schedule || !doctor) return;
     const date = dateInput.value;
@@ -78,7 +79,7 @@ function renderAvailableSlots() {
             const labelHour = Math.floor(cursor / 60) % 12 || 12;
             const labelSuffix = Math.floor(cursor / 60) >= 12 ? "PM" : "AM";
             const slotLabel = `${String(labelHour).padStart(2, "0")}:${String(cursor % 60).padStart(2, "0")} ${labelSuffix}`;
-            if (!duringBreak && window.CarePlusClinic.isAvailable({ doctor, date, time: slotLabel })) slots.push(slot);
+            if (!duringBreak && window.CarePlusClinic.isAvailable({ doctor, doctorId, date, time: slotLabel })) slots.push(slot);
             cursor += duration;
         }
     }
@@ -148,6 +149,7 @@ continueButton.addEventListener("click", function (event) {
         area: area,
         specialty: specialty,
         doctor: doctor,
+        doctorId: doctorId,
         date: dateInput.value,
         time: selectedTime
     });

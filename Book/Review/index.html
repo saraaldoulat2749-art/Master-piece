@@ -46,9 +46,9 @@ fetch("../../Nav/index.html")
             </div>
             <div class="step">
                 <div class="circle">4</div>
-                <div class="step-label">Booking Success</div>
+                <div class="step-label">Deposit Payment</div>
             </div>
-           
+            <div class="step"><div class="circle">5</div><div class="step-label">Request Received</div></div>
         </div>
         <div class="content-grid">
             <!-- Appointment details -->
@@ -92,6 +92,12 @@ fetch("../../Nav/index.html")
                     </div>
                     <div class="detail-value">30 minutes</div>
                 </div>
+                <hr class="divider">
+                <h2 class="card-title">Consultation &amp; deposit</h2>
+                <div class="detail-row"><div class="detail-label">Full consultation fee</div><div class="detail-value" id="consultationFee">Not available</div></div>
+                <div class="detail-row"><div class="detail-label">Required deposit (10%)</div><div class="detail-value" id="requiredDeposit">Not available</div></div>
+                <div class="detail-row"><div class="detail-label">Remaining balance</div><div class="detail-value" id="remainingBalance">Not available</div></div>
+                <div class="detail-row"><div class="detail-label">CarePlus commission</div><div class="detail-value"><span id="commissionAmount">Not available</span> · 10% of the full consultation fee</div></div>
             </section>
             <!-- Patient information -->
             <section>
@@ -126,9 +132,7 @@ fetch("../../Nav/index.html")
                 </div>
                 <div class="notice">
                     <strong> Before You Confirm</strong>
-                    Please check your appointment details carefully.
-                    You can return to the previous step if you need to
-                    change the selected date or time.
+                    The deposit is part of the consultation fee. CarePlus commission is calculated once from the full fee, not from the deposit.
                 </div>
             </section>
         </div>
@@ -142,7 +146,7 @@ fetch("../../Nav/index.html")
                 class="button confirm-button"
                 id="confirmButton"
             >
-                 Confirm Appointment
+                 Continue to deposit
         </a>
         </div>
     </div>

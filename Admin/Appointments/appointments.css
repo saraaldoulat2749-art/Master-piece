@@ -1,0 +1,6 @@
+.appointment-filter{display:flex;align-items:center;gap:8px;color:var(--admin-muted);font-size:11px}
+.appointment-filter select{min-height:38px;padding:0 10px;border:1px solid var(--admin-line);border-radius:8px;background:#fff;color:var(--admin-ink);font-size:12px}
+.appointment-id-cell{font-weight:700}
+.table-wrap td small{display:block;margin-top:4px;color:var(--admin-muted);font-size:10px;white-space:normal;min-width:125px}
+.table-wrap table{min-width:1430px}
+@media(max-width:600px){.appointment-filter{justify-content:space-between}.appointment-filter select{flex:1;min-width:0}}

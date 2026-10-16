@@ -1,94 +1,30 @@
+(() => {
+  const params = new URLSearchParams(location.search);
+  const appointmentId = params.get("appointmentId") || "";
+  const fallback = Object.fromEntries(["doctor", "specialty", "area", "date", "time", "image"].map(key => [key, params.get(key) || ""]));
+  const money = value => `JOD ${Number(value || 0).toFixed(2)}`;
 
-const params = new URLSearchParams(window.location.search);
-
-// استلام معلومات الحجز من صفحة Time
-const doctor = params.get("doctor") || "";
-const specialty = params.get("specialty") || "";
-const area = params.get("area") || "";
-const image = params.get("image") || "";
-const date = params.get("date") || "";
-const time = params.get("time") || "";
-const appointmentId = params.get("appointmentId") || "";
-const bookingStatus = document.getElementById("bookingStatus");
-function syncAppointmentStatus() {
-    const appointment = appointmentId && window.CarePlusData?.get("appointments", appointmentId);
-    if (bookingStatus) bookingStatus.textContent = appointment?.status || "Demo record unavailable";
-}
-syncAppointmentStatus();
-window.CarePlusData?.subscribe(syncAppointmentStatus);
-
-// عرض معلومات الدكتور
-document.getElementById("doctorName").textContent =
-    doctor || "Doctor not selected";
-
-document.getElementById("doctorSpecialty").textContent =
-    specialty || "Specialty not selected";
-
-document.getElementById("doctorArea").textContent =
-    area || "Area not selected";
-
-// عرض تفاصيل الموعد
-document.getElementById("appointmentDate").textContent =
-    date || "Not specified";
-
-document.getElementById("appointmentTime").textContent =
-    time || "Not specified";
-
-document.getElementById("appointmentLocation").textContent =
-    area || "Not specified";
-
-// عرض صورة الدكتور
-const doctorImage = document.getElementById("doctorImage");
-
-if (doctorImage && image) {
-    doctorImage.src = image;
-}
-
-if (doctorImage) {
-    doctorImage.onerror = function () {
-        this.onerror = null;
-        this.src =
-            "https://placehold.co/200x200/e8f8f7/087f86?text=Doctor";
-    };
-}
-
-// تأكيد الحجز والانتقال إلى Success
-const confirmButton = document.getElementById("confirmButton");
-const errorMessage = document.getElementById("errorMessage");
-
-if (confirmButton) {
-    confirmButton.addEventListener("click", function (event) {
-        event.preventDefault();
-
-        // التأكد من تعبئة جميع بيانات الموعد
-        if (!doctor || !specialty || !area || !date || !time) {
-            if (errorMessage) {
-                errorMessage.textContent =
-                    "Booking information is incomplete. Please return and complete all required fields.";
-                errorMessage.style.display = "block";
-            } else {
-                alert(
-                    "Booking information is incomplete. Please return and complete all required fields."
-                );
-            }
-
-            return;
-        }
-
-        // إرسال المعلومات إلى صفحة النجاح
-        const successParams = new URLSearchParams({
-            doctor: doctor,
-            specialty: specialty,
-            area: area,
-            date: date,
-            time: time
-        });
-
-        if (image) {
-            successParams.set("image", image);
-        }
-
-        window.location.href =
-            "../Success/index.html?" + successParams.toString();
-    });
-}
+  function render() {
+    const row = appointmentId && window.CarePlusData?.get("appointments", appointmentId);
+    const value = (key, fallbackValue = "Not specified") => row?.[key] || fallback[key] || fallbackValue;
+    document.getElementById("doctorName").textContent = value("doctor", "Doctor not selected");
+    document.getElementById("doctorSpecialty").textContent = value("specialty", "Specialty not selected");
+    document.getElementById("doctorArea").textContent = value("area", "Area not selected");
+    document.getElementById("appointmentDate").textContent = value("date");
+    document.getElementById("appointmentTime").textContent = value("time");
+    document.getElementById("appointmentLocation").textContent = value("area");
+    document.getElementById("bookingStatus").textContent = row?.status || "Appointment record unavailable";
+    document.getElementById("appointmentId").textContent = row?.id || "Not available";
+    document.getElementById("consultationFee").textContent = money(row?.consultationFee);
+    document.getElementById("depositRequired").textContent = money(row?.depositAmount);
+    document.getElementById("depositPaid").textContent = money(row?.depositPaid);
+    document.getElementById("remainingBalance").textContent = money(row?.remainingBalance);
+    document.getElementById("commissionAmount").textContent = money(row?.commissionAmount);
+    document.getElementById("paymentStatus").textContent = row?.paymentStatus || "Pending";
+    const image = document.getElementById("doctorImage");
+    image.src = fallback.image || "https://placehold.co/200x200/e8f8f7/087f86?text=Doctor";
+    image.onerror = () => { image.onerror = null; image.src = "https://placehold.co/200x200/e8f8f7/087f86?text=Doctor"; };
+  }
+  window.CarePlusData?.subscribe(render);
+  render();
+})();

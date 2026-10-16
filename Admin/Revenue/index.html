@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#062536">
+  <title>Revenue Overview | CarePlus Admin</title>
+  <link rel="stylesheet" href="../admin.css">
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="revenue.css">
+</head>
+<body class="admin-dashboard revenue-page" data-protected="true" data-admin-protected="true">
+  <script src="../../auth.js"></script>
+  <div class="admin-layout">
+    <aside class="sidebar" id="admin-sidebar">
+      <a class="brand" href="../index.html"><span class="brand-mark">+</span><span>Care<span>Plus</span><small>ADMIN</small></span></a>
+      <nav class="side-nav" aria-label="Admin sections">
+        <a href="../index.html"><span>▦</span>Dashboard</a>
+        <a href="../Users/index.html"><span>♙</span>Users</a>
+        <a href="../Appointments/index.html"><span>▣</span>Appointments</a>
+        <a href="../Products/index.html"><span>＋</span>Products</a>
+        <a href="../Pharmacies/index.html"><span>⌖</span>Pharmacies</a>
+        <a href="../CareRequests/index.html"><span>♡</span>Care requests</a>
+        <a href="../Orders/index.html"><span>▧</span>Orders</a>
+        
+        <a class="active" href="index.html" aria-current="page"><span>◫</span>Revenue Overview</a>
+      </nav>
+      <div class="sidebar-bottom"><p>Admin workspace</p><a href="../../Home/Master.html">View CarePlus site</a></div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar">
+        <button class="menu-toggle" type="button" aria-label="Open admin navigation" aria-controls="admin-sidebar" aria-expanded="false">☰</button>
+        <div class="topbar-copy"><span class="eyebrow">CAREPLUS FINANCE</span><h1>Revenue Overview</h1></div>
+        <a class="logout-link" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a>
+      </header>
+      <section class="page-content" data-revenue-page>
+        <div class="revenue-filter-row">
+          <div class="date-filter" aria-label="Revenue date filter">
+            <label>Period<select data-period><option value="all" selected>All time</option><option value="today">Today</option><option value="7days">Last 7 days</option><option value="month">This month</option><option value="lastMonth">Last month</option><option value="custom">Custom range</option></select></label>
+            <label class="custom-date" hidden>From<input type="date" data-date-from></label>
+            <label class="custom-date" hidden>To<input type="date" data-date-to></label>
+          </div>
+        </div>
+        <section class="revenue-stats" aria-label="Revenue summary">
+          <article class="revenue-stat"><span class="stat-mark teal-mark">JOD</span><div><p>Total platform revenue</p><strong data-total-revenue>JOD 0.00</strong><small>Verified net earnings in range</small></div></article>
+          <article class="revenue-stat"><span class="stat-mark blue-mark">↗</span><div><p>Completed transactions</p><strong data-total-transactions>0</strong><small>Verified and completed</small></div></article>
+          <article class="revenue-stat"><span class="stat-mark purple-mark">%</span><div><p>Total platform commissions</p><strong data-total-commissions>JOD 0.00</strong><small>After recorded reversals</small></div></article>
+          <article class="revenue-stat"><span class="stat-mark amber-mark">…</span><div><p>Pending payments</p><strong data-pending-payments>JOD 0.00</strong><small data-pending-count>0 payment records</small></div></article>
+          <article class="revenue-stat"><span class="stat-mark green-mark">▤</span><div><p>Revenue this month</p><strong data-month-revenue>JOD 0.00</strong><small>Verified net earnings</small></div></article>
+        </section>
+        <section class="revenue-charts" aria-label="Revenue charts">
+          <article class="revenue-panel source-chart-panel"><div class="panel-title"><div><p class="eyebrow">PAYMENT ACTIVITY</p><h2>Payment activity by source</h2></div><span class="period-caption" data-period-caption>All time</span></div><div class="donut-layout"><div class="donut" data-donut><div class="donut-center"><strong data-donut-total>JOD 0.00</strong><span>Net CarePlus revenue</span></div></div><div class="source-legend" data-source-legend></div></div></article>
+          <article class="revenue-panel trend-panel"><div class="panel-title"><div><p class="eyebrow">REVENUE ACTIVITY</p><h2>Revenue trend</h2></div><span class="period-caption" data-trend-caption>This month</span></div><div class="trend-wrap"><svg data-trend viewBox="0 0 720 240" role="img" aria-label="Verified revenue over the selected period"></svg></div><div class="chart-empty" data-trend-empty hidden>No verified revenue in this date range.</div></article>
+        </section>
+        <section class="revenue-panel breakdown-panel">
+          <div class="panel-title breakdown-heading"><div><p class="eyebrow">SOURCE PERFORMANCE</p><h2>Revenue breakdown</h2></div><label class="revenue-search">Search sources<input type="search" data-source-search placeholder="Search sources"></label></div>
+          <div class="table-scroll"><table class="revenue-table"><thead><tr><th><button data-sort="source">Revenue source</button></th><th><button data-sort="gross">Collected value</button></th><th><button data-sort="count">Completed</button></th><th><button data-sort="commission">CarePlus commission</button></th><th><button data-sort="refunds">Refunds</button></th><th><button data-sort="net">Net platform revenue</button></th><th>Payment / settlement status</th><th>Details</th></tr></thead><tbody data-source-rows></tbody></table><div class="table-empty" data-source-empty hidden>No revenue sources match your search.</div></div>
+        </section>
+        <section class="revenue-panel transactions-panel">
+          <div class="panel-title transactions-heading"><div><p class="eyebrow">FINANCIAL RECORDS</p><h2 data-transactions-title>Transactions</h2></div><div class="transaction-filters"><label>Source<select data-source-filter><option value="">All sources</option></select></label><label>Status<select data-status-filter><option value="">All statuses</option><option value="verified">Completed / verified</option><option value="pending">Pending</option><option value="failed">Failed</option><option value="refunded">Refunded</option><option value="unverified">Unverified / demo</option><option value="cancelled">Cancelled</option></select></label><label>Search<input type="search" data-transaction-search placeholder="ID, customer, source"></label></div></div>
+          <div class="table-scroll"><table class="transaction-table"><thead><tr><th>Transaction ID</th><th>Source</th><th>Related record</th><th>Customer / provider</th><th>Amount</th><th>Commission</th><th>Payment status</th><th>Date</th><th>Details</th></tr></thead><tbody data-transactions></tbody></table><div class="table-empty" data-transactions-empty hidden>No transactions match this period and filter.</div></div>
+          <div class="pagination"><span data-page-info>0 transactions</span><div><button class="secondary-button" type="button" data-prev disabled>Previous</button><button class="secondary-button" type="button" data-next disabled>Next</button></div></div>
+        </section>
+      </section>
+    </main>
+  </div>
+  <dialog class="revenue-dialog" data-details-dialog><div class="dialog-content"><div class="dialog-heading"><div><p class="eyebrow">SOURCE TRANSACTIONS</p><h2 data-dialog-title>Revenue details</h2></div><button type="button" class="dialog-close" data-dialog-close aria-label="Close">×</button></div><div class="dialog-body" data-dialog-body></div></div></dialog>
+  <script src="../../data/careplus-data.js"></script><script src="../admin.js"></script><script src="revenue.js"></script>
+</body>
+</html>

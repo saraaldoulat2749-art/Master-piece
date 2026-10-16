@@ -1,6 +1,73 @@
 (() => {
   const page = document.querySelector("[data-admin-page]");
-  if (!page) return;
+  if (!page) {
+    // Revenue Overview shares the admin shell but has its own page controller.
+    if (!document.body.classList.contains("revenue-page")) return;
+    const sidebar = document.querySelector("#admin-sidebar");
+    const mainArea = document.querySelector(".main-area");
+    const topbar = document.querySelector(".topbar");
+    const pageContent = mainArea?.querySelector(".page-content");
+    if (!sidebar || !mainArea) return;
+    const paths = {
+      dashboard: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+      users: '<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+      appointments: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 15h3"/>',
+      products: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5M12 13v8"/>',
+      pharmacies: '<path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/><path d="M10 9h4M12 7v4"/>',
+      carerequests: '<path d="M20.8 8.6c0 5.4-8.8 11-8.8 11s-8.8-5.6-8.8-11A4.6 4.6 0 0 1 12 6.2a4.6 4.6 0 0 1 8.8 2.4Z"/><path d="M8 12h8M12 8v8"/>',
+      orders: '<path d="M6 3h12a2 2 0 0 1 2 2v16l-4-2-4 2-4-2-4 2V5a2 2 0 0 1 2-2Z"/><path d="M8 8h8m-8 4h8m-8 4h4"/>',
+      revenueoverview: '<circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18"/>',
+      menu: '<path d="M4 6h16M4 12h16M4 18h16"/>'
+    };
+    const icon = (name) => {
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("aria-hidden", "true"); svg.setAttribute("focusable", "false"); svg.classList.add("admin-icon");
+      svg.innerHTML = paths[name] || paths.dashboard;
+      return svg;
+    };
+    const brand = sidebar.querySelector(".brand");
+    if (brand) {
+      const logo = document.createElement("span"); logo.className = "logo-icon"; logo.setAttribute("aria-hidden", "true");
+      logo.innerHTML = '<svg viewBox="0 0 48 48" focusable="false"><path d="M24 41S6 29 6 17.5C6 10.8 10.8 7 16.1 7c3.4 0 6.1 1.8 7.9 4.8C25.8 8.8 28.5 7 31.9 7 37.2 7 42 10.8 42 17.5 42 29 24 41 24 41Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><path d="M11 24h7l3-6 5.5 13 4-8H37" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      const wordmark = document.createElement("span"); wordmark.append(document.createTextNode("Care"));
+      const plus = document.createElement("span"); plus.className = "brand-plus"; plus.textContent = "Plus"; wordmark.append(plus);
+      const admin = document.createElement("small"); admin.textContent = "ADMIN"; wordmark.append(admin);
+      brand.replaceChildren(logo, wordmark);
+    }
+    sidebar.querySelectorAll(".side-nav a").forEach(link => {
+      const holder = link.querySelector(":scope > span");
+      if (!holder) return;
+      const label = link.textContent.slice(holder.textContent.length).trim().toLowerCase().replace(/\s+/g, "");
+      holder.classList.add("nav-icon"); holder.replaceChildren(icon(label));
+    });
+    const menu = topbar?.querySelector(".menu-toggle");
+    if (menu) { menu.replaceChildren(icon("menu")); mainArea.prepend(menu); }
+    const logout = topbar?.querySelector("[data-auth-toggle]");
+    if (logout) sidebar.querySelector(".sidebar-bottom")?.append(logout);
+    const title = topbar?.querySelector(".topbar-copy");
+    if (title && pageContent) {
+      const heading = document.createElement("div"); heading.className = "revenue-page-title";
+      heading.append(title); pageContent.prepend(heading);
+    }
+    topbar?.remove();
+    sidebar.querySelectorAll(".sidebar-bottom a:not(.sidebar-logout)").forEach(link => { link.textContent = "View CarePlus site"; });
+    const menuButton = mainArea.querySelector(".menu-toggle");
+    const closeSidebar = () => {
+      document.body.classList.remove("sidebar-open");
+      menuButton?.setAttribute("aria-expanded", "false");
+    };
+    const toggle = () => {
+      const open = document.body.classList.toggle("sidebar-open");
+      menuButton?.setAttribute("aria-expanded", String(open));
+    };
+    menuButton?.addEventListener("click", toggle);
+    sidebar.querySelectorAll(".side-nav a").forEach(link => link.addEventListener("click", closeSidebar));
+    document.addEventListener("click", event => {
+      if (document.body.classList.contains("sidebar-open") && !event.target.closest(".sidebar, .menu-toggle")) closeSidebar();
+    });
+    document.addEventListener("keydown", event => { if (event.key === "Escape") closeSidebar(); });
+    return;
+  }
 
   const moduleName = page.dataset.adminPage;
   const dataStore = window.CarePlusData;
@@ -147,7 +214,57 @@
     return element;
   }
 
+  function renderAppointmentFinance() {
+    const head = page.querySelector("[data-table-head]");
+    const body = page.querySelector("[data-table-body]");
+    const empty = page.querySelector("[data-table-empty]");
+    if (!head || !body || !empty) return;
+    const appointments = dataStore.list("appointments").filter(row => row.commissionAppointmentId ? String(row.commissionAppointmentId) === String(row.id) : true);
+    const money = value => `JOD ${Number(value || 0).toFixed(2)}`;
+    const eligible = appointments.filter(row => row.status === "Completed" && row.paymentStatus === "Paid" && row.balancePaymentStatus === "Paid" && row.commissionStatus !== "Reversed" && row.refundStatus !== "Refunded");
+    const totals = {
+      consultation: appointments.filter(row => row.status !== "Cancelled").reduce((sum, row) => sum + Number(row.consultationFee || 0), 0),
+      deposits: appointments.filter(row => row.depositPaymentStatus === "Paid" && row.refundStatus !== "Refunded").reduce((sum, row) => sum + Number(row.depositPaid || 0), 0),
+      commissions: eligible.reduce((sum, row) => sum + Number(row.commissionAmount || 0), 0),
+      awaiting: eligible.filter(row => ["Pending Review", "Payable"].includes(row.commissionStatus)).reduce((sum, row) => sum + Number(row.commissionRemainingToSettle ?? row.commissionAmount ?? 0), 0)
+    };
+    [["consultation", totals.consultation], ["deposits", totals.deposits], ["commissions", totals.commissions], ["awaiting", totals.awaiting]].forEach(([key, value]) => {
+      const node = page.querySelector(`[data-financial-total="${key}"]`);
+      if (node) node.textContent = money(value);
+    });
+    const query = String(page.querySelector("[data-search]")?.value || "").trim().toLowerCase();
+    const filter = String(page.querySelector("[data-appointment-status-filter]")?.value || "");
+    const shown = appointments.filter(row => {
+      const haystack = [row.id, row.patient, row.doctor, row.status, row.paymentStatus, row.commissionStatus, row.commissionRate, row.commissionAmount].join(" ").toLowerCase();
+      return (!query || haystack.includes(query)) && (!filter || (filter === "awaiting" ? ["Pending Review", "Payable"].includes(row.commissionStatus) : filter === "demo" ? String(row.paymentStatus || "").startsWith("Demo") : row.status === filter));
+    }).sort((a, b) => String(b.createdAt || b.date || "").localeCompare(String(a.createdAt || a.date || "")));
+    const headers = ["Appointment ID", "Patient", "Doctor", "Consultation fee", "Deposit paid", "Balance", "Rate", "Commission", "Collected", "To settle", "Payment", "Commission status", "Appointment status", "Date", "Review"];
+    const header = document.createElement("tr");
+    headers.forEach(label => { const th = document.createElement("th"); th.scope = "col"; th.textContent = label; header.append(th); });
+    head.replaceChildren(header);
+    body.replaceChildren();
+    shown.forEach(row => {
+      const tr = document.createElement("tr");
+      const values = [row.id, row.patient, row.doctor, money(row.consultationFee), money(row.depositPaid), money(row.remainingBalance), row.commissionRate == null ? "—" : `${Number(row.commissionRate)}%`, money(row.commissionAmount), money(row.commissionCollected), money(row.commissionRemainingToSettle), row.paymentStatus || "Not recorded", row.commissionStatus || "Not recorded", row.status || "Requested", row.date || row.createdAt || "—"];
+      values.forEach((value, index) => tr.append(cell(String(value ?? "—"), index === 0 ? "appointment-id-cell" : "")));
+      const actionCell = document.createElement("td");
+      const eligibleForSettlement = row.status === "Completed" && row.paymentStatus === "Paid" && row.balancePaymentStatus === "Paid" && row.commissionAppointmentId === row.id && Number(row.commissionAmount) > 0 && row.refundStatus !== "Refunded";
+      if (eligibleForSettlement && row.commissionStatus === "Pending Review") {
+        const button = document.createElement("button"); button.type = "button"; button.className = "text-button"; button.dataset.commissionAction = "approve"; button.dataset.id = String(row.id); button.textContent = "Approve"; actionCell.append(button);
+      } else if (eligibleForSettlement && row.commissionStatus === "Payable") {
+        const button = document.createElement("button"); button.type = "button"; button.className = "text-button"; button.dataset.commissionAction = "settle"; button.dataset.id = String(row.id); button.textContent = "Mark settled"; actionCell.append(button);
+      } else if (String(row.paymentStatus || "").startsWith("Demo")) actionCell.textContent = "Demo only";
+      else actionCell.textContent = "—";
+      tr.append(actionCell); body.append(tr);
+    });
+    empty.textContent = shown.length ? "" : "Doctor appointment records will appear here when submitted.";
+    empty.hidden = shown.length > 0;
+    const count = page.querySelector("[data-record-count]");
+    if (count) count.textContent = `${shown.length} ${shown.length === 1 ? "appointment" : "appointments"}`;
+  }
+
   function renderTable() {
+    if (moduleName === "appointments") { renderAppointmentFinance(); return; }
     const config = fields[moduleName];
     const head = page.querySelector("[data-table-head]");
     const body = page.querySelector("[data-table-body]");
@@ -620,6 +737,24 @@
   });
   document.querySelector("[data-action='add']")?.addEventListener("click", () => openEditor());
   page.querySelector("[data-search]")?.addEventListener("input", renderTable);
+  page.querySelector("[data-appointment-status-filter]")?.addEventListener("change", renderTable);
+  page.querySelector("[data-table-body]")?.addEventListener("click", event => {
+    const button = event.target.closest("button[data-commission-action]");
+    if (!button) return;
+    const row = dataStore.get("appointments", button.dataset.id);
+    const verified = row && row.status === "Completed" && row.paymentStatus === "Paid" && row.balancePaymentStatus === "Paid" && row.commissionAppointmentId === row.id && Number(row.commissionAmount) > 0 && row.refundStatus !== "Refunded";
+    if (!verified) { showToast("Only a completed, fully verified appointment can be settled.", true); return; }
+    const action = button.dataset.commissionAction;
+    const expected = action === "approve" ? "Pending Review" : "Payable";
+    if (row.commissionStatus !== expected) { showToast("This commission has already been reviewed.", true); return; }
+    const identity = localStorage.getItem("careplusDemoIdentity") || "Admin";
+    const stamp = new Date().toISOString();
+    const changes = action === "approve"
+      ? { commissionStatus: "Payable", commissionReviewedAt: stamp, commissionReviewedBy: identity, commissionAdminAction: "Approved for settlement" }
+      : { commissionStatus: "Settled", commissionSettledAt: stamp, commissionSettledBy: identity, commissionAdminAction: "Marked settled" };
+    if (!dataStore.update("appointments", row.id, changes)) { showToast("Commission update could not be saved.", true); return; }
+    refreshRecords(); renderTable(); renderDashboard(); showToast(action === "approve" ? "Commission approved for settlement." : "Commission marked settled.");
+  });
   document.querySelector("[data-pharmacy-order-search]")?.addEventListener("input", renderPharmacyOrders);
   document.querySelector("[data-pharmacy-order-filter]")?.addEventListener("change", renderPharmacyOrders);
   page.querySelector("[data-table-body]")?.addEventListener("click", event => {

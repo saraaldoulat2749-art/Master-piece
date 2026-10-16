@@ -190,7 +190,7 @@
     const visible = appointments.filter(item => {
       const status = String(item.status || "").toLowerCase();
       const group = status === "cancelled" ? "cancelled" : isAppointmentUpcoming(item) ? "upcoming" : "past";
-      const searchText = [item.doctor, item.specialty, item.area, item.date].join(" ").toLowerCase();
+      const searchText = [item.id, item.doctor, item.specialty, item.area, item.date, item.paymentStatus].join(" ").toLowerCase();
       return group === appointmentFilter && searchText.includes(query);
     }).sort((a, b) => `${a.date} ${a.time || ""}`.localeCompare(`${b.date} ${b.time || ""}`));
     const list = byId("appointment-list"); list.replaceChildren();
@@ -210,9 +210,28 @@
       const meta = makeElement("div", "record-meta");
       appendMeta(meta, "calendar", dateFormat(appointment.date)); appendMeta(meta, "clock", appointment.time || "Time to be confirmed");
       appendMeta(meta, "pin", appointment.area || "Clinic details to be confirmed"); card.append(meta);
+      if (Number(appointment.consultationFee) > 0) {
+        const finance = makeElement("div", "appointment-finance");
+        [
+          ["Appointment ID", appointment.id], ["Consultation fee", `JOD ${Number(appointment.consultationFee).toFixed(2)}`],
+          ["Deposit paid", `JOD ${Number(appointment.depositPaid || 0).toFixed(2)}`],
+          ["Required deposit", `JOD ${Number(appointment.depositAmount || 0).toFixed(2)}`],
+          ["Remaining balance", `JOD ${Number(appointment.remainingBalance || 0).toFixed(2)}`],
+          ["CarePlus commission (10% of full fee)", `JOD ${Number(appointment.commissionAmount || 0).toFixed(2)}`],
+          ["Payment status", appointment.paymentStatus || "Pending"]
+        ].forEach(([label, value]) => {
+          const item = makeElement("div", "appointment-finance__item");
+          item.append(makeElement("span", "", label), makeElement("strong", "", value)); finance.append(item);
+        });
+        card.append(finance);
+      }
       const actions = makeElement("div", "record-actions");
       const details = makeElement("button", "button button--outline", "View details"); details.type = "button";
-      details.addEventListener("click", () => showDetails("Appointment details", [["Doctor", appointment.doctor], ["Specialty", appointment.specialty], ["Date", dateFormat(appointment.date)], ["Time", appointment.time], ["Clinic", appointment.area], ["Status", statusLabel]]));
+      details.addEventListener("click", () => {
+        const details = [["Appointment ID", appointment.id], ["Doctor", appointment.doctor], ["Specialty", appointment.specialty], ["Date", dateFormat(appointment.date)], ["Time", appointment.time], ["Clinic", appointment.area], ["Appointment status", statusLabel]];
+        if (Number(appointment.consultationFee) > 0) details.push(["Consultation fee", `JOD ${Number(appointment.consultationFee).toFixed(2)}`], ["Deposit paid", `JOD ${Number(appointment.depositPaid || 0).toFixed(2)}`], ["Required deposit", `JOD ${Number(appointment.depositAmount || 0).toFixed(2)}`], ["Remaining balance", `JOD ${Number(appointment.remainingBalance || 0).toFixed(2)}`], ["CarePlus commission", `JOD ${Number(appointment.commissionAmount || 0).toFixed(2)}`], ["Payment status", appointment.paymentStatus || "Not recorded"]);
+        showDetails("Appointment details", details);
+      });
       actions.append(details);
       if (isAppointmentUpcoming(appointment)) {
         const reschedule = makeElement("button", "button button--outline", "Reschedule"); reschedule.type = "button";
@@ -376,7 +395,15 @@
 
   function cancelAppointment(appointment) {
     if (!window.confirm(`Cancel your appointment with ${appointment.doctor || "this doctor"}?`)) return;
-    if (window.CarePlusClinic?.updateAppointment(appointment.id, { status: "Cancelled" })) { refreshUser(); showToast("Appointment cancelled."); }
+    const changes = { status: "Cancelled" };
+    if (Number(appointment.consultationFee) > 0) {
+      changes.commissionStatus = ["Pending Review", "Payable", "Settled"].includes(appointment.commissionStatus) ? "Reversed" : "Not earned";
+      if (Number(appointment.commissionCollected) > 0) changes.commissionReversedAmount = Number(appointment.commissionCollected);
+      changes.commissionCollected = 0;
+      changes.commissionRemainingToSettle = 0;
+      if (Number(appointment.depositPaid) > 0) changes.refundStatus = String(appointment.paymentStatus || "").startsWith("Demo") ? "No refund due; demo payment was not charged" : "Refund review required";
+    }
+    if (window.CarePlusClinic?.updateAppointment(appointment.id, changes)) { refreshUser(); showToast("Appointment cancelled."); }
   }
 
   function cancelCareRequest(request) {

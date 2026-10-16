@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Appointment Deposit | CarePlus</title>
+  <link rel="stylesheet" href="../../Nav/style.css">
+  <link rel="stylesheet" href="../Review/style.css">
+  <link rel="stylesheet" href="../../Footer/style.css">
+  <style>
+    .payment-grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:22px;align-items:start}.checkout-steps{grid-column:1/-1;width:100%;margin-bottom:0}.payment-card{border:1px solid var(--border);border-radius:13px;padding:22px;background:#fff}.payment-card h2{font-size:19px;margin:0 0 8px}.payment-card p{color:var(--muted);font-size:13px;line-height:1.65}.money-row{display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid #edf2f3;color:var(--muted);font-size:13px}.money-row strong{color:var(--dark);white-space:nowrap}.money-row.total{font-size:15px;font-weight:700}.payment-result{min-height:20px;margin-top:12px;font-size:13px;color:#16856b}.payment-button{width:100%;margin-top:18px}.payment-button:disabled{opacity:.55;cursor:not-allowed}.payment-badge{display:inline-flex;padding:6px 10px;border-radius:20px;background:#fff4e5;color:#9b6920;font-size:11px;font-weight:bold}.checkout-ref{margin-top:15px;color:#758795;font-size:12px;overflow-wrap:anywhere}
+    @media(max-width:800px){.payment-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body data-protected="true"><script src="../../auth.js"></script>
+  <div id="nav-container"></div>
+  <script>fetch("../../Nav/index.html").then(response=>response.text()).then(html=>{document.getElementById("nav-container").innerHTML=html;document.querySelectorAll('#nav-container a[href^="../"]').forEach(link=>link.href=`../${link.getAttribute("href")}`)}).catch(error=>console.error("Navbar could not be loaded",error));</script>
+  <main class="page">
+    <a href="../Review/index.html" class="button back-button" id="backButton">Back to booking review</a>
+    <h1 class="page-title">Appointment <span>Deposit</span></h1>
+    <p class="subtitle">Review the amount required to submit your appointment request.</p>
+    <div class="container payment-grid">
+      <div class="steps checkout-steps" aria-label="Booking progress"><div class="step completed"><div class="circle">✓</div><div class="step-label">Book Appointment</div></div><div class="step completed"><div class="circle">✓</div><div class="step-label">Select Date &amp; Time</div></div><div class="step completed"><div class="circle">✓</div><div class="step-label">Review Booking</div></div><div class="step active"><div class="circle">4</div><div class="step-label">Deposit Payment</div></div><div class="step"><div class="circle">5</div><div class="step-label">Request Received</div></div></div>
+      <section class="payment-card">
+        <span class="payment-badge" id="paymentStatus">Deposit required</span>
+        <h2 style="margin-top:15px">Deposit summary</h2>
+        <div class="money-row"><span>Full consultation fee</span><strong id="feeAmount">JOD 0.00</strong></div>
+        <div class="money-row"><span>Deposit due now (10%)</span><strong id="depositAmount">JOD 0.00</strong></div>
+        <div class="money-row"><span>Balance payable after deposit</span><strong id="balanceAmount">JOD 0.00</strong></div>
+        <div class="money-row"><span>CarePlus commission (10% of full fee)</span><strong id="commissionAmount">JOD 0.00</strong></div>
+        <div class="money-row"><span>Commission collected</span><strong id="commissionCollected">JOD 0.00</strong></div>
+        <div class="money-row"><span>Commission remaining to settle</span><strong id="commissionRemaining">JOD 0.00</strong></div>
+        <p class="checkout-ref">Appointment ID: <strong id="appointmentId">—</strong></p>
+        <p class="payment-result" id="paymentMessage" role="status" aria-live="polite"></p>
+        <button class="button confirm-button payment-button" id="simulatePayment" type="button">Simulate deposit success</button>
+        <a class="button back-button payment-button" id="viewAppointment" href="#" hidden>View appointment</a>
+      </section>
+      <aside class="payment-card">
+        <h2>How the amounts work</h2>
+        <p>The 10% deposit is part of the consultation fee. It is deducted from the amount still due at the visit.</p>
+        <p>CarePlus commission is calculated once from the full consultation fee. It is not added to the deposit and is not deducted a second time from the remaining balance.</p>
+        <div class="money-row"><span>Doctor amount after commission</span><strong id="doctorNet">JOD 0.00</strong></div>
+      </aside>
+    </div>
+  </main>
+  <div id="footer-container"></div>
+  <script>fetch("../../Footer/index.html").then(response=>response.text()).then(html=>{document.getElementById("footer-container").innerHTML=html}).catch(error=>console.error("Footer could not be loaded",error));</script>
+  <script src="../../data/careplus-data.js"></script><script src="../../data/careplus-clinic.js"></script><script src="script.js"></script><script src="../../Footer/footer.js"></script>
+</body>
+</html>

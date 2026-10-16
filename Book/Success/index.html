@@ -25,10 +25,9 @@ fetch("../../Nav/index.html")
     <main class="success-container">
         <section class="success-header">
             <div class="success-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7" /></svg></div>
-            <h1>Booking Successful!</h1>
+            <h1>Appointment booking submitted</h1>
             <p>
-                Your appointment has been booked successfully.
-                Here are your appointment details.
+                Your appointment is saved and appears in your bookings. The doctor will review and respond to your request.
             </p>
         </section>
         <section class="booking-card">
@@ -73,14 +72,18 @@ fetch("../../Nav/index.html")
                 </div>
                 <div class="detail-item">
                     <div class="detail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></div>
-                    <div class="detail-text">
-                        <span>Booking Status</span>
-                        <strong id="bookingStatus">Requested</strong>
-                    </div>
+                    <div class="detail-text"><span>Appointment status</span><strong id="bookingStatus">Pending deposit</strong></div>
                 </div>
+                <div class="detail-item"><div class="detail-text"><span>Appointment ID</span><strong id="appointmentId">Not available</strong></div></div>
+                <div class="detail-item"><div class="detail-text"><span>Consultation fee</span><strong id="consultationFee">JOD 0.00</strong></div></div>
+                <div class="detail-item"><div class="detail-text"><span>Required deposit (10%)</span><strong id="depositRequired">JOD 0.00</strong></div></div>
+                <div class="detail-item"><div class="detail-text"><span>Deposit paid</span><strong id="depositPaid">JOD 0.00</strong></div></div>
+                <div class="detail-item"><div class="detail-text"><span>Remaining balance</span><strong id="remainingBalance">JOD 0.00</strong></div></div>
+                <div class="detail-item"><div class="detail-text"><span>CarePlus commission (10% of full fee)</span><strong id="commissionAmount">JOD 0.00</strong></div></div>
+                <div class="detail-item"><div class="detail-text"><span>Payment status</span><strong id="paymentStatus">Pending</strong></div></div>
             </div>
             <div class="confirmation-note">
-                Your booking request has been sent to the doctor. The status will update here when the doctor responds.
+                The deposit shown was simulated in this browser. No real payment was processed. Appointment status and payment status are tracked separately.
             </div>
             <div class="buttons">
                 <a href="../Time/index.html" class="btn btn-primary">

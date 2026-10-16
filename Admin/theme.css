@@ -83,7 +83,7 @@
 }
 .admin-dashboard .brand > span > span,
 .admin-dashboard .brand-plus { color: #94D5D6; }
-.admin-dashboard .side-nav a { min-height: 41px; border-radius: 7px; color: #e8f3f6; }
+.admin-dashboard .side-nav a { min-height: 44px; border-radius: 10px; color: #e8f3f6; }
 .admin-dashboard .side-nav a > .nav-icon { color: #b1e5e6; }
 .admin-dashboard .side-nav a.active {
   border-color: rgba(148, 213, 214, .38);
@@ -93,7 +93,7 @@
 .admin-dashboard .side-nav a.active > .nav-icon { color: #94D5D6; }
 .admin-dashboard .side-nav a.active:hover,
 .admin-dashboard .side-nav a.active:focus-visible { background: rgba(148, 213, 214, .2); }
-.admin-dashboard .sidebar-bottom { border-top-color: rgba(255,255,255,.1); }
+.admin-dashboard .sidebar-bottom { border-top-color: rgba(255,255,255,.16); }
 .admin-dashboard .sidebar-bottom a { color: #fff; }
 .admin-dashboard .sidebar-bottom .logout-link:hover,
 .admin-dashboard .sidebar-bottom .logout-link:focus-visible { border-color: #94D5D6; background: #94D5D6; color: #041b2a; }
@@ -213,3 +213,7 @@
   .customer-orders-heading .record-count { align-self: center; }
   .customer-orders-table { min-width: 1000px; }
 }
+
+.side-nav .nav-section-label{padding:15px 12px 4px;color:#91a8b4;font-size:9px;font-weight:700;letter-spacing:1.3px}
+
+.sidebar-bottom .sidebar-logout{display:block;margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.12);font-size:11px;font-weight:700;letter-spacing:.4px}
