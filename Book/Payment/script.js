@@ -15,7 +15,8 @@
     }
     const identity = sessionStorage.getItem("careplusDemoIdentity") || localStorage.getItem("careplusDemoIdentity") || "";
     const signedIn = window.CarePlusData?.list("users").find(user => user.email?.toLowerCase() === identity.toLowerCase() || user.phone === identity);
-    if (record.userId && String(record.userId) !== String(signedIn?.id || "")) {
+    const allowedUserIds = [record.userId, record.bookingUserId].filter(Boolean).map(String);
+    if (allowedUserIds.length && !allowedUserIds.includes(String(signedIn?.id || ""))) {
       document.getElementById("paymentMessage").textContent = "This appointment belongs to a different account.";
       button.disabled = true;
       return;
@@ -29,7 +30,7 @@
     document.getElementById("commissionRemaining").textContent = money(record.commissionRemainingToSettle);
     document.getElementById("doctorNet").textContent = money(record.doctorNetEarnings);
     const complete = record.depositPaymentStatus === "Demo Simulated" || record.depositPaymentStatus === "Paid";
-    document.getElementById("paymentStatus").textContent = complete ? record.paymentStatus : "Deposit required";
+    document.getElementById("paymentStatus").textContent = complete ? record.paymentStatus : "Pending";
     button.disabled = complete;
     button.textContent = complete ? "Demo deposit step complete" : "Simulate deposit success";
     viewLink.hidden = !complete;

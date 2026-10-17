@@ -3,7 +3,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const values = Object.fromEntries(["area", "specialty", "doctor", "doctorId", "image", "date", "time"].map(key => [key, params.get(key) || ""]));
   const errorMessage = document.getElementById("errorMessage");
   const confirmButton = document.getElementById("confirmButton");
-  const profile = window.CarePlusClinic?.resolveDoctor(values.doctor, values.doctorId)?.profile || {};
+  const resolvedDoctor = window.CarePlusClinic?.resolveDoctor(values.doctor, values.doctorId);
+  const profile = resolvedDoctor?.profile || {};
+  values.doctor = profile.name || values.doctor;
+  values.specialty = profile.specialty || values.specialty;
+  values.image = profile.photo || values.image;
   const fee = Number(profile.fee);
   const validFee = Number.isFinite(fee) && fee > 0;
   const deposit = validFee ? Number((fee * 0.10).toFixed(2)) : 0;
@@ -38,11 +42,30 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!validFee) return showError("This doctor has not set a consultation fee. Please choose another doctor or try later.");
     if (!window.CarePlusClinic?.isAvailable({ doctor: values.doctor, doctorId: values.doctorId, date: values.date, time: values.time })) return showError("This time is no longer available. Please return to the schedule and select another time.");
 
+    const users = window.CarePlusData?.list("users") || [];
     const identity = sessionStorage.getItem("careplusDemoIdentity") || localStorage.getItem("careplusDemoIdentity") || "";
-    const matchedUser = window.CarePlusData?.list("users").find(user => user.email?.toLowerCase() === identity.toLowerCase() || user.phone === identity);
-    const idempotencyKey = [matchedUser?.id || identity || patientPhone, values.doctorId, values.date, values.time].join("|");
+    const bookingUser = users.find(user =>
+      (identity && user.email?.toLowerCase() === identity.toLowerCase()) ||
+      (identity && user.phone === identity)
+    );
+    const matchedUser = users.find(user =>
+      (patientEmail && user.email?.toLowerCase() === patientEmail.toLowerCase()) ||
+      (patientPhone && user.phone === patientPhone)
+    );
+    const patientUser = matchedUser || window.CarePlusData?.upsertDemoUser(patientEmail || patientPhone);
+    if (patientUser) {
+      window.CarePlusData?.update("users", patientUser.id, {
+        name: patientName,
+        phone: patientPhone,
+        email: patientEmail,
+        role: "Customer",
+        status: "Active"
+      });
+    }
+    const idempotencyKey = [patientUser?.id || patientPhone, values.doctorId, values.date, values.time].join("|");
     const result = window.CarePlusClinic?.createBooking({
-      patient: patientName, phone: patientPhone, email: patientEmail, userId: matchedUser?.id || "",
+      patient: patientName, phone: patientPhone, email: patientEmail, userId: patientUser?.id || "",
+      bookingUserId: bookingUser?.id || patientUser?.id || "",
       doctor: values.doctor, doctorId: values.doctorId, specialty: values.specialty,
       area: values.area, date: values.date, time: values.time, idempotencyKey
     });

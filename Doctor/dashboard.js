@@ -34,9 +34,15 @@
   ensureProfile();
   const doctorName = () => String(profile.name || "Doctor").trim();
   const ownedAppointments = () => {
-    const doctorId = window.CarePlusAuth?.demoDoctorAccount?.()?.doctorId;
+    const doctorId = window.CarePlusAuth?.demoDoctorAccount?.()?.doctorId || providerId;
     return appointments().filter(row => Boolean(doctorId) && String(row.doctorId || "") === String(doctorId));
   };
+  function patientKey(row) {
+    const name = String(row.patient || "").trim().toLowerCase().replace(/\s+/g, " ");
+    const contact = String(row.email || "").trim().toLowerCase() || String(row.phone || "").replace(/\D/g, "");
+    if (name) return `${name}|${contact}`;
+    return contact || String(row.userId || row.id || "");
+  }
   function initials(name) { return String(name || "DR").trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase(); }
   function paintIdentity() {
     document.querySelectorAll("[data-doctor-name]").forEach(node => node.textContent = doctorName());
@@ -52,19 +58,18 @@
   function renderDashboard() {
     const rows = ownedAppointments();
     const todayRows = rows.filter(row => row.date === today).sort((a, b) => String(a.time).localeCompare(String(b.time)));
-    const upcoming = rows.filter(row => row.date >= today && ["Pending Deposit", "Requested", "Confirmed"].includes(row.status));
-    const patients = new Set(rows.map(row => row.userId || `${row.patient}|${row.phone || ""}`));
+    const patients = new Set(rows.map(patientKey));
     document.getElementById("todayLabel").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }).toUpperCase();
     document.getElementById("statToday").textContent = todayRows.length;
     document.getElementById("statPatients").textContent = patients.size;
-    document.getElementById("statUpcoming").textContent = upcoming.length;
+    document.getElementById("statUpcoming").textContent = rows.length;
     document.getElementById("statPending").textContent = rows.filter(row => ["Pending Deposit", "Requested"].includes(row.status)).length;
     const todayList = document.getElementById("todayList");
     todayList.innerHTML = todayRows.length ? todayRows.map(row => `<div class="appointment-item"><span class="time-block">${esc(timeText(row.time))}</span><span class="patient-main"><b>${esc(row.patient || "Patient")}</b><small>${esc(dateText(row.date))}${row.specialty ? ` · ${esc(row.specialty)}` : ""}${String(row.source || "").includes("demo") ? " · Sample preview" : ""}</small></span>${statusTag(row.status)}</div>`).join("") : `<div class="empty-state">No appointments are scheduled for today.</div>`;
     const notices = [];
     const requests = rows.filter(row => ["Pending Deposit", "Requested"].includes(row.status)).length;
     if (requests) notices.push(`<div class="notice"><i>✉</i><span><b>${requests} new booking request${requests === 1 ? "" : "s"}</b><br>Review requests awaiting a response.</span></div>`);
-    const next = upcoming.filter(row => row.status === "Confirmed").sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))[0];
+    const next = rows.filter(row => row.date >= today && row.status === "Confirmed").sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))[0];
     if (next) notices.push(`<div class="notice"><i>◷</i><span><b>Upcoming appointment</b><br>${esc(rowPatient(next))} · ${esc(dateText(next.date))} at ${esc(timeText(next.time))}</span></div>`);
     document.getElementById("noticeList").innerHTML = notices.join("") || `<div class="empty-state">You’re all caught up. New updates will appear here.</div>`;
     document.getElementById("notificationDot").hidden = requests === 0;
@@ -92,7 +97,7 @@
       const hasFee = Number(row.consultationFee) > 0;
       const depositReady = ["Demo Simulated", "Paid"].includes(row.depositPaymentStatus);
       let actions = "—";
-      if (row.status === "Pending Deposit") actions = `<span class="payment-wait">Deposit required</span>`;
+      if (row.status === "Pending Deposit") actions = `<span class="payment-wait">Pending</span>`;
       else if (row.status === "Requested" && (!hasFee || depositReady)) actions = `<div class="row-actions"><button class="action accept" data-action="Confirmed" data-id="${esc(row.id)}">Accept</button><button class="action reject" data-action="Cancelled" data-id="${esc(row.id)}">Reject</button></div>`;
       else if (row.status === "Requested") actions = `<span class="payment-wait">Awaiting deposit</span>`;
       else if (row.status === "Confirmed") actions = `<div class="row-actions"><button class="action" data-action="Completed" data-id="${esc(row.id)}">Complete</button><button class="action cancel" data-action="Cancelled" data-id="${esc(row.id)}">Cancel</button></div>`;
@@ -107,7 +112,7 @@
     const query = document.getElementById("patientSearch").value.trim().toLowerCase();
     const byKey = new Map();
     ownedAppointments().forEach(row => {
-      const key = row.userId || `${row.patient}|${row.phone || ""}`;
+      const key = patientKey(row);
       if (!byKey.has(key)) byKey.set(key, { ...row, history: [] });
       byKey.get(key).history.push(row);
     });

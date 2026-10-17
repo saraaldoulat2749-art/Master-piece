@@ -96,9 +96,8 @@
     const upcoming = allVisits.filter(request => ["accepted", "in progress"].includes(statusName(request).toLowerCase()) && timestamp(request) >= new Date(`${day}T00:00`).getTime() && timestamp(request) < new Date(`${addDays(day, 7)}T00:00`).getTime());
     const completed = allVisits.filter(request => statusName(request).toLowerCase() === "completed");
     const hours = completed.reduce((sum, request) => {
-      const start = Date.parse(request.actualStartAt || request.startedAt || "");
-      const end = Date.parse(request.actualEndAt || request.completedAt || "");
-      return Number.isFinite(start) && Number.isFinite(end) && end > start ? sum + (end - start) / 3600000 : sum;
+      const plannedDuration = Number.parseFloat(request.duration);
+      return Number.isFinite(plannedDuration) && plannedDuration > 0 ? sum + plannedDuration : sum;
     }, 0);
     $("visitsToday").textContent = String(todayVisits.length);
     $("newRequests").textContent = String(newRequests.length);

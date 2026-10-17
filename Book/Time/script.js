@@ -2,10 +2,12 @@
 const params = new URLSearchParams(window.location.search);
 
 const area = params.get("area") || "";
-const specialty = params.get("specialty") || "";
-const doctor = params.get("doctor") || "";
-const doctorId = params.get("doctorId") || window.CarePlusClinic?.resolveDoctor(doctor)?.doctorId || "";
-const image = params.get("image") || "";
+const requestedDoctor = params.get("doctor") || "";
+const doctorId = params.get("doctorId") || window.CarePlusClinic?.resolveDoctor(requestedDoctor)?.doctorId || "";
+const resolvedDoctor = window.CarePlusClinic?.resolveDoctor(requestedDoctor, doctorId);
+const doctor = resolvedDoctor?.profile?.name || requestedDoctor;
+const specialty = resolvedDoctor?.profile?.specialty || params.get("specialty") || "";
+const image = resolvedDoctor?.profile?.photo || params.get("image") || "";
 
 // عرض معلومات الدكتور المختار من صفحة Book
 document.getElementById("doctorName").textContent =
