@@ -52,7 +52,7 @@
   content.hidden = false;
 
   if (String(request.paymentStatus || "").toLowerCase() === "paid") {
-    showResult("Payment already recorded", "This care request has already been marked as paid in the CarePlus demo.");
+    showResult("Payment already recorded", "This care request has already been paid.");
     return;
   }
 
@@ -77,7 +77,7 @@
     error.textContent = "";
     const digits = digitsOnly(cardNumber.value);
     if (holder.value.trim().length < 2) { error.textContent = "Enter the cardholder name."; holder.focus(); return; }
-    if (digits.length < 12 || digits.length > 19) { error.textContent = "Enter a demo card number with 12 to 19 digits."; cardNumber.focus(); return; }
+    if (digits.length < 12 || digits.length > 19) { error.textContent = "Enter a valid card number."; cardNumber.focus(); return; }
     if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry.value)) { error.textContent = "Enter the expiry in MM/YY format."; expiry.focus(); return; }
     const [month, year] = expiry.value.split("/").map(Number);
     const expiryDate = new Date(2000 + year, month, 0, 23, 59, 59);
@@ -90,14 +90,14 @@
       error.textContent = "This request is no longer eligible for payment."; return;
     }
     if (String(latest.paymentStatus || "").toLowerCase() === "paid") {
-      showResult("Payment already recorded", "This care request has already been marked as paid in the CarePlus demo."); return;
+      showResult("Payment already recorded", "This care request has already been paid."); return;
     }
     const saved = dataStore.update("careRequests", request.id, {
-      paymentStatus: "Paid", paymentMethod: `Demo card ending in ${digits.slice(-4)}`,
+      paymentStatus: "Paid", paymentMethod: `Card ending in ${digits.slice(-4)}`,
       paymentLast4: digits.slice(-4), paymentAmount: amount, paidAt: new Date().toISOString()
     });
-    if (!saved) { error.textContent = "The demo payment could not be saved. Please try again."; return; }
+    if (!saved) { error.textContent = "Payment could not be recorded. Please try again."; return; }
     form.reset();
-    showResult("Payment recorded", `JOD ${amount.toFixed(2)} demo payment recorded. No real money was charged.`);
+    showResult("Payment recorded", `JOD ${amount.toFixed(2)} payment recorded.`);
   });
 })();

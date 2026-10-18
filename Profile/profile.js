@@ -77,6 +77,7 @@
   }
   const isAppointmentUpcoming = appointment => appointment.date >= today() && !["completed", "cancelled"].includes(String(appointment.status || "").toLowerCase());
   const matchesUser = record => String(record.userId ?? "") === String(user.id)
+    || String(record.bookingUserId ?? "") === String(user.id)
     || String(record.email || record.customer?.email || "").toLowerCase() === identityLower
     || String(record.phone || record.customer?.phone || "") === identity;
   let appointmentFilter = "upcoming";
@@ -401,7 +402,7 @@
       if (Number(appointment.commissionCollected) > 0) changes.commissionReversedAmount = Number(appointment.commissionCollected);
       changes.commissionCollected = 0;
       changes.commissionRemainingToSettle = 0;
-      if (Number(appointment.depositPaid) > 0) changes.refundStatus = String(appointment.paymentStatus || "").startsWith("Demo") ? "No refund due; demo payment was not charged" : "Refund review required";
+      if (Number(appointment.depositPaid) > 0) changes.refundStatus = String(appointment.paymentStatus || "").startsWith("Demo") ? "No refund due" : "Refund review required";
     }
     if (window.CarePlusClinic?.updateAppointment(appointment.id, changes)) { refreshUser(); showToast("Appointment cancelled."); }
   }

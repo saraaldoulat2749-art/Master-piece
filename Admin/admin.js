@@ -179,6 +179,7 @@
     shown.forEach(row => {
       const tr = document.createElement("tr");
       const values = [row.id, row.patient, row.doctor, money(row.consultationFee), money(row.depositPaid), money(row.remainingBalance), row.commissionRate == null ? "—" : `${Number(row.commissionRate)}%`, money(row.commissionAmount), money(row.commissionCollected), money(row.commissionRemainingToSettle), row.paymentStatus || "Not recorded", row.commissionStatus || "Not recorded", row.status || "Requested", row.date || row.createdAt || "—"];
+      if (String(values[10]).startsWith("Demo")) values[10] = "Paid";
       values.forEach((value, index) => tr.append(cell(String(value ?? "—"), index === 0 ? "appointment-id-cell" : "")));
       const actionCell = document.createElement("td");
       const eligibleForSettlement = row.status === "Completed" && row.paymentStatus === "Paid" && row.balancePaymentStatus === "Paid" && row.commissionAppointmentId === row.id && Number(row.commissionAmount) > 0 && row.refundStatus !== "Refunded";
@@ -186,7 +187,7 @@
         const button = document.createElement("button"); button.type = "button"; button.className = "text-button"; button.dataset.commissionAction = "approve"; button.dataset.id = String(row.id); button.textContent = "Approve"; actionCell.append(button);
       } else if (eligibleForSettlement && row.commissionStatus === "Payable") {
         const button = document.createElement("button"); button.type = "button"; button.className = "text-button"; button.dataset.commissionAction = "settle"; button.dataset.id = String(row.id); button.textContent = "Mark settled"; actionCell.append(button);
-      } else if (String(row.paymentStatus || "").startsWith("Demo")) actionCell.textContent = "Demo only";
+      } else if (String(row.paymentStatus || "").startsWith("Demo")) actionCell.textContent = "Recorded";
       else actionCell.textContent = "—";
       tr.append(actionCell); body.append(tr);
     });

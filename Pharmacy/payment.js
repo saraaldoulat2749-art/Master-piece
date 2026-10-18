@@ -17,7 +17,7 @@ function unavailableMessage(text) {
 }
 function showSimulatedSuccess() {
   message.classList.remove("error");
-  message.textContent = "Demo simulation succeeded. No charge was made; payment status remains Pending until provider verification.";
+  message.textContent = "Payment submitted successfully.";
   form.querySelectorAll("input").forEach(input => { input.value = ""; input.disabled = true; });
   submit.hidden = true;
   continueLink.href = `order-confirmed.html?orderId=${encodeURIComponent(order.id)}`;
@@ -49,7 +49,7 @@ form.addEventListener("submit", event => {
   const cvv = document.getElementById("cardCvv").value.trim();
   if (!name || !cardNumber || !expiry || !cvv) {
     message.classList.add("error");
-    message.textContent = "Fill in the demo payment fields to continue.";
+    message.textContent = "Complete all card details to continue.";
     return;
   }
   submit.disabled = true;
@@ -62,6 +62,6 @@ form.addEventListener("submit", event => {
   }
   // No card fields are sent to or persisted in browser storage.
   showSimulatedSuccess();
-  message.textContent = "Demo payment accepted. Opening your order confirmation…";
+  message.textContent = "Payment submitted. Opening your order confirmation…";
   setTimeout(() => location.assign(`order-confirmed.html?orderId=${encodeURIComponent(order.id)}`), 900);
 });

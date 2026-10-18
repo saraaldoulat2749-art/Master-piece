@@ -101,7 +101,8 @@
       else if (row.status === "Requested" && (!hasFee || depositReady)) actions = `<div class="row-actions"><button class="action accept" data-action="Confirmed" data-id="${esc(row.id)}">Accept</button><button class="action reject" data-action="Cancelled" data-id="${esc(row.id)}">Reject</button></div>`;
       else if (row.status === "Requested") actions = `<span class="payment-wait">Awaiting deposit</span>`;
       else if (row.status === "Confirmed") actions = `<div class="row-actions"><button class="action" data-action="Completed" data-id="${esc(row.id)}">Complete</button><button class="action cancel" data-action="Cancelled" data-id="${esc(row.id)}">Cancel</button></div>`;
-      const payment = hasFee ? `<small class="finance-lines">Fee ${esc(money(row.consultationFee))} · Deposit paid ${esc(money(row.depositPaid))} / required ${esc(money(row.depositAmount))} · Balance ${esc(money(row.remainingBalance))}<br>CarePlus ${esc(Number(row.commissionRate || 0))}% = ${esc(money(row.commissionAmount))} · Collected ${esc(money(row.commissionCollected))} · To settle ${esc(money(row.commissionRemainingToSettle))}<br>Doctor net ${esc(money(row.doctorNetEarnings))}<br>Payment: ${esc(row.paymentStatus || "Pending")}</small>` : `<small class="finance-lines">No payment details recorded</small>`;
+      const paymentStatus = String(row.paymentStatus || "Pending").startsWith("Demo") ? "Paid" : (row.paymentStatus || "Pending");
+      const payment = hasFee ? `<small class="finance-lines">Fee ${esc(money(row.consultationFee))} · Deposit paid ${esc(money(row.depositPaid))} / required ${esc(money(row.depositAmount))} · Balance ${esc(money(row.remainingBalance))}<br>CarePlus ${esc(Number(row.commissionRate || 0))}% = ${esc(money(row.commissionAmount))} · Collected ${esc(money(row.commissionCollected))} · To settle ${esc(money(row.commissionRemainingToSettle))}<br>Doctor net ${esc(money(row.doctorNetEarnings))}<br>Payment: ${esc(paymentStatus)}</small>` : `<small class="finance-lines">No payment details recorded</small>`;
       const appointmentTag = row.status === "Pending Deposit" ? `<span class="status requested">Pending deposit</span>` : statusTag(row.status);
       return `<tr><td><b>${esc(row.patient || "Patient")}</b><small class="finance-lines">ID ${esc(row.id)}</small></td><td>${esc(dateText(row.date))}</td><td>${esc(timeText(row.time))}</td><td>${appointmentTag}</td><td>${payment}</td><td>${actions}</td></tr>`;
     }).join("");
@@ -212,13 +213,13 @@
     const row = ownedAppointments().find(item => String(item.id) === button.dataset.id); if (!row) return;
     const status = button.dataset.action;
     const changes = { status };
-    if (status === "Completed") changes.commissionStatus = row.paymentStatus === "Paid" && row.balancePaymentStatus === "Paid" ? "Pending Review" : "Not payable — demo payment or balance unpaid";
+    if (status === "Completed") changes.commissionStatus = row.paymentStatus === "Paid" && row.balancePaymentStatus === "Paid" ? "Pending Review" : "Not payable — payment or balance unpaid";
     if (status === "Cancelled") {
       changes.commissionStatus = ["Pending Review", "Payable", "Settled"].includes(row.commissionStatus) ? "Reversed" : "Not earned";
         if (Number(row.commissionCollected) > 0) changes.commissionReversedAmount = Number(row.commissionCollected);
         changes.commissionCollected = 0;
         changes.commissionRemainingToSettle = 0;
-      if (Number(row.depositPaid) > 0) changes.refundStatus = String(row.paymentStatus || "").startsWith("Demo") ? "No refund due; demo payment was not charged" : "Refund review required";
+      if (Number(row.depositPaid) > 0) changes.refundStatus = String(row.paymentStatus || "").startsWith("Demo") ? "No refund due" : "Refund review required";
     }
     if (Object.keys(changes).length && clinic?.updateAppointment(row.id, changes)) renderAll();
   });

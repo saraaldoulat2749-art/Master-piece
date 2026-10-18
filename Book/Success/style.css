@@ -19,6 +19,7 @@
             max-width: 850px;
             margin: 30px auto;
         }
+        .booking-progress{display:flex;align-items:flex-start;gap:8px;margin:0 0 34px}.progress-step{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;color:#83949e;font-size:12px}.progress-step:not(:last-child)::after{content:"";position:absolute;z-index:0;top:18px;left:calc(50% + 22px);width:calc(100% - 36px);height:2px;background:#dfe9eb}.progress-step.completed:not(:last-child)::after{background:#94D5D6}.progress-step span{position:relative;z-index:1;display:flex;width:37px;height:37px;align-items:center;justify-content:center;border:1px solid #dfe9eb;border-radius:50%;background:#fff}.progress-step.completed span,.progress-step.active span{border-color:#94D5D6;background:#94D5D6;color:#172536}.progress-step.completed strong,.progress-step.active strong{color:#078f9b}.progress-step strong{font-weight:400}@media(max-width:650px){.booking-progress{gap:3px}.progress-step{font-size:10px}.progress-step:not(:last-child)::after{left:calc(50% + 18px);width:calc(100% - 26px)}}
         .success-header {
             text-align: center;
             margin-bottom: 30px;

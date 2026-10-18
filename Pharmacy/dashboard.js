@@ -152,7 +152,7 @@ function renderOrders() {
       : order.status === "Preparing for Delivery" ? `<button class="action-button accept" data-order-action="Out for Delivery" data-order-id="${escapeHtml(order.id)}">Dispatch</button><button class="action-button reject" data-order-action="Cancelled" data-order-id="${escapeHtml(order.id)}">Cancel</button>`
       : order.status === "Out for Delivery" ? `<a class="action-button accept" href="manage-order.html?orderId=${encodeURIComponent(order.id)}">Track delivery</a>` : "—";
     const commissionLabel = order.commissionStatus || "Not Eligible";
-    const demoPaymentNote = order.paymentDemoResult === "simulated-success" ? "<small>Demo payment simulated · not verified</small>" : "";
+    const demoPaymentNote = "";
     return `<tr><td><b>${escapeHtml(order.reference || order.id)}</b>${order.demo ? "<small>Sample preview</small>" : ""}</td><td>${escapeHtml(order.customerReference || "Customer")}</td><td>${medicines || "—"}</td><td>${fmtDateTime(order.placedAt || order.createdAt)}</td><td><b>${money(order.total)}</b></td><td>${statusBadge(order.paymentStatus || "Pending", order.paymentStatus === "Paid" ? "accepted" : order.paymentStatus === "Refunded" || order.paymentStatus === "Failed" ? "out" : "pending")}${demoPaymentNote}</td><td>${statusBadge(order.status, statusClass)}</td><td><b>${Number(order.commissionRate || 0)}%</b><small>${money(order.commissionAmount || 0)} · ${escapeHtml(commissionLabel)}</small></td><td><div class="row-actions">${action}</div></td></tr>`;
   }).join("");
   byId("orderRows").querySelectorAll("tr").forEach((row, index) => {

@@ -74,7 +74,7 @@ function loadDraft() {
     const choice = document.querySelector(`input[name="payment"][value="${draft.payment}"]`);
     if (choice) {
       choice.checked = true;
-      byId("card-entry").hidden = choice.value !== "demo-card";
+      byId("card-entry").hidden = choice.value !== "card";
     }
   }
 }
@@ -82,7 +82,7 @@ function loadDraft() {
 function saveDraft() {
   const draft = Object.fromEntries([...document.querySelectorAll("#checkout-form [name]")].filter(field => field.type !== "radio").map(field => [field.name, field.value]));
   draft.delivery = document.querySelector('input[name="delivery"]:checked')?.value || "standard";
-  draft.payment = document.querySelector('input[name="payment"]:checked')?.value || "demo-card";
+  draft.payment = document.querySelector('input[name="payment"]:checked')?.value || "card";
   sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
 }
 
@@ -106,17 +106,17 @@ function validateForm() {
     else if (field.name === "email" && !field.validity.valid) message = "Enter a valid email address.";
     else if (field.name === "phone" && !/^(?:\+962|00962|0)?7[789]\d{7}$/.test(field.value.replace(/[\s-]/g, ""))) message = "Enter a valid Jordanian mobile number.";
     else if (field.name === "address" && field.value.trim().length < 8) message = "Please enter a complete delivery address.";
-    else if (field.matches("[data-card-number]") && (field.value.replace(/\D/g, "").length < 12 || field.value.replace(/\D/g, "").length > 19)) message = "Enter a valid demo card number.";
-    else if (field.matches("[data-card-name]") && field.value.trim().length < 2) message = "Enter the name shown on the demo card.";
+    else if (field.matches("[data-card-number]") && (field.value.replace(/\D/g, "").length < 12 || field.value.replace(/\D/g, "").length > 19)) message = "Enter a valid card number.";
+    else if (field.matches("[data-card-name]") && field.value.trim().length < 2) message = "Enter the name shown on the card.";
     else if (field.matches("[data-card-expiry]")) {
       const match = field.value.trim().match(/^(0[1-9]|1[0-2])\/(\d{2})$/);
       if (!match) message = "Enter the expiry date as MM/YY.";
       else {
         const expiryMonth = Number(match[1]); const expiryYear = 2000 + Number(match[2]); const now = new Date();
-        if (expiryYear < now.getFullYear() || (expiryYear === now.getFullYear() && expiryMonth < now.getMonth() + 1)) message = "The demo card expiry date has passed.";
+        if (expiryYear < now.getFullYear() || (expiryYear === now.getFullYear() && expiryMonth < now.getMonth() + 1)) message = "This card expiry date has passed.";
       }
     }
-    else if (field.matches("[data-card-cvv]") && !/^\d{3,4}$/.test(field.value)) message = "Enter a 3 or 4 digit demo security code.";
+    else if (field.matches("[data-card-cvv]") && !/^\d{3,4}$/.test(field.value)) message = "Enter a 3 or 4 digit security code.";
     setFieldError(field, message);
     if (message && !firstInvalid) firstInvalid = field;
   }
@@ -135,7 +135,7 @@ function submitOrder(event) {
   }
   if (!validateForm()) return;
   const formData = new FormData(byId("checkout-form"));
-  const paymentMethod = "Card payment (demo)";
+  const paymentMethod = "Card payment";
   const deliveryMethod = formData.get("delivery") || "standard";
   const subtotal = cart.reduce((sum, item) => sum + Number(item.product.price) * Number(item.quantity), 0);
   const deliveryFee = DELIVERY_FEES[deliveryMethod];
@@ -210,7 +210,7 @@ if (isConfirmationPage()) {
   document.querySelectorAll('input[name="delivery"]').forEach(input => input.addEventListener("change", () => { updateTotals(); saveDraft(); }));
   const cardEntry = byId("card-entry");
   document.querySelectorAll('input[name="payment"]').forEach(input => input.addEventListener("change", () => {
-    cardEntry.hidden = input.value !== "demo-card" || !input.checked;
+    cardEntry.hidden = input.value !== "card" || !input.checked;
     saveDraft();
   }));
   byId("card-entry")?.addEventListener("input", event => {

@@ -3,6 +3,7 @@
   const appointmentId = params.get("appointmentId") || "";
   const money = value => `JOD ${Number(value || 0).toFixed(2)}`;
   const button = document.getElementById("simulatePayment");
+  const cardForm = document.getElementById("cardForm");
   const viewLink = document.getElementById("viewAppointment");
   const appointment = () => appointmentId && window.CarePlusData?.get("appointments", appointmentId);
 
@@ -30,26 +31,30 @@
     document.getElementById("commissionRemaining").textContent = money(record.commissionRemainingToSettle);
     document.getElementById("doctorNet").textContent = money(record.doctorNetEarnings);
     const complete = record.depositPaymentStatus === "Demo Simulated" || record.depositPaymentStatus === "Paid";
-    document.getElementById("paymentStatus").textContent = complete ? record.paymentStatus : "Pending";
     button.disabled = complete;
-    button.textContent = complete ? "Demo deposit step complete" : "Simulate deposit success";
+    button.textContent = complete ? "Paid" : "Pay now";
+    cardForm.hidden = complete;
+    document.getElementById("paymentMessage").hidden = complete || !document.getElementById("paymentMessage").textContent;
     viewLink.hidden = !complete;
     viewLink.href = `../Success/index.html?appointmentId=${encodeURIComponent(record.id)}`;
-    if (complete) document.getElementById("paymentMessage").textContent = "The demo response was recorded. This is not a real payment; the appointment is a request for the doctor's review.";
   }
 
-  button.addEventListener("click", () => {
+  cardForm.addEventListener("submit", event => {
+    event.preventDefault();
+    if (!cardForm.reportValidity()) return;
     const record = appointment();
     if (!record) return render();
     // Replace this simulated response with verified provider webhooks/API calls in the backend version.
     const updated = window.CarePlusClinic?.recordDemoDepositStep(record.id);
+    cardForm.reset();
     if (!updated) {
-      document.getElementById("paymentMessage").textContent = "The demo response could not be saved in this browser.";
+      const message = document.getElementById("paymentMessage");
+      message.textContent = "Payment could not be recorded. Please try again.";
+      message.hidden = false;
       return;
     }
     location.href = `../Success/index.html?appointmentId=${encodeURIComponent(updated.id)}`;
   });
-  document.getElementById("backButton").addEventListener("click", event => { event.preventDefault(); if (history.length > 1) history.back(); else location.href = "../Review/index.html"; });
   window.CarePlusData?.subscribe(render);
   render();
 })();

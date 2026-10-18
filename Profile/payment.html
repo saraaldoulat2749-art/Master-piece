@@ -16,24 +16,24 @@
   <main class="payment-main">
     <div class="payment-container">
       <a class="payment-back" href="index.html#care">&larr; Back to my care requests</a>
-          <header class="payment-heading"><p class="profile-kicker">CAREPLUS DEMO CHECKOUT</p><h1>Pay for your care request</h1><p>Enter card details to complete the demo payment for your accepted request.</p></header>
+          <header class="payment-heading"><p class="profile-kicker">CAREPLUS CHECKOUT</p><h1>Pay for your care request</h1><p>Enter card details to complete payment for your accepted request.</p></header>
       <div class="payment-layout" id="payment-content" hidden>
         <section class="payment-summary" aria-labelledby="payment-summary-title">
           <span class="payment-summary__icon" aria-hidden="true">♡</span>
           <p class="eyebrow">ACCEPTED REQUEST</p>
           <h2 id="payment-summary-title">Elderly care</h2>
           <dl><div><dt>Request number</dt><dd id="request-reference"></dd></div><div><dt>Care service</dt><dd id="request-service"></dd></div><div><dt>Care recipient</dt><dd id="request-recipient"></dd></div><div><dt>Requested date</dt><dd id="request-date"></dd></div></dl>
-          <div class="payment-total"><span>Demo amount due</span><strong id="payment-amount"></strong></div>
+          <div class="payment-total"><span>Amount due</span><strong id="payment-amount"></strong></div>
         </section>
         <form class="payment-form" id="card-form" novalidate>
           <div class="card-preview" aria-hidden="true"><span class="card-chip"></span><span class="card-brand">CAREPLUS PAY</span><strong id="card-number-preview">•••• •••• •••• ••••</strong><div><span id="card-name-preview">CARDHOLDER NAME</span><span id="card-expiry-preview">MM/YY</span></div></div>
           <div class="payment-fields">
             <label>Cardholder name<input name="cardholder" autocomplete="cc-name" required minlength="2" placeholder="Name on card"></label>
-            <label>Card number<input name="cardNumber" inputmode="numeric" autocomplete="cc-number" required minlength="12" maxlength="23" placeholder="1234 5678 9012 3456" aria-describedby="card-number-help"><small id="card-number-help">Use any 12–19 digit demo number.</small></label>
+            <label>Card number<input name="cardNumber" inputmode="numeric" autocomplete="cc-number" required minlength="12" maxlength="23" placeholder="1234 5678 9012 3456"></label>
             <div class="payment-fields__row"><label>Expiry date<input name="expiry" autocomplete="cc-exp" required inputmode="numeric" placeholder="MM/YY"></label><label>Security code<input name="cvv" autocomplete="cc-csc" required inputmode="numeric" maxlength="4" minlength="3" pattern="[0-9]{3,4}" placeholder="CVV"></label></div>
           </div>
           <p class="payment-error" id="payment-error" role="alert"></p>
-          <button class="button button--primary payment-submit" type="submit">Complete demo payment</button>
+          <button class="button button--primary payment-submit" type="submit">Complete payment</button>
         </form>
       </div>
       <section class="payment-result" id="payment-result" hidden role="status" aria-live="polite"><span aria-hidden="true">✓</span><h2 id="payment-result-title">Payment recorded</h2><p id="payment-result-copy"></p><a class="button button--primary" href="index.html#care">Return to My Care Requests</a></section>

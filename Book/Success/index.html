@@ -23,6 +23,13 @@ fetch("../../Nav/index.html")
   .catch(error => console.error("Error loading navbar:", error));
 </script> 
     <main class="success-container">
+        <div class="booking-progress" aria-label="Booking progress">
+            <div class="progress-step completed"><span>✓</span><strong>Book Appointment</strong></div>
+            <div class="progress-step completed"><span>✓</span><strong>Select Date &amp; Time</strong></div>
+            <div class="progress-step completed"><span>✓</span><strong>Review Booking</strong></div>
+            <div class="progress-step completed"><span>✓</span><strong>Deposit Payment</strong></div>
+            <div class="progress-step active"><span>5</span><strong>Request Received</strong></div>
+        </div>
         <section class="success-header">
             <div class="success-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7" /></svg></div>
             <h1>Appointment booking submitted</h1>
@@ -80,7 +87,6 @@ fetch("../../Nav/index.html")
                 <div class="detail-item"><div class="detail-text"><span>Deposit paid</span><strong id="depositPaid">JOD 0.00</strong></div></div>
                 <div class="detail-item"><div class="detail-text"><span>Remaining balance</span><strong id="remainingBalance">JOD 0.00</strong></div></div>
                 <div class="detail-item"><div class="detail-text"><span>CarePlus commission (10% of full fee)</span><strong id="commissionAmount">JOD 0.00</strong></div></div>
-                <div class="detail-item"><div class="detail-text"><span>Payment status</span><strong id="paymentStatus">Pending</strong></div></div>
             </div>
             <div class="buttons">
                 <a href="../Time/index.html" class="btn btn-primary">
