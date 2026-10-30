@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#062536">
+  <title>Revenue &amp; Financial Overview | CarePlus Admin</title>
+  <link rel="stylesheet" href="../admin.css">
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="../dashboard-ui.css?v=admin-pages-5">
+  <link rel="stylesheet" href="../../shared/notifications.css?v=notifications-6">
+  <link rel="stylesheet" href="revenue.css?v=finance-14">
+  <link rel="stylesheet" href="../../shared/global-button-theme.css">
+</head>
+<body class="admin-unified" data-protected="true" data-admin-protected="true">
+  <script src="../../auth.js?v=archive-aware-1"></script>
+  <div class="admin-layout">
+    <aside class="sidebar" id="admin-sidebar">
+      <a class="brand" href="../index.html"><span class="brand-mark">+</span><span>Care<span>Plus</span><small>ADMIN</small></span></a>
+      <nav class="side-nav" aria-label="Admin sections">
+        <a href="../index.html"><span>▦</span>Dashboard</a>
+        <a href="../Users/index.html"><span>♙</span>Users</a>
+        <a href="../Appointments/index.html"><span>▣</span>Appointments</a>
+        <a href="../Products/index.html"><span>+</span>Products</a>
+        <a href="../Pharmacies/index.html"><span>✚</span>Pharmacies</a>
+        <a href="../CareRequests/index.html"><span>♡</span>Care requests</a>
+        <a href="../Orders/index.html"><span>▤</span>Orders</a>
+        <a class="active" href="index.html"><span>◈</span>Revenue &amp; reports</a>
+      </nav>
+      <div class="sidebar-bottom"><p>Admin workspace</p><a href="../../Home/Master.html">View CarePlus site</a><a class="sidebar-logout" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar"><button class="menu-toggle" type="button" aria-label="Open admin navigation" aria-controls="admin-sidebar" aria-expanded="false">☰</button><div class="topbar-copy"><span class="eyebrow">CAREPLUS MANAGEMENT</span><h1>Revenue &amp; Financial Overview</h1></div><div id="careplus-notification-widget" class="cpn-admin-slot"></div><a class="logout-link" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></header>
+      <section class="page-content finance-page" data-finance-page>
+        <div class="welcome-row"><div><p class="eyebrow">FINANCIAL OVERVIEW</p><h2>Revenue Overview</h2><p>Total payment amounts recorded on CarePlus across services.</p></div></div>
+        <section class="admin-ui-summary finance-metrics revenue-summary" id="finance-metrics" aria-label="Revenue overview"></section>
+        <section class="finance-charts">
+          <article class="finance-panel" aria-labelledby="revenue-service-title"><div class="finance-panel-head"><div><h3 id="revenue-service-title">Revenue by Service</h3></div></div><div class="pie-layout"><svg id="revenue-pie" viewBox="0 0 200 200" role="img" aria-label="Payment distribution by service"></svg><div id="revenue-legend" class="chart-legend"></div></div></article>
+          <article class="finance-panel" aria-labelledby="revenue-growth-title"><div class="finance-panel-head"><div><h3 id="revenue-growth-title">Revenue Growth</h3><p>Recorded payments by month</p></div></div><svg id="revenue-line" viewBox="0 0 900 230" role="img" aria-label="Recorded payment amounts over the last six months"></svg></article>
+        </section>
+        <section class="finance-panel finance-transactions" aria-labelledby="recent-transactions-title">
+          <div class="finance-panel-head"><div><h3 id="recent-transactions-title">Recent Financial Transactions</h3><span id="transaction-count" class="finance-count">0 transactions</span></div><button type="button" id="transactions-view-all" class="finance-provider-details" aria-expanded="false">View All →</button></div>
+          <div class="finance-filters" aria-label="Search and filter transactions">
+            <div class="finance-filter-search"><label for="transaction-search">Search</label><div class="finance-search"><span aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg></span><input id="transaction-search" type="search" placeholder="Search transactions, customers, or providers" aria-label="Search transactions, customers, or providers"></div></div>
+            <label class="finance-filter-service">Service<select id="transaction-service" aria-label="Filter by service"><option value="">All services</option><option value="pharmacy">Pharmacies</option><option value="doctor">Doctors</option><option value="care">Elderly Care</option><option value="store">Medical Store</option><option value="ai">AI Services</option></select></label>
+          </div>
+          <div class="finance-table-wrap"><table class="finance-table finance-table--compact"><thead><tr><th>Name</th><th>Service type</th><th>Details</th></tr></thead><tbody id="recent-transaction-rows"></tbody></table><div class="finance-empty" id="recent-transactions-empty" hidden>No payment transactions recorded yet.</div></div>
+        </section>
+        <dialog class="finance-dialog" id="service-breakdown-dialog" aria-labelledby="service-breakdown-title">
+          <div class="service-breakdown-head"><div><p class="eyebrow">PAYMENTS BY PROVIDER</p><h2 id="service-breakdown-title">Service details</h2></div><button type="button" data-breakdown-close aria-label="Close details">×</button></div>
+          <div class="service-breakdown-summary"><span><small>Total recorded</small><strong id="service-breakdown-total">JOD 0.00</strong></span><b id="service-breakdown-count">0 payments</b></div>
+          <div class="provider-breakdown-list" id="service-breakdown-rows"></div>
+          <div class="service-breakdown-empty" id="service-breakdown-empty" hidden>No payment records for this service in the selected date range.</div>
+          <div class="service-breakdown-foot"><button type="button" class="finance-button finance-button--soft" data-breakdown-close>Close</button></div>
+        </dialog>
+        <dialog class="finance-dialog" id="transaction-dialog" aria-labelledby="transaction-dialog-title"><div class="finance-dialog-head"><h2 id="transaction-dialog-title">Transaction details</h2><button type="button" data-transaction-close aria-label="Close details">×</button></div><div id="transaction-detail-grid" class="finance-detail-grid"></div><div class="finance-dialog-foot"><button type="button" class="finance-button finance-button--soft" data-transaction-close>Close</button></div></dialog>
+      </section>
+    </main>
+  </div>
+  <script src="../../data/careplus-data.js?v=archive-aware-1"></script>
+  <script src="../../data/careplus-pharmacy.js?v=archive-aware-1"></script>
+  <script src="../../data/careplus-clinic.js?v=archive-aware-1"></script>
+  <script src="../dashboard-ui.js?v=admin-pages-3"></script>
+  <script src="../admin-nav.js?v=nav-3"></script>
+  <script src="../../shared/notifications.js?v=notifications-2"></script>
+  <script src="revenue.js?v=finance-14"></script>
+</body>
+</html>
+
+

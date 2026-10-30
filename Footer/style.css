@@ -1,4 +1,7 @@
 .careplus-footer {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
     background: linear-gradient(135deg, #041b2a, #07394b);
     color: #ffffff;
     padding: 55px 7% 20px;
@@ -7,7 +10,26 @@
     min-height: 47vh;
 }
 
+.footer-watermark {
+    position: absolute;
+    z-index: 0;
+    top: 50%;
+    right: 32px;
+    width: 245px;
+    height: 245px;
+    transform: translateY(-50%);
+    fill: none;
+    stroke: #94D5D6;
+    stroke-width: 1.4;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    opacity: .035;
+    pointer-events: none;
+}
+
 .footer-container {
+    position: relative;
+    z-index: 1;
     display: grid;
     grid-template-columns: 1.4fr 1fr 1.3fr 1.3fr 1fr;
     gap: 35px;
@@ -15,14 +37,34 @@
     margin: auto;
 }
 
+.careplus-footer .footer-brand,
+.careplus-footer .footer-column,
+.careplus-footer .footer-bottom {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+}
+
+.careplus-footer .footer-logo,
+.careplus-footer .footer-logo span,
+.careplus-footer .footer-brand > p,
+.careplus-footer .footer-column h3,
+.careplus-footer .footer-column > a,
+.careplus-footer .footer-contact p,
+.careplus-footer .footer-bottom p {
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
 .footer-logo {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: 14px;
     color: #ffffff;
     text-decoration: none;
-    font-size: 24px;
-    font-weight: bold;
+    font-size: 30px;
+    font-weight: 750;
+    letter-spacing: -0.5px;
 }
 
 .footer-logo .brand-plus {
@@ -30,22 +72,26 @@
 }
 
 .logo-icon {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 46px;
-    height: 46px;
-    flex: none;
-    border: 1px solid rgba(148, 213, 214,  0.55);
-    border-radius: 14px;
-    background: linear-gradient(145deg, rgba(148, 213, 214,  0.2), rgba(148, 213, 214,  0.06));
-    color: #94D5D6;
+    display: grid;
+    width: 58px;
+    height: 57px;
+    flex: 0 0 58px;
+    place-items: center;
+    border: 1.5px solid rgba(148, 213, 214, .65);
+    border-radius: 18px;
+    background: linear-gradient(145deg, rgba(148, 213, 214, .16), rgba(148, 213, 214, .045));
+    color: #9ae3e5;
+    box-shadow: 0 0 18px rgba(37, 190, 202, .12), inset 0 0 14px rgba(148, 213, 214, .045);
+}
+
+.careplus-footer .logo-icon {
+    display: grid;
 }
 
 .logo-icon svg {
     display: block;
-    width: 30px;
-    height: 30px;
+    width: 37px;
+    height: 37px;
 }
 
 .footer-brand > p:first-of-type {
@@ -123,6 +169,8 @@
 }
 
 .footer-bottom {
+    position: relative;
+    z-index: 1;
     max-width: 1400px;
     margin: 40px auto 0;
     padding-top: 20px;
@@ -155,6 +203,35 @@
 .footer-legal a:hover {
     color: #94D5D6;
 }
+.careplus-footer {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+
+.footer-watermark {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  right: 32px;
+  width: 245px;
+  height: 245px;
+  transform: translateY(-50%);
+  fill: none;
+  stroke: #94d5d6;
+  stroke-width: 1.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+.footer-container,
+.footer-bottom {
+  position: relative;
+  z-index: 1;
+}
 
 /* Responsive Design */
 @media (max-width: 1000px) {
@@ -166,6 +243,12 @@
 @media (max-width: 650px) {
     .careplus-footer {
         padding: 40px 6% 20px;
+    }
+
+    .footer-watermark {
+        right: -72px;
+        width: 175px;
+        height: 175px;
     }
 
     .footer-container {

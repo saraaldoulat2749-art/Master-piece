@@ -30,10 +30,7 @@ const revealElements = document.querySelectorAll(
     ".about-image-box, " +
     ".about-feature, " +
     ".quick-services-heading, " +
-    ".quick-service, " +
-    ".footer-brand, " +
-    ".footer-column, " +
-    ".footer-bottom"
+    ".quick-service"
 );
 
 revealElements.forEach(function (element, index) {

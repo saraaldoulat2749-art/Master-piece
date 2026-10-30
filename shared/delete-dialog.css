@@ -1,0 +1,37 @@
+.cp-delete-modal { width: min(470px, calc(100% - 32px)); max-height: calc(100dvh - 32px); padding: 0; border: 1px solid #fff; border-radius: 26px; background: #fff; color: #0d2b3a; box-shadow: 0 32px 100px #0d2b3a4d; overflow: auto; }
+.cp-delete-modal::backdrop { background: #0d2b3a99; backdrop-filter: blur(7px); }
+.cp-delete-content { position: relative; padding: 36px 30px 26px; background: radial-gradient(ellipse at 50% 0%, #fff2f3 0%, #fff 55%); }
+.cp-delete-close { position: absolute; top: 14px; right: 14px; border-color: transparent; background: #ffffffb3; color: #718590; border-radius: 50%; }
+.cp-delete-intro { text-align: center; }
+.cp-delete-symbol { display: grid; place-items: center; width: 68px; height: 68px; margin: 8px auto 24px; border: 1px solid #f4d4db; border-radius: 22px; background: linear-gradient(145deg, #fff, #ffe7ec); color: #bd4259; box-shadow: 0 0 0 7px #fff5f7, 0 8px 18px #ba415612; }
+.cp-delete-symbol svg { width: 29px; height: 29px; }
+.cp-delete-content .cp-delete-eyebrow { margin: 0 0 10px; color: #8e6973; font-size: 9px; font-weight: 750; letter-spacing: .17em; }
+.cp-delete-content h2 { margin: 0 0 12px; font-size: clamp(23px, 5vw, 27px); letter-spacing: -.025em; }
+.cp-delete-content p { color: #637d8d; font-size: 13px; line-height: 1.75; }
+.cp-delete-record { display: grid; gap: 7px; margin: 24px 0 16px; padding: 18px 20px; border: 1px solid #deeaee; border-left: 3px solid #23b8be; border-radius: 13px; background: #f5fafb; overflow-wrap: anywhere; }
+.cp-delete-record-label { color: #6c8795; font-size: 9px; font-weight: 700; letter-spacing: .1em; }
+.cp-delete-record strong { color: #163b4e; font-size: 15px; }
+.cp-delete-record [data-delete-meta] { color: #6b8390; font-size: 12px; }
+.cp-delete-content .cp-delete-warning { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 0; color: #9f5c6b; font-size: 11px; }
+.cp-delete-warning > span { display: grid; place-items: center; width: 15px; height: 15px; border: 1px solid #ddb4be; border-radius: 50%; font-size: 10px; font-weight: 700; }
+.cp-delete-actions { display: grid; grid-template-columns: 1fr 1.2fr; gap: 12px; margin-top: 25px; padding-top: 22px; border-top: 1px solid #edf1f3; }
+.cp-delete-actions button { min-height: 46px; padding: 11px 14px; border-radius: 11px; font: 700 12px Arial, Helvetica, sans-serif; cursor: pointer; transition: background .2s, box-shadow .2s; }
+.cp-delete-actions .cp-delete-keep { border: 1px solid #d6e4e9; background: #fff; color: #385c6c; }
+.cp-delete-actions .cp-delete-keep:hover { background: #eef8f8; border-color: #a5d4d7; }
+.cp-delete-confirm { border: 1px solid #b83d52; background: linear-gradient(135deg, #c84a62, #b63b52); color: #fff; box-shadow: 0 4px 10px #b83d521c; }
+.cp-delete-confirm:hover { background: #a63248; box-shadow: 0 6px 16px #b83d5233; }
+.cp-delete-modal button:focus-visible { outline: 3px solid #23b8be; outline-offset: 3px; }
+.cp-deleted-modal .cp-delete-content { padding-top: 40px; background: radial-gradient(ellipse at 50% 0%, #e9f9f3, #fff 65%); }
+.cp-deleted-symbol { display: grid; place-items: center; width: 72px; height: 72px; margin: 0 auto 25px; border: 1px solid #bfe5d7; border-radius: 50%; background: #e2f6ed; color: #21845c; box-shadow: 0 0 0 8px #f2fbf7; }
+.cp-deleted-symbol svg { width: 34px; height: 34px; }
+.cp-deleted-modal h2 { font-size: 23px; }
+.cp-deleted-done { width: 100%; min-height: 46px; margin-top: 20px; border-radius: 11px; background: #008f98; }
+@media (max-width: 400px) { .cp-delete-content { padding: 30px 20px 22px; } .cp-delete-actions { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .cp-delete-modal, .cp-delete-modal * { animation: none !important; transition: none !important; } }
+
+.cp-delete-modal { box-sizing: border-box; font-family: Arial, Helvetica, sans-serif; }
+.cp-delete-modal *, .cp-delete-modal *::before { box-sizing: border-box; }
+.cp-delete-close { display: grid; place-items: center; width: 34px; height: 34px; border: 0; font-size: 24px; cursor: pointer; }
+.cp-deleted-done { border: 0; color: #fff; font: 700 13px Arial, Helvetica, sans-serif; cursor: pointer; }
+@keyframes cp-delete-enter { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: no-preference) { .cp-delete-modal[open] { animation: cp-delete-enter .2s ease-out; } }

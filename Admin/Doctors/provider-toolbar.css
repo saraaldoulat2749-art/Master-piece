@@ -1,0 +1,47 @@
+.admin-unified .provider-page .records-toolbar.admin-inline-toolbar {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 26px 30px;
+}
+.admin-unified .provider-page .admin-inline-filters {
+  display: flex !important;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.admin-unified .provider-page label.admin-inline-filter {
+  display: flex !important;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 12px;
+  width: auto;
+  margin: 0;
+  color: #7090a2;
+  font: 14px Arial, Helvetica, sans-serif;
+}
+.admin-unified .provider-page label.admin-inline-filter select {
+  min-width: 180px;
+  max-width: 240px;
+  height: 54px;
+  padding: 12px 20px;
+  border: 1px solid #d7e5ed;
+  border-radius: 13px;
+  background: #fff;
+  color: #365e74;
+  font: 14px Arial, Helvetica, sans-serif;
+}
+@media (max-width: 850px) {
+  .admin-unified .provider-page .records-toolbar.admin-inline-toolbar {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+@media (max-width: 600px) {
+  .admin-unified .provider-page .records-toolbar.admin-inline-toolbar { gap: 12px; padding: 17px; }
+  .admin-unified .provider-page label.admin-inline-filter { flex: 1 1 200px; }
+  .admin-unified .provider-page label.admin-inline-filter select { flex: 1; min-width: 0; max-width: none; }
+}

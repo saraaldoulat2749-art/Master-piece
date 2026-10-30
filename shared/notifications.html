@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f8fa">
+  <title>Notifications | CarePlus</title>
+  <link rel="stylesheet" href="notifications.css?v=notifications-6">
+  <link rel="stylesheet" href="global-button-theme.css">
+</head>
+<body data-protected="true">
+  <script src="../auth.js?v=archive-aware-1"></script>
+  <main class="cpn-page">
+    <div class="cpn-page-inner">
+      <a class="cpn-page-back" id="cpn-page-back" href="../Home/Master.html">← Back to CarePlus</a>
+      <h1>Notifications</h1>
+      <p class="cpn-page-intro">Updates related to your bookings, orders, and care requests.</p>
+      <p class="cpn-admin-note" id="cpn-admin-note" hidden>Administrator view: all system notifications, including their assigned recipient.</p>
+      <div class="cpn-toolbar">
+        <label>Category
+          <select id="cpn-category-filter" aria-label="Filter notifications by category">
+            <option value="">All categories</option>
+            <option value="appointment">Appointments</option>
+            <option value="pharmacy">Pharmacy orders</option>
+            <option value="care">Elderly care</option>
+            <option value="store">Store orders</option>
+          </select>
+        </label>
+        <button id="cpn-mark-all-page" type="button">Mark all as read</button>
+        <span id="cpn-page-count" aria-live="polite">0 notifications</span>
+      </div>
+      <section class="cpn-page-list" id="cpn-page-list" aria-live="polite"></section>
+    </div>
+  </main>
+  <script src="../data/careplus-data.js?v=archive-aware-1"></script>
+  <script src="notifications.js?v=notifications-2"></script>
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Nurses | CarePlus Admin</title>
+  <link rel="stylesheet" href="../admin.css"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../dashboard-ui.css?v=admin-pages-5">
+  <link rel="stylesheet" href="../../shared/notifications.css?v=notifications-6"><link rel="stylesheet" href="../Doctors/providers.css?v=providers-2"><link rel="stylesheet" href="../Doctors/provider-toolbar.css">
+  <link rel="stylesheet" href="../../shared/global-button-theme.css">
+</head>
+<body class="admin-dashboard admin-unified" data-protected="true" data-admin-protected="true" data-provider-type="nurse">
+  <script src="../../auth.js?v=archive-aware-1"></script>
+  <div class="admin-layout">
+    <aside class="sidebar" id="admin-sidebar">
+      <a class="brand" href="../index.html"><span class="brand-mark">+</span><span>Care<span>Plus</span><small>ADMIN</small></span></a>
+      <nav class="side-nav" aria-label="Admin sections"><a href="../index.html"><span>D</span>Dashboard</a><a href="../Users/index.html"><span>U</span>Users</a><a class="active" href="index.html"><span>D</span>Nurses</a></nav>
+      <div class="sidebar-bottom"><p>Admin workspace</p><a href="../../Home/Master.html">View CarePlus site</a><a class="sidebar-logout" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar"><button class="menu-toggle" type="button" aria-label="Open admin navigation" aria-controls="admin-sidebar" aria-expanded="false">☰</button><div class="topbar-copy"><span class="eyebrow">CAREPLUS MANAGEMENT</span><h1>Nurses</h1></div><div id="careplus-notification-widget" class="cpn-admin-slot"></div><a class="logout-link" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></header>
+      <section class="page-content provider-page nurse-page" data-admin-page="nurses">
+        <div class="welcome-row"><div><p class="eyebrow">PROVIDER DIRECTORY</p><h2>Nurses</h2><p>Manage nurse profiles, account access, and commission rates.</p></div><button class="primary-button" type="button" data-add-provider>Add Nurse</button></div>
+        <div class="admin-ui-summary doctor-summary nurse-summary">
+          <article class="admin-ui-metric"><span class="stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2.5 21v-2a6.5 6.5 0 0 1 13 0v2M18 8v6m-3-3h6"/></svg></span><p>Total Nurses</p><strong data-summary-total>0</strong><small>Nurse directory records</small></article>
+          <article class="admin-ui-metric"><span class="stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></span><p>Active Nurses</p><strong data-summary-active>0</strong><small>With active accounts</small></article>
+          <article class="admin-ui-metric"><span class="stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></svg></span><p>Currently Inactive</p><strong data-summary-inactive>0</strong><small>Marked inactive by the admin</small></article>
+          <article class="admin-ui-metric"><span class="stat-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 3H5v5h5zM19 3h-5v5h5zM10 16H5v5h5zM19 16h-5v5h5z"/><path d="M12 8v8m-4-4h8"/></svg></span><p>Care Specialties</p><strong data-summary-specialties>0</strong><small>Across the nurse directory</small></article>
+        </div>
+        <section class="panel records-panel">
+          <div class="records-toolbar"><label class="search-control"><span aria-hidden="true">⌕</span><input type="search" data-provider-search placeholder="Search nurses" aria-label="Search nurses"></label>
+            <label><span>Status</span><select data-account-filter><option value="">All statuses</option><option>Active</option><option>Inactive</option></select></label>
+          </div>
+          <div class="table-wrap provider-table-wrap"><table><thead><tr><th>Name</th><th>Status</th><th>Details</th></tr></thead><tbody data-provider-rows></tbody></table><div class="table-empty" data-provider-empty>No nurses found.</div></div>
+        </section>
+      </section>
+    </main>
+  </div>
+  <dialog class="provider-dialog" data-provider-dialog><form data-provider-form>
+    <div class="dialog-heading"><div><p class="eyebrow">NURSE PROFILE</p><h2 data-dialog-title>Add Nurse</h2></div><button type="button" class="icon-button" data-dialog-close aria-label="Close">×</button></div>
+    <div class="provider-form-fields">
+      <label class="provider-field">Full name<input name="name" required maxlength="100"></label><label class="provider-field">Email<input name="email" type="email" autocomplete="email" required></label><label class="provider-field">Password<input name="password" type="password" autocomplete="new-password" minlength="8" required></label>
+      <label class="provider-field">Phone<input name="phone" type="tel"></label><label class="provider-field">Qualifications<input name="qualifications" required></label>
+      <label class="provider-field">Experience (years)<input name="experience" type="number" min="0" max="80" step="1"></label><label class="provider-field">Completed requests<input name="completedRequests" type="number" min="0" step="1"></label>
+      <label class="provider-field">CarePlus commission (%)<input name="commissionRate" type="number" min="0" max="100" step="0.01" required></label>
+      <label class="provider-field">Account status<select name="status"><option>Active</option><option>Inactive</option></select></label>
+    </div>
+    <p class="form-feedback" data-form-feedback role="status"></p><div class="dialog-actions"><button type="button" class="secondary-button" data-dialog-close>Cancel</button><button class="primary-button" type="submit">Save Nurse</button></div>
+  </form></dialog>
+  <dialog class="provider-dialog provider-details-dialog" data-details-dialog><div class="dialog-heading"><div><p class="eyebrow">PROVIDER DETAILS</p><h2 data-details-title>Nurse</h2></div><button type="button" class="icon-button" data-details-close aria-label="Close">×</button></div><div class="provider-details-grid" data-details-grid></div><div class="provider-activity"><strong>Activity history</strong><div data-provider-activity></div></div><div class="provider-actions" data-details-actions></div><div class="dialog-actions"><a class="secondary-button" href="../CareRequests/index.html">View care requests</a></div></dialog>
+  <div class="toast" data-provider-toast role="status" aria-live="polite"></div>
+  <script src="../../data/careplus-data.js?v=archive-aware-1"></script><script src="../../data/careplus-pharmacy.js?v=archive-aware-1"></script>
+  <script src="../dashboard-ui.js?v=admin-pages-3"></script><script src="../admin-nav.js?v=nav-3"></script><script src="../../shared/notifications.js?v=notifications-2"></script><script src="../../shared/search-toggle.js"></script><script src="../../shared/filter-toggle.js"></script><script src="../Doctors/providers.js?v=providers-4"></script>
+</body></html>
+
+

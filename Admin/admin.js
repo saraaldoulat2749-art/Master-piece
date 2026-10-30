@@ -8,7 +8,9 @@
   const fields = {
     users: [
       { key: "name", label: "Name", required: true }, { key: "email", label: "Email", type: "email", required: true },
-      { key: "phone", label: "Phone", type: "tel" }, { key: "role", label: "Role", type: "select", options: ["Customer", "Nurse", "Administrator"] },
+      { key: "phone", label: "Phone", type: "tel" }, { key: "role", label: "Role", type: "select", options: ["Customer", "Doctor", "Nurse", "Administrator"] },
+      { key: "password", label: "Provider password", type: "password", autocomplete: "new-password", minLength: 8 },
+      { key: "commissionRate", label: "CarePlus commission (%)", type: "number", min: "0", max: "100", step: "0.01" },
       { key: "status", label: "Status", type: "select", options: ["Active", "Inactive"] }
     ],
     appointments: [
@@ -25,6 +27,9 @@
     pharmacies: [
       { key: "name", label: "Pharmacy name", required: true }, { key: "area", label: "Area", required: true },
       { key: "address", label: "Address", required: true }, { key: "phone", label: "Phone", type: "tel" },
+      { key: "email", label: "Email", type: "email", autocomplete: "email", required: true },
+      { key: "password", label: "Password", type: "password", autocomplete: "new-password", minLength: 8, required: true },
+      { key: "commissionRate", label: "CarePlus commission (%)", type: "number", min: "0", max: "100", step: "0.01", required: true },
       { key: "distance", label: "Distance", required: true }, { key: "hours", label: "Opening hours", required: true },
       { key: "medicines", label: "Available medicines (comma separated)", wide: true },
       { key: "status", label: "Status", type: "select", options: ["Active", "Inactive"] }
@@ -37,6 +42,12 @@
       { key: "careCommissionRate", label: "CarePlus rate (%)", type: "number", step: "0.01", readOnly: true },
       { key: "careCommissionAmount", label: "CarePlus fee (JOD)", type: "number", step: "0.01", readOnly: true },
       { key: "estimatedTotal", label: "Estimated total (JOD)", type: "number", step: "0.01", readOnly: true },
+      { key: "_payment", label: "Website deposit payment", readOnly: true, computed: true },
+      { key: "_paid", label: "Website deposit paid (JOD)", readOnly: true, computed: true },
+      { key: "_balance", label: "Remaining balance (JOD)", readOnly: true, computed: true },
+      { key: "_reference", label: "Transaction reference", readOnly: true, computed: true },
+      { key: "_paidAt", label: "Payment date", readOnly: true, computed: true },
+      { key: "_method", label: "Payment method", readOnly: true, computed: true },
       { key: "area", label: "Area" }, { key: "assignedNurseId", label: "Assigned nurse ID" },
       { key: "status", label: "Status", readOnly: true },
       { key: "notes", label: "Family instructions", type: "textarea", wide: true },
@@ -52,15 +63,19 @@
   let records = Object.fromEntries(Object.keys(labels).map(key => [key, dataStore.list(key)]));
   let editingId = null;
   let toastTimer;
+  const isArchived = record => record.archived === true || Boolean(record.archivedAt);
 
   const iconPaths = {
     dashboard: '<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
     users: '<path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/>',
+    doctors: '<path d="M12 4v16M4 12h16"/><circle cx="12" cy="12" r="9"/>',
+    nurses: '<path d="M12 4v16M4 12h16"/><path d="M7 3h10v3H7z"/>',
     appointments: '<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 15h3"/>',
     products: '<path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5M3 16l9 5 9-5M12 13v8"/>',
     orders: '<path d="M6 3h12a2 2 0 0 1 2 2v16l-4-2-4 2-4-2-4 2V5a2 2 0 0 1 2-2Z"/><path d="M8 8h8m-8 4h8m-8 4h4"/>',
     pharmacies: '<path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-6h6v6"/><path d="M10 9h4M12 7v4"/>',
     carerequests: '<path d="M20.8 8.6c0 5.4-8.8 11-8.8 11s-8.8-5.6-8.8-11A4.6 4.6 0 0 1 12 6.2a4.6 4.6 0 0 1 8.8 2.4Z"/><path d="M8 12h8M12 8v8"/>',
+    revenue: '<path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/><path d="M16 6h4v4"/>',
     search: '<circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/>',
     plus: '<path d="M12 5v14M5 12h14"/>',
     menu: '<path d="M4 6h16M4 12h16M4 18h16"/>',
@@ -129,13 +144,17 @@
   });
   document.querySelectorAll(".stat-card").forEach(card => {
     const holder = card.querySelector(".stat-icon");
-    const label = card.querySelector("p")?.textContent.trim().toLowerCase();
-    if (holder) holder.replaceChildren(makeIcon(label === "care requests" ? "carerequests" : label === "store orders" ? "products" : label));
+    const metricIcons = { "count-users": "users", "count-doctors": "doctors", "count-pharmacies": "pharmacies", "count-nurses": "nurses", "count-appointments": "appointments", "count-medicine-orders": "orders", "count-careRequests": "carerequests", "count-store-orders": "products", "count-revenue": "revenue" };
+    const metricId = card.querySelector("strong")?.id;
+    if (holder && metricIcons[metricId]) holder.replaceChildren(makeIcon(metricIcons[metricId]));
   });
   document.querySelectorAll(".sidebar-bottom a").forEach(link => { link.textContent = "View CarePlus site"; });
   document.querySelectorAll(".shortcuts-panel a > span").forEach(holder => { holder.replaceChildren(makeIcon("arrow")); });
   document.querySelectorAll(".panel-heading > a").forEach(link => {
-    link.textContent = "Manage appointments "; link.append(makeIcon("arrow"));
+    const isOrders = Boolean(link.closest(".recent-panel")?.querySelector("#recent-orders"));
+    link.textContent = isOrders ? "Manage orders " : "Manage appointments ";
+    if (isOrders) link.href = "Orders/index.html";
+    link.append(makeIcon("arrow"));
   });
 
   function refreshRecords() { records = Object.fromEntries(Object.keys(labels).map(key => [key, dataStore.list(key)])); }
@@ -166,11 +185,17 @@
       if (node) node.textContent = money(value);
     });
     const query = String(page.querySelector("[data-search]")?.value || "").trim().toLowerCase();
-    const filter = String(page.querySelector("[data-appointment-status-filter]")?.value || "");
-    const shown = appointments.filter(row => {
+    const statusSelect = page.querySelector("[data-appointment-status-filter]");
+    const filter = String(statusSelect?.value || "");
+    if (statusSelect) {
+      const statuses = [...new Set(["Pending Deposit", "Requested", "Confirmed", "Completed", "Cancelled", ...appointments.map(row => row.status).filter(Boolean)])];
+      statusSelect.replaceChildren(new Option("All statuses", ""), ...statuses.map(status => new Option(status, status)));
+      statusSelect.value = filter;
+    }
+    const shown = dataStore.newestFirst(appointments).filter(row => {
       const haystack = [row.id, row.patient, row.doctor, row.status, row.paymentStatus, row.commissionStatus, row.commissionRate, row.commissionAmount].join(" ").toLowerCase();
-      return (!query || haystack.includes(query)) && (!filter || (filter === "awaiting" ? ["Pending Review", "Payable"].includes(row.commissionStatus) : filter === "demo" ? String(row.paymentStatus || "").startsWith("Demo") : row.status === filter));
-    }).sort((a, b) => String(b.createdAt || b.date || "").localeCompare(String(a.createdAt || a.date || "")));
+      return (!query || haystack.includes(query)) && (!filter || String(row.status || "Requested") === filter);
+    });
     const headers = ["Appointment ID", "Patient", "Doctor", "Consultation fee", "Deposit paid", "Balance", "Rate", "Commission", "Collected", "To settle", "Payment", "Commission status", "Appointment status", "Date", "Review"];
     const header = document.createElement("tr");
     headers.forEach(label => { const th = document.createElement("th"); th.scope = "col"; th.textContent = label; header.append(th); });
@@ -180,7 +205,15 @@
       const tr = document.createElement("tr");
       const values = [row.id, row.patient, row.doctor, money(row.consultationFee), money(row.depositPaid), money(row.remainingBalance), row.commissionRate == null ? "—" : `${Number(row.commissionRate)}%`, money(row.commissionAmount), money(row.commissionCollected), money(row.commissionRemainingToSettle), row.paymentStatus || "Not recorded", row.commissionStatus || "Not recorded", row.status || "Requested", row.date || row.createdAt || "—"];
       if (String(values[10]).startsWith("Demo")) values[10] = "Paid";
-      values.forEach((value, index) => tr.append(cell(String(value ?? "—"), index === 0 ? "appointment-id-cell" : "")));
+      values.forEach((value, index) => {
+        if (index === 12) {
+          const statusCell = document.createElement("td");
+          const badge = document.createElement("span");
+          badge.className = "status-badge appointment-status appointment-status--" + String(value).toLowerCase().replace(/[^a-z]+/g, "-");
+          badge.textContent = value;
+          statusCell.append(badge); tr.append(statusCell);
+        } else tr.append(cell(String(value ?? "—"), index === 0 ? "appointment-id-cell" : ""));
+      });
       const actionCell = document.createElement("td");
       const eligibleForSettlement = row.status === "Completed" && row.paymentStatus === "Paid" && row.balancePaymentStatus === "Paid" && row.commissionAppointmentId === row.id && Number(row.commissionAmount) > 0 && row.refundStatus !== "Refunded";
       if (eligibleForSettlement && row.commissionStatus === "Pending Review") {
@@ -193,13 +226,47 @@
     });
     empty.textContent = shown.length ? "" : "Doctor appointment records will appear here when submitted.";
     empty.hidden = shown.length > 0;
-    const count = page.querySelector("[data-record-count]");
-    if (count) count.textContent = `${shown.length} ${shown.length === 1 ? "appointment" : "appointments"}`;
+  }
+
+  function carePaymentValue(record, key) {
+    const demoPaid = record.paymentMode === "demo" && record.demoPaymentStatus === "Succeeded" && Boolean(record.demoTransactionReference);
+    const paid = record.paymentStatus === "Paid" || demoPaid;
+    const amount = paid ? Number(record.depositAmount) || 0 : 0;
+    const total = Number(record.totalPrice ?? record.estimatedTotal);
+    const values = {
+      _payment: paid ? "Website deposit paid" : record.paymentStatus || "Not recorded",
+      _paid: amount.toFixed(2),
+      _balance: Number.isFinite(total) ? Math.max(0, total - amount).toFixed(2) : "Not recorded",
+      _reference: demoPaid ? record.demoTransactionReference : record.transactionReference || "Not recorded",
+      _paidAt: demoPaid ? record.demoPaymentAt : record.paidAt || "Not recorded",
+      _method: demoPaid ? record.demoPaymentMethod : record.paymentMethod || "Not recorded"
+    };
+    return values[key] ?? record[key];
+  }
+
+  function careStatusGroup(record) {
+    const status = String(record.status || "New").toLowerCase();
+    if (["cancelled", "rejected"].includes(status)) return "Cancelled";
+    if (["completed", "closed"].includes(status)) return "Completed";
+    if (status === "in progress") return "In Progress";
+    if (["accepted", "approved"].includes(status)) return "Accepted";
+    const depositPaid = (record.paymentMode === "demo" && record.demoPaymentStatus === "Succeeded" && Boolean(record.demoTransactionReference)) || record.paymentStatus === "Paid";
+    if (depositPaid) return "Paid";
+    if (status === "pending payment") return "Pending Payment";
+    return "Awaiting Acceptance";
+  }
+
+  function productStockState(product) {
+    const quantity = Number(product.quantity ?? product.stock);
+    if (Number.isFinite(quantity) && quantity <= 0) return "sold-out";
+    if (product.inStock === false || String(product.status).toLowerCase() === "unavailable") return "unavailable";
+    return product.inStock === true || quantity > 0 ? "in-stock" : "unavailable";
   }
 
   function renderTable() {
     if (moduleName === "appointments") { renderAppointmentFinance(); return; }
     const config = fields[moduleName];
+    const tableFields = moduleName === "careRequests" ? config.filter(field => ["client", "service", "date", "status"].includes(field.key)) : config;
     const head = page.querySelector("[data-table-head]");
     const body = page.querySelector("[data-table-body]");
     const empty = page.querySelector("[data-table-empty]");
@@ -207,7 +274,7 @@
 
     head.replaceChildren();
     const headerRow = document.createElement("tr");
-    config.forEach(field => {
+    tableFields.forEach(field => {
       const th = document.createElement("th");
       th.scope = "col";
       th.textContent = field.label;
@@ -220,20 +287,51 @@
     head.append(headerRow);
 
     const query = (page.querySelector("[data-search]")?.value || "").trim().toLocaleLowerCase();
-    const shown = records[moduleName].filter(record => config.some(field => String(record[field.key] ?? "").toLocaleLowerCase().includes(query)));
+    const categoryFilter = page.querySelector("[data-filter-category]");
+    const availabilityFilter = page.querySelector("[data-filter-availability]");
+    if (moduleName === "products" && categoryFilter) {
+      const selected = categoryFilter.value;
+      const categories = new Map([...categoryFilter.options].map(option => [option.value, option.textContent]));
+      records.products.forEach(product => {
+        if (product.category && !categories.has(product.category)) categories.set(product.category, String(product.category).replace(/[_-]/g, " "));
+      });
+      categoryFilter.replaceChildren(...[...categories].map(([value, label]) => new Option(label, value)));
+      categoryFilter.value = selected;
+    }
+    const statusFilter = page.querySelector("[data-care-status-filter], [data-user-status-filter], [data-pharmacy-status-filter]");
+    if (["users", "pharmacies"].includes(moduleName) && statusFilter) {
+      const selected = statusFilter.value;
+      const statuses = [...new Set(["Active", "Inactive", ...records[moduleName].map(record => record.status).filter(Boolean)])];
+      statusFilter.replaceChildren(new Option("All statuses", ""), ...statuses.map(status => new Option(status, status)));
+      statusFilter.value = selected;
+    }
+    if (moduleName === "careRequests" && statusFilter) {
+      const selected = statusFilter.value;
+      const statuses = ["Pending Payment", "Paid", "Awaiting Acceptance", "Accepted", "In Progress", "Completed", "Cancelled"];
+      statusFilter.replaceChildren(new Option("All statuses", ""), ...statuses.map(status => new Option(status, status)));
+      statusFilter.value = selected;
+    }
+    const shown = dataStore.newestFirst(records[moduleName]).filter(record =>
+      (!["users", "products", "pharmacies", "careRequests"].includes(moduleName) || !isArchived(record)) &&
+      (moduleName !== "products" || ((!categoryFilter?.value || categoryFilter.value === "all" || record.category === categoryFilter.value) && (!availabilityFilter?.value || availabilityFilter.value === "all" || productStockState(record) === availabilityFilter.value))) &&
+      (!statusFilter?.value || (["users", "pharmacies"].includes(moduleName) ? record.status === statusFilter.value : careStatusGroup(record) === statusFilter.value || (statusFilter.value === "Paid" && carePaymentValue(record, "_payment") === "Website deposit paid"))) &&
+      config.some(field => String((moduleName === "careRequests" ? carePaymentValue(record, field.key) : record[field.key]) ?? "").toLocaleLowerCase().includes(query)));
     body.replaceChildren();
     shown.forEach(record => {
       const row = document.createElement("tr");
-      config.forEach(field => {
-        const derived = field.key === "quantity" ? (record.quantity ?? record.stock ?? 0)
-          : field.key === "status" ? (record.status ?? (record.inStock ? "Available" : record.open ? "Active" : "Active"))
+      tableFields.forEach(field => {
+        const derived = field.computed ? carePaymentValue(record, field.key) : field.key === "quantity" ? (record.quantity ?? record.stock ?? 0)
+          : field.key === "status" ? (moduleName === "careRequests" ? careStatusGroup(record) : moduleName === "products" ? ({ "in-stock": "Available", "sold-out": "Out of stock", unavailable: "Unavailable" })[productStockState(record)] : record.status ?? (record.inStock ? "Available" : record.open ? "Active" : "Active"))
           : record[field.key];
         const value = String(derived ?? "");
         if (field.key === "status") {
           const statusCell = document.createElement("td");
           const badge = document.createElement("span");
           badge.className = "status-badge";
-          if (["confirmed", "active", "available", "completed", "accepted", "contacted"].includes(value.toLowerCase())) badge.classList.add("is-good");
+          if (moduleName === "products") badge.classList.add("product-status--" + productStockState(record));
+          if (moduleName === "careRequests") badge.classList.add("care-request-status--" + value.toLowerCase().replace(/[^a-z]+/g, "-"));
+          if (["users", "pharmacies"].includes(moduleName)) badge.classList.add("account-status--" + value.toLowerCase().replace(/[^a-z]+/g, "-"));
+          if (["paid", "confirmed", "active", "available", "completed", "accepted", "contacted"].includes(value.toLowerCase())) badge.classList.add("is-good");
           if (["cancelled", "inactive", "unavailable", "closed"].includes(value.toLowerCase())) badge.classList.add("is-muted");
           badge.textContent = value || "—";
           statusCell.append(badge);
@@ -242,24 +340,48 @@
       });
       const actions = document.createElement("td");
       actions.className = "row-actions";
+      if (moduleName === "pharmacies") {
+        const active = String(record.status || "Active").toLowerCase() === "active";
+        const toggle = document.createElement("button");
+        toggle.type = "button";
+        toggle.className = "account-status-toggle" + (active ? " is-on" : "");
+        toggle.dataset.action = "toggle-status";
+        toggle.dataset.id = String(record.id);
+        toggle.setAttribute("role", "switch");
+        toggle.setAttribute("aria-checked", String(active));
+        toggle.setAttribute("aria-label", "Pharmacy account status: " + (active ? "Active" : "Inactive"));
+        toggle.innerHTML = '<span class="account-status-toggle__track" aria-hidden="true"><span></span></span><span>' + (active ? "Active" : "Inactive") + "</span>";
+        actions.append(toggle);
+      }
+      if (moduleName === "careRequests") {
+        const details = document.createElement("button");
+        details.type = "button";
+        details.dataset.action = "details";
+        details.dataset.id = String(record.id);
+        details.textContent = "View details";
+        details.className = "text-button";
+        actions.append(details);
+      }
       const edit = document.createElement("button");
       edit.type = "button"; edit.dataset.action = "edit"; edit.dataset.id = String(record.id); edit.textContent = "Edit"; edit.className = "text-button";
       edit.setAttribute("aria-label", `Edit ${record.name || record.patient || record.id}`);
-      const remove = document.createElement("button");
-      remove.type = "button"; remove.dataset.action = "delete"; remove.dataset.id = String(record.id); remove.textContent = "Delete"; remove.className = "text-button danger";
-      remove.setAttribute("aria-label", `Delete ${record.name || record.patient || record.id}`);
-      actions.append(edit, remove);
+      if (moduleName !== "careRequests") actions.append(edit);
+      if (isArchived(record)) row.classList.add("is-archived");
       row.append(actions);
       body.append(row);
     });
     empty.hidden = shown.length > 0;
-    const count = page.querySelector("[data-record-count]");
-    if (count) count.textContent = `${records[moduleName].length} ${records[moduleName].length === 1 ? "record" : "records"}`;
+    if (moduleName === "products") empty.textContent = records.products.length ? "No products match your search and filters." : "No products have been added yet.";
+  }
+
+  function openCareDetails(record) {
+    window.CarePlusCareDetails?.open(record);
   }
 
   function makeInput(field, value = "") {
     const label = document.createElement("label");
     label.className = field.wide ? "field-label is-wide" : "field-label";
+    label.dataset.fieldKey = field.key;
     label.append(document.createTextNode(field.label));
     let input;
     if (field.type === "select") {
@@ -272,10 +394,14 @@
     } else {
       input = document.createElement("input"); input.type = field.type || "text";
       if (field.min !== undefined) input.min = field.min;
+      if (field.max !== undefined) input.max = field.max;
       if (field.step !== undefined) input.step = field.step;
+      if (field.minLength !== undefined) input.minLength = field.minLength;
+      if (field.autocomplete) input.autocomplete = field.autocomplete;
     }
     input.name = field.key; input.value = value; input.required = Boolean(field.required);
     input.readOnly = Boolean(field.readOnly);
+    input.disabled = Boolean(field.computed);
     label.append(input);
     return label;
   }
@@ -289,7 +415,44 @@
     }
     editingId = record ? String(record.id) : null;
     dialog.querySelector("#dialog-title").textContent = `${record ? "Edit" : "Add"} ${singular[moduleName]}`;
-    holder.replaceChildren(...fields[moduleName].map(field => makeInput(field, record?.[field.key] ?? "")));
+    holder.replaceChildren(...fields[moduleName].map(field => {
+      let value = field.computed && record ? carePaymentValue(record, field.key) : record?.[field.key] ?? "";
+      if (field.key === "commissionRate") {
+        const settings = window.CarePlusPharmacy?.settings?.();
+        const role = String(record?.role || holder.querySelector('[name="role"]')?.value || "").toLowerCase();
+        const rateMap = moduleName === "pharmacies" ? settings?.pharmacyRates : role === "doctor" ? settings?.doctorRates : settings?.careProviderRates;
+        value = record?.commissionRate ?? rateMap?.[String(record?.id)] ?? (moduleName === "pharmacies" ? settings?.defaultRate : role === "doctor" ? settings?.doctorCommissionRate : settings?.careCommissionRate) ?? "";
+      }
+      return makeInput(field, value);
+    }));
+    if (moduleName === "pharmacies") {
+      const linkedAccount = record ? dataStore.list("users").find(user => String(user.role || "").toLowerCase() === "pharmacy" && String(user.pharmacyId || "") === String(record.id)) : null;
+      const email = holder.querySelector('[name="email"]');
+      const password = holder.querySelector('[name="password"]');
+      if (email && linkedAccount?.email) email.value = linkedAccount.email;
+      if (password) { password.required = !record || !linkedAccount; password.value = ""; }
+    }
+    if (moduleName === "users") {
+      const role = holder.querySelector('[name="role"]');
+      const rate = holder.querySelector('[name="commissionRate"]');
+      const rateField = rate?.closest("label");
+      const password = holder.querySelector('[name="password"]');
+      const passwordField = password?.closest("label");
+      const settings = window.CarePlusPharmacy?.settings?.();
+      if (record?.commissionRate != null && rate) rate.dataset.edited = "true";
+      const refreshRateField = () => {
+        const type = String(role?.value || "").toLowerCase();
+        const enabled = ["doctor", "nurse"].includes(type);
+        if (rateField) rateField.hidden = !enabled;
+        if (rate) { rate.disabled = !enabled; rate.required = enabled; }
+        if (passwordField) passwordField.hidden = !enabled;
+        if (password) { password.disabled = !enabled; password.required = enabled && (!record || type !== String(record.role || "").toLowerCase()); password.value = ""; }
+        if (enabled && rate && !rate.dataset.edited) rate.value = type === "doctor" ? settings?.doctorRates?.[String(record?.id)] ?? settings?.doctorCommissionRate ?? 10 : settings?.careProviderRates?.[String(record?.id)] ?? settings?.careCommissionRate ?? 10;
+      };
+      rate?.addEventListener("input", () => { rate.dataset.edited = "true"; });
+      role?.addEventListener("change", refreshRateField);
+      refreshRateField();
+    }
     dialog.querySelector("[data-form-feedback]").textContent = "";
     if (typeof dialog.showModal === "function") dialog.showModal();
     else dialog.setAttribute("open", "");
@@ -315,7 +478,7 @@
     renderRecentOrders();
     const recent = document.getElementById("recent-appointments");
     if (!recent) return;
-    const appointments = [...records.appointments].slice(-4).reverse();
+    const appointments = dataStore.newestFirst(records.appointments).slice(0, 4);
     recent.replaceChildren();
     if (!appointments.length) {
       const icon = document.createElement("span"); icon.append(makeIcon("appointments"));
@@ -337,7 +500,7 @@
   function renderRecentOrders() {
     const recent = document.getElementById("recent-orders");
     if (!recent) return;
-    const orders = [...dataStore.list("orders")].sort((a, b) => new Date(b.placedAt || b.createdAt || 0) - new Date(a.placedAt || a.createdAt || 0)).slice(0, 5);
+    const orders = dataStore.newestFirst(dataStore.list("orders")).slice(0, 5);
     recent.replaceChildren();
     if (!orders.length) {
       const icon = document.createElement("span"); icon.textContent = "▧";
@@ -431,7 +594,7 @@
       });
       select.value = currentStatus;
       select.addEventListener("change", () => {
-        const updated = dataStore.update("orders", order.id, { status: select.value });
+        const updated = dataStore.update("orders", order.id, { status: select.value, lastActionByRole: "Admin" });
         if (!updated) {
           select.value = currentStatus;
           showToast("Could not update the order status.", true);
@@ -494,13 +657,14 @@
     }
     const groupWidth = (right - left) / months.length;
     const barWidth = 19;
+    let barIndex = 0;
     buckets.forEach((bucket, index) => {
       const center = left + groupWidth * index + groupWidth / 2;
       series.forEach((item, seriesIndex) => {
         const value = bucket[item.key];
         const height = value ? value / scaleMax * chartHeight : 0;
         const x = center + (seriesIndex - 1) * (barWidth + 5) - barWidth / 2;
-        const bar = svgNode("rect", { x, y: bottom - height, width: barWidth, height: Math.max(height, value ? 2 : 0), rx: 4, fill: item.color, class: "chart-bar" });
+        const bar = svgNode("rect", { x, y: bottom - height, width: barWidth, height: Math.max(height, value ? 2 : 0), rx: 4, fill: item.color, class: "chart-bar", style: `animation-delay:${barIndex++ * 45}ms` });
         const title = svgNode("title", {}, `${item.label}: ${value}`);
         bar.append(title);
         chartNodes.push(bar);
@@ -516,18 +680,26 @@
     const grandTotal = series.reduce((sum, item) => sum + totals[item.key], 0);
     let offset = 0;
     const segments = [];
+    const animatedSegments = [];
     series.forEach(item => {
       const portion = grandTotal ? totals[item.key] / grandTotal * circumference : 0;
       if (portion > 0) {
-        segments.push(svgNode("circle", {
+        const segment = svgNode("circle", {
           cx: 70, cy: 70, r: 48, fill: "none", stroke: item.color, "stroke-width": 17,
-          "stroke-dasharray": `${portion} ${circumference - portion}`, "stroke-dashoffset": -offset,
+          "stroke-dasharray": `0 ${circumference}`, "data-dasharray": `${portion} ${circumference - portion}`, "stroke-dashoffset": -offset,
           "stroke-linecap": "butt", class: "service-mix-segment"
-        }));
+        });
+        segments.push(segment);
+        animatedSegments.push(segment);
         offset += portion;
       }
     });
     mixSegments.replaceChildren(...segments);
+    if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      requestAnimationFrame(() => animatedSegments.forEach(segment => segment.setAttribute("stroke-dasharray", segment.dataset.dasharray)));
+    } else {
+      animatedSegments.forEach(segment => segment.setAttribute("stroke-dasharray", segment.dataset.dasharray));
+    }
     const totalLabel = document.getElementById("service-mix-total");
     if (totalLabel) totalLabel.textContent = String(grandTotal);
     const legend = document.getElementById("service-mix-legend");
@@ -670,7 +842,24 @@
     }
   });
   document.querySelector("[data-action='add']")?.addEventListener("click", () => openEditor());
+  if (moduleName === "careRequests") {
+    const label = document.createElement("label");
+    label.className = "care-status-filter";
+    label.textContent = "Status";
+    const select = document.createElement("select");
+    select.dataset.careStatusFilter = "";
+    select.setAttribute("aria-label", "Filter care requests by status");
+    label.append(select);
+    const count = page.querySelector("[data-record-count]");
+    if (count) count.before(label);
+    else page.querySelector(".records-toolbar")?.append(label);
+    select.addEventListener("change", renderTable);
+  }
   page.querySelector("[data-search]")?.addEventListener("input", renderTable);
+  page.querySelector("[data-user-status-filter]")?.addEventListener("change", renderTable);
+  page.querySelector("[data-pharmacy-status-filter]")?.addEventListener("change", renderTable);
+  page.querySelector("[data-filter-category]")?.addEventListener("change", renderTable);
+  page.querySelector("[data-filter-availability]")?.addEventListener("change", renderTable);
   page.querySelector("[data-appointment-status-filter]")?.addEventListener("change", renderTable);
   page.querySelector("[data-table-body]")?.addEventListener("click", event => {
     const button = event.target.closest("button[data-commission-action]");
@@ -691,24 +880,65 @@
   });
   document.querySelector("[data-pharmacy-order-search]")?.addEventListener("input", renderPharmacyOrders);
   document.querySelector("[data-pharmacy-order-filter]")?.addEventListener("change", renderPharmacyOrders);
-  page.querySelector("[data-table-body]")?.addEventListener("click", event => {
+  page.querySelector("[data-table-body]")?.addEventListener("click", async event => {
     const button = event.target.closest("button[data-action]");
     if (!button) return;
     const index = records[moduleName].findIndex(record => String(record.id) === button.dataset.id);
     if (index < 0) return;
+    if (button.dataset.action === "toggle-status" && moduleName === "pharmacies") {
+      const pharmacy = records.pharmacies[index];
+      const status = String(pharmacy.status || "Active").toLowerCase() === "active" ? "Inactive" : "Active";
+      const linkedAccount = dataStore.list("users").find(user => String(user.role || "").toLowerCase() === "pharmacy" && String(user.pharmacyId || "") === String(pharmacy.id));
+      if (!dataStore.update("pharmacies", pharmacy.id, { status, updatedAt: new Date().toISOString() })) {
+        showToast("Could not update the pharmacy status.", true);
+        return;
+      }
+      if (linkedAccount && !dataStore.update("users", linkedAccount.id, { status, accountStatus: status })) {
+        dataStore.update("pharmacies", pharmacy.id, { status: pharmacy.status || "Active" });
+        showToast("Could not update the pharmacy sign-in status.", true);
+        return;
+      }
+      refreshRecords(); renderTable(); renderDashboard();
+      showToast("Pharmacy account " + status.toLowerCase() + ".");
+      return;
+    }
+    if (button.dataset.action === "details" && moduleName === "careRequests") openCareDetails(records[moduleName][index]);
     if (button.dataset.action === "edit") openEditor(records[moduleName][index]);
-    if (button.dataset.action === "delete" && window.confirm("Delete this temporary demo record?")) {
-      if (dataStore.remove(moduleName, button.dataset.id)) { refreshRecords(); renderTable(); renderDashboard(); showToast("Shared demo record deleted."); }
+    if (["archive", "restore"].includes(button.dataset.action)) {
+      const record = records[moduleName][index];
+      const archiving = button.dataset.action === "archive";
+      const noun = record.name || record.client || record.patient || record.customerName || record.reference || String(record.id);
+      if (!window.confirm(`${archiving ? "Archive" : "Restore"} ${noun}?`)) return;
+      if (!window.CarePlusAuth?.hasDemoAdminSession()) return;
+      if (dataStore.update(moduleName, button.dataset.id, { archived: archiving, archivedAt: archiving ? new Date().toISOString() : "" })) {
+        refreshRecords(); renderTable(); renderDashboard();
+        showToast(archiving ? "Record archived. You can restore it later." : "Record restored.");
+      } else showToast("The record could not be updated. Please refresh and try again.", true);
     }
   });
   document.querySelectorAll("[data-close]").forEach(button => button.addEventListener("click", () => button.closest("dialog")?.close()));
   const dialog = document.querySelector(".record-dialog");
   dialog?.addEventListener("click", event => { if (event.target === dialog) dialog.close(); });
-  dialog?.querySelector("[data-record-form]")?.addEventListener("submit", event => {
+  dialog?.querySelector("[data-record-form]")?.addEventListener("submit", async event => {
     event.preventDefault();
     const form = event.currentTarget;
     if (!form.reportValidity()) return;
     const values = Object.fromEntries(new FormData(form).entries());
+    const userPassword = moduleName === "users" ? String(values.password || "") : "";
+    if (moduleName === "users") delete values.password;
+    const pharmacyPassword = moduleName === "pharmacies" ? String(values.password || "") : "";
+    const linkedPharmacyAccount = moduleName === "pharmacies" && editingId
+      ? dataStore.list("users").find(user => String(user.role || "").toLowerCase() === "pharmacy" && String(user.pharmacyId || "") === String(editingId))
+      : null;
+    if (moduleName === "pharmacies") {
+      values.email = String(values.email || "").trim().toLowerCase();
+      const duplicateEmail = dataStore.list("users").some(user => String(user.id) !== String(linkedPharmacyAccount?.id || "") && String(user.email || "").trim().toLowerCase() === values.email);
+      if (duplicateEmail) { document.querySelector("[data-form-feedback]").textContent = "A user with this email address already exists."; return; }
+      if (pharmacyPassword && pharmacyPassword.length < 8) {
+        document.querySelector("[data-form-feedback]").textContent = "Password must be at least 8 characters."; return;
+      }
+      delete values.password;
+    }
     if (moduleName === "users") {
       const email = String(values.email || "").trim().toLowerCase();
       const duplicate = records.users.some(user => user.id !== editingId && String(user.email || "").trim().toLowerCase() === email);
@@ -719,12 +949,90 @@
       values.email = email;
       values.name = String(values.name || "").trim();
       values.phone = String(values.phone || "").trim();
+      const providerRole = String(values.role || "").toLowerCase();
+      values.commissionRate = ["doctor", "nurse"].includes(providerRole) ? Number(values.commissionRate) : null;
+      if (["doctor", "nurse"].includes(providerRole)) {
+        const previousRole = String(dataStore.get("users", editingId)?.role || "").toLowerCase();
+        if ((!editingId || previousRole !== providerRole) && userPassword.length < 8) {
+          document.querySelector("[data-form-feedback]").textContent = "A provider password of at least 8 characters is required.";
+          return;
+        }
+        const providerKey = providerRole === "doctor" ? "doctorId" : "nurseId";
+        values[providerKey] = dataStore.get("users", editingId)?.[providerKey] || editingId || globalThis.crypto?.randomUUID?.() || "provider-" + Date.now();
+        if (!editingId) values.id = values[providerKey];
+        if (userPassword && (!editingId || previousRole !== providerRole)) values.mustChangePassword = true;
+      }
     }
     if (moduleName === "products") { values.price = Number(values.price); values.quantity = Number(values.quantity); values.stock = values.quantity; values.inStock = values.status === "Available" && values.quantity > 0; }
     if (moduleName === "pharmacies") values.medicines = String(values.medicines || "").split(",").map(item => item.trim().toLowerCase()).filter(Boolean);
+    if (["users", "pharmacies"].includes(moduleName) && values.commissionRate != null) values.commissionRate = Number(values.commissionRate);
     if (moduleName === "orders") values.total = Number(values.total);
+    if (editingId) values.lastActionByRole = "Admin";
+    const previousRecord = editingId ? dataStore.get(moduleName, editingId) : null;
+    const previousProvider = editingId && moduleName === "users" ? previousRecord : null;
     const saved = editingId ? dataStore.update(moduleName, editingId, values) : dataStore.create(moduleName, values);
-    if (saved) { const wasEditing = Boolean(editingId); dialog.close(); form.reset(); editingId = null; refreshRecords(); renderTable(); renderDashboard(); showToast(wasEditing ? "Shared demo record updated." : "Shared demo record added."); }
+    if (saved) {
+      if (moduleName === "users" && (userPassword || previousProvider && String(previousProvider.email || "").toLowerCase() !== String(saved.email || "").toLowerCase())) {
+        const auth = window.CarePlusAuth;
+        let credentialsSaved = true;
+        if (userPassword) credentialsSaved = Boolean(await auth?.setDemoPassword?.(saved.email, userPassword));
+        else credentialsSaved = Boolean(auth?.moveDemoPassword?.(previousProvider.email, saved.email));
+        if (!credentialsSaved) {
+          if (previousProvider) dataStore.update("users", editingId, previousProvider);
+          else dataStore.remove("users", saved.id);
+          document.querySelector("[data-form-feedback]").textContent = "Could not save sign-in credentials. Please try again.";
+          return;
+        }
+        if (userPassword && previousProvider?.email && previousProvider.email.toLowerCase() !== String(saved.email || "").toLowerCase()) auth?.removeDemoPassword?.(previousProvider.email);
+      }
+      if (moduleName === "pharmacies") {
+        const feedback = document.querySelector("[data-form-feedback]");
+        const rollbackPharmacy = () => previousRecord ? dataStore.update("pharmacies", saved.id, previousRecord) : dataStore.remove("pharmacies", saved.id);
+        const auth = window.CarePlusAuth;
+        const accountChanges = {
+          name: saved.name, email: values.email, phone: saved.phone || "", role: "Pharmacy",
+          pharmacyId: String(saved.id), status: saved.status || "Active", accountStatus: saved.status || "Active",
+          approvalStatus: linkedPharmacyAccount?.approvalStatus || "Approved",
+          source: linkedPharmacyAccount?.source || "admin-provisioned"
+        };
+        if (pharmacyPassword && !linkedPharmacyAccount) accountChanges.mustChangePassword = true;
+        const savedAccount = linkedPharmacyAccount
+          ? dataStore.update("users", linkedPharmacyAccount.id, accountChanges)
+          : dataStore.create("users", accountChanges);
+        if (!savedAccount) { rollbackPharmacy(); feedback.textContent = "Could not create the pharmacy sign-in account."; return; }
+        let credentialsSaved = true;
+        if (pharmacyPassword) credentialsSaved = Boolean(await auth?.setDemoPassword?.(values.email, pharmacyPassword));
+        else if (linkedPharmacyAccount && String(linkedPharmacyAccount.email || "").toLowerCase() !== values.email) {
+          credentialsSaved = Boolean(auth?.moveDemoPassword?.(linkedPharmacyAccount.email, values.email));
+        }
+        if (!credentialsSaved) {
+          if (linkedPharmacyAccount) dataStore.update("users", linkedPharmacyAccount.id, linkedPharmacyAccount);
+          else dataStore.remove("users", savedAccount.id);
+          rollbackPharmacy();
+          if (pharmacyPassword && linkedPharmacyAccount?.email?.toLowerCase() !== values.email) auth?.removeDemoPassword?.(values.email);
+          feedback.textContent = "Could not save pharmacy sign-in credentials. Please try again.";
+          return;
+        }
+        if (pharmacyPassword && linkedPharmacyAccount?.email && linkedPharmacyAccount.email.toLowerCase() !== values.email) auth?.removeDemoPassword?.(linkedPharmacyAccount.email);
+      }
+      const commissionApi = window.CarePlusPharmacy;
+      let commissionSaved = true;
+      if (commissionApi && moduleName === "pharmacies") commissionSaved = commissionApi.saveSettings({ pharmacyId: saved.id, pharmacyRate: values.commissionRate }).ok;
+      if (commissionApi && moduleName === "users") {
+        const providerType = role => { const value = String(role || "").toLowerCase(); return value === "doctor" ? "doctor" : value === "nurse" ? "care" : ""; };
+        const oldType = providerType(previousProvider?.role), newType = providerType(saved.role);
+        if (oldType && oldType !== newType) {
+          const cleared = oldType === "doctor" ? commissionApi.saveSettings({ doctorId: saved.id, doctorRate: "" }) : commissionApi.saveSettings({ careProviderId: saved.id, careProviderRate: "" });
+          commissionSaved = commissionSaved && cleared.ok;
+        }
+        if (newType) {
+          const result = newType === "doctor" ? commissionApi.saveSettings({ doctorId: saved.id, doctorRate: values.commissionRate }) : commissionApi.saveSettings({ careProviderId: saved.id, careProviderRate: values.commissionRate });
+          commissionSaved = commissionSaved && result.ok;
+        }
+      }
+      const wasEditing = Boolean(editingId); dialog.close(); form.reset(); editingId = null; refreshRecords(); renderTable(); renderDashboard();
+      showToast(commissionSaved ? (wasEditing ? "Shared demo record updated." : "Shared demo record added.") : "Record saved, but the commission rate could not be synced.", !commissionSaved);
+    }
     else document.querySelector("[data-form-feedback]").textContent = "Could not save this demo record in this browser.";
   });
 

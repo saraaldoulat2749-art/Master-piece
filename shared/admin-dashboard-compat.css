@@ -1,0 +1,171 @@
+/* Role-specific structures mapped onto the Admin Dashboard visual system. */
+body.admin-unified:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) {
+  --admin-navy: #1b2232;
+  --admin-blue: #4d82ed;
+  --admin-teal: #008f98;
+  --admin-ink: #272b3c;
+  --admin-muted: #7b8090;
+  --admin-line: #e7e9ee;
+  --admin-bg: #f2fafb;
+  background: var(--admin-bg);
+  color: var(--admin-ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+body.admin-unified:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) :is(.main, .main-area) { background: var(--admin-bg); }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .sidebar { background: linear-gradient(155deg, #041b2a, #07394b); }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.nav, .side-nav) .nav-link {
+  display: flex;
+  min-height: 44px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: #e8f3f6;
+  font: 13px Arial, Helvetica, sans-serif;
+  text-align: left;
+}
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.nav, .side-nav) .nav-link > span { display: grid; width: 22px; height: 22px; flex: 0 0 22px; place-items: center; color: #b1e5e6; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .nav-link > span svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .nav-link.active { border-color: rgba(148,213,214,.38); background: rgba(148,213,214,.16); color: #fff; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .nav-link.active > span { color: #94d5d6; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .nav-link:hover { background: rgba(255,255,255,.09); color: #fff; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.page-heading h1, .section-heading h1, .section-heading h2) { color: #008c95; font-family: Arial, Helvetica, sans-serif; font-weight: 700; letter-spacing: -.45px; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.page-heading h1, .section-heading h1) { font-size: 23px; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .section-heading h2 { font-size: 25px; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.page-heading p:not(.eyebrow), .section-heading p:not(.eyebrow)) { color: #7b929f; font-size: 12px; line-height: 1.6; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.panel-head h2, .panel-heading h3, .panel-heading h2) { color: #252b3e; font-family: Arial, Helvetica, sans-serif; font-size: 15px; font-weight: 700; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.panel-head p, .panel-heading p:not(.eyebrow)) { color: #7b8090; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.button.primary, .primary-button) { min-height: 40px; border: 0; border-radius: 9px; background: #008f98; color: #fff; font: 700 12px Arial, Helvetica, sans-serif; box-shadow: none; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.button.primary, .primary-button):hover { background: #007a84; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.button.secondary, .secondary-button) { min-height: 40px; border: 1px solid #d3e2e8; border-radius: 9px; background: #fff; color: #456d80; font: 700 12px Arial, Helvetica, sans-serif; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(input, select, textarea) { border-color: #d3e2e8; border-radius: 9px; background: #fbfdfd; color: #345f71; font-family: Arial, Helvetica, sans-serif; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(input, select, textarea):focus { border-color: #159da9; outline: 3px solid rgba(21,157,169,.12); }
+body.admin-unified[data-doctor-protected] .stat-grid,
+body.admin-unified[data-pharmacy-protected] .stats-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.stat-grid, .stats-grid) > .stat-card {
+  --metric-color: #008f98;
+  --metric-tint: #e1f5f4;
+  --metric-wash: #f4fcfb;
+  display: grid;
+  min-width: 0;
+  min-height: 164px;
+  grid-template-columns: 58px minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  align-items: center;
+  column-gap: 15px;
+  padding: 20px 22px;
+  border: 1px solid #dce9ee;
+  border-top: 3px solid var(--metric-color);
+  border-radius: 17px;
+  background: linear-gradient(125deg, var(--metric-wash), #fff 76%);
+  box-shadow: 0 4px 16px rgba(13,43,58,.04);
+  animation: admin-ui-enter .3s ease-out both;
+  transition: transform .2s, border-color .2s, box-shadow .2s;
+}
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.stat-grid, .stats-grid) > .stat-card:nth-child(2) { --metric-color: #4a78ce; --metric-tint: #e9f0ff; --metric-wash: #f5f8ff; animation-delay: .04s; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.stat-grid, .stats-grid) > .stat-card:nth-child(3) { --metric-color: #8c61bd; --metric-tint: #f0e9fa; --metric-wash: #faf7ff; animation-delay: .08s; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.stat-grid, .stats-grid) > .stat-card:nth-child(4) { --metric-color: #b78320; --metric-tint: #fff1d5; --metric-wash: #fffbf2; animation-delay: .12s; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.stat-grid, .stats-grid) > .stat-card:nth-child(5) { --metric-color: #2b9b70; --metric-tint: #e8f7ee; --metric-wash: #f5fcf7; animation-delay: .16s; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.stat-grid, .stats-grid) > .stat-card:nth-child(6) { --metric-color: #418eaa; --metric-tint: #e5f5f6; --metric-wash: #f3fbfc; animation-delay: .2s; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .stat-card > :is(.stat-icon, .stat-top) { grid-column: 1; grid-row: 1 / 4; align-self: center; position: static; width: 58px; height: 58px; margin: 0; }
+body.admin-unified[data-pharmacy-protected] .stat-card > .stat-top { display: contents; }
+body.admin-unified[data-pharmacy-protected] .stat-card .stat-top > .stat-icon { display: grid; grid-column: 1; grid-row: 1 / 4; width: 58px; height: 58px; }
+body.admin-unified[data-pharmacy-protected] .stat-card .stat-top > span:not(.stat-icon) { grid-column: 2; grid-row: 1; }
+body.admin-unified[data-doctor-protected] .stat-card > .stat-icon { display: grid; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .stat-card .stat-icon { border: 1px solid color-mix(in srgb, var(--metric-color) 14%, transparent); border-radius: 16px; background: var(--metric-tint); color: var(--metric-color); }
+body.admin-unified[data-doctor-protected] .stat-card > span:not(.stat-icon),
+body.admin-unified[data-pharmacy-protected] .stat-card .stat-top > span:not(.stat-icon) { grid-column: 2; grid-row: 1; margin: 0; color: #62808e; font-size: 12px; font-weight: 600; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .stat-card > :is(b, strong) { grid-column: 2; grid-row: 2; margin: 2px 0; color: #193c50; font-size: 36px; line-height: 1.05; letter-spacing: -.7px; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .stat-card > small { display: block; grid-column: 2; grid-row: 3; margin: 0; color: #879eaa; font-size: 11px; line-height: 1.5; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .stat-card:hover { transform: translateY(-3px); border-color: var(--metric-color); box-shadow: 0 10px 25px rgba(30,39,58,.07); }
+body.admin-unified[data-doctor-protected] .status { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border: 1px solid transparent; border-radius: 8px; font-size: 10px; font-weight: 700; }
+body.admin-unified[data-doctor-protected] .status::before { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: currentColor; content: ""; }
+body.admin-unified[data-doctor-protected] .status.requested { background: #fff0e4; border-color: #f3d8bb; color: #9c5e1b; }
+body.admin-unified[data-doctor-protected] .status.confirmed { background: #eaf2ff; border-color: #cddff7; color: #346aad; }
+body.admin-unified[data-doctor-protected] .status.completed { background: #e8f7ee; border-color: #c8e8d4; color: #2b7950; }
+body.admin-unified[data-doctor-protected] .status.cancelled,
+body.admin-unified[data-doctor-protected] .status.rejected { background: #ffedf1; border-color: #f0cbd4; color: #b13f59; }
+body.admin-unified[data-pharmacy-protected] .status-badge { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border: 1px solid transparent; border-radius: 8px; font-size: 10px; font-weight: 700; }
+body.admin-unified[data-pharmacy-protected] .status-badge.pending,
+body.admin-unified[data-pharmacy-protected] .status-badge.low,
+body.admin-unified[data-pharmacy-protected] .status-badge.expiry-soon { background: #fff6df; border-color: #efdfad; color: #89640c; }
+body.admin-unified[data-pharmacy-protected] .status-badge.confirmed,
+body.admin-unified[data-pharmacy-protected] .status-badge.accepted,
+body.admin-unified[data-pharmacy-protected] .status-badge.preparing-for-delivery,
+body.admin-unified[data-pharmacy-protected] .status-badge.out-for-delivery { background: #eaf2ff; border-color: #cddff7; color: #346aad; }
+body.admin-unified[data-pharmacy-protected] .status-badge.in-stock,
+body.admin-unified[data-pharmacy-protected] .status-badge.delivered,
+body.admin-unified[data-pharmacy-protected] .status-badge.completed { background: #e8f7ee; border-color: #c8e8d4; color: #2b7950; }
+body.admin-unified[data-pharmacy-protected] .status-badge.cancelled,
+body.admin-unified[data-pharmacy-protected] .status-badge.rejected,
+body.admin-unified[data-pharmacy-protected] .status-badge.out,
+body.admin-unified[data-pharmacy-protected] .status-badge.expired,
+body.admin-unified[data-pharmacy-protected] .status-badge.unavailable { background: #ffedf1; border-color: #f0cbd4; color: #b13f59; }
+body.admin-unified[data-pharmacy-protected] .action-button { min-height: 33px; padding: 0 11px; border: 1px solid #c9e5e8; border-radius: 8px; background: #f3fbfc; color: #00848f; font: 700 10px Arial, Helvetica, sans-serif; }
+body.admin-unified[data-pharmacy-protected] .action-button.accept { border-color: #008f98; background: #008f98; color: #fff; }
+body.admin-unified[data-pharmacy-protected] .action-button.reject,
+body.admin-unified[data-pharmacy-protected] .action-button.delete { border-color: #f0cbd4; background: #fff6f7; color: #b13f59; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .row-actions { gap: 7px; }
+body.admin-unified[data-doctor-protected] .row-actions { flex-wrap: wrap; }
+body.admin-unified[data-doctor-protected] .row-actions .action { min-height: 33px; padding: 0 11px; border-radius: 8px; font: 700 10px Arial, Helvetica, sans-serif; }
+body.admin-unified[data-doctor-protected] .row-actions .action.accept { border-color: #008f98; background: #008f98; color: #fff; }
+body.admin-unified[data-doctor-protected] .row-actions .action.reject,
+body.admin-unified[data-doctor-protected] .row-actions .action.cancel { border-color: #f0cbd4; background: #fff6f7; color: #b13f59; }
+body.admin-unified[data-doctor-protected] .row-actions .action:disabled { cursor: not-allowed; opacity: .5; }
+body.admin-unified[data-doctor-protected] .payment-wait { display: block; margin-top: 5px; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.fee-breakdown, .profile-form, .records-panel, .table-panel) { border-color: #e7e9ee; border-radius: 17px; background: #fff; box-shadow: 0 5px 16px rgba(30,39,58,.045); }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .fee-breakdown { padding: 18px; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.panel, .patient-card, .schedule-grid > section, .profile-form) { border: 1px solid #dce9ee; border-radius: 17px; background: #fff; box-shadow: 0 4px 16px rgba(13,43,58,.04); }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.panel-head h2, .panel-heading h3, .schedule-grid h2, .profile-section-heading h3) { color: #252b3e; font-family: Arial, Helvetica, sans-serif; font-weight: 700; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.table-wrap, .table-scroll) { width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) table { min-width: 760px; border-collapse: collapse; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) th { padding: 14px 18px; border-block: 1px solid #e7f0f3; background: #f6fafb; color: #7d96a3; font: 700 10px Arial, Helvetica, sans-serif; letter-spacing: .04em; text-transform: uppercase; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) td { padding: 16px 18px; border-bottom: 1px solid #edf3f5; color: #577786; font: 12px/1.5 Arial, Helvetica, sans-serif; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) tbody tr:nth-child(even) { background: #fcfefe; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) tbody tr:hover { background: #f0fafb; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.filter-row, .toolbar) { display: flex; align-items: center; flex-wrap: wrap; gap: 16px; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.search, .search-box) { height: 54px; max-width: 388px; border-color: #d7e5ed; border-radius: 13px; background: #f8fcfe; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.search input, .search-box input) { color: #365e74; font: 14px Arial, Helvetica, sans-serif; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.date-filter, .select-filter) { color: #7090a2; font: 14px Arial, Helvetica, sans-serif; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.date-filter input, .select-filter select) { min-width: 180px; height: 54px; padding: 0 16px; border: 1px solid #d7e5ed; border-radius: 13px; background: #fff; color: #365e74; font: 14px Arial, Helvetica, sans-serif; }
+body.admin-unified[data-doctor-protected] .tabs { display: flex; flex-wrap: wrap; gap: 7px; border-bottom-color: #e7f0f3; }
+body.admin-unified[data-doctor-protected] .tabs button { padding: 10px 14px; border: 1px solid transparent; border-radius: 9px; background: transparent; color: #7090a2; font: 700 12px Arial, Helvetica, sans-serif; }
+body.admin-unified[data-doctor-protected] .tabs button.selected { border-color: #cce8ea; background: #eaf8f8; color: #00848f; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.button:not(.primary), .action-button, .text-button) { transition: background .18s, border-color .18s, color .18s, transform .18s; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .action-button:hover { transform: translateY(-1px); }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .patient-card { padding: 18px; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .fee-breakdown-values > div { border-color: #e7f0f3; }
+body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .profile-form { padding: 22px; }
+body.admin-unified:is([data-doctor-protected], [data-nurse-protected]) .profile-form .form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 17px; }
+body.admin-unified[data-doctor-protected] .fee-breakdown-values.lifetime-values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+body.admin-unified[data-nurse-protected] .fee-breakdown-values.lifetime-values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+body.admin-unified[data-nurse-protected] #page-visits :is(.select-filter select, .admin-inline-filter select) { height: 54px !important; min-height: 54px !important; box-sizing: border-box; }
+body.admin-unified[data-nurse-protected] #page-profile .form-actions .button.primary { border-color: #008f98 !important; background-color: #008f98 !important; color: #fff !important; }
+body.admin-unified[data-nurse-protected] #page-patient-care label.patient-search { margin-bottom: 18px !important; }
+body.admin-unified[data-nurse-protected] #page-profile .form-actions .button.primary:hover,
+body.admin-unified[data-nurse-protected] #page-profile .form-actions .button.primary:focus-visible { border-color: #007a84 !important; background-color: #007a84 !important; color: #fff !important; }
+@media (max-width: 1200px) {
+  body.admin-unified[data-doctor-protected] .stat-grid,
+  body.admin-unified[data-pharmacy-protected] .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 900px) {
+  body.admin-unified[data-doctor-protected] .stat-grid,
+  body.admin-unified[data-pharmacy-protected] .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 760px) {
+  body.admin-unified[data-doctor-protected] .stat-grid,
+  body.admin-unified[data-pharmacy-protected] .stats-grid { grid-template-columns: 1fr; }
+  body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(th, td) { padding-inline: 12px; }
+  body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) .stat-card { min-height: 142px; padding: 18px; border-radius: 17px; }
+  body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.filter-row, .toolbar, .admin-inline-toolbar) { align-items: stretch; }
+  body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.search, .search-box) { max-width: none; }
+  body.admin-unified:is([data-doctor-protected], [data-pharmacy-protected]) :is(.date-filter, .select-filter) { justify-content: space-between; }
+  body.admin-unified[data-doctor-protected] .fee-breakdown-values.lifetime-values { grid-template-columns: 1fr; }
+  body.admin-unified[data-nurse-protected] .fee-breakdown-values.lifetime-values { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.admin-unified:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) * { animation: none !important; transition: none !important; }
+}

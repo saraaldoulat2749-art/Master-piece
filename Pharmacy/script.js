@@ -1,7 +1,7 @@
 const medicineInput = document.getElementById("medicine");
 const areaSelect = document.getElementById("area");
 const searchForm = document.getElementById("pharmacySearchForm");
-const pharmacies = window.CarePlusData.list("pharmacies").filter(window.CarePlusPharmacy.isActivePharmacy);
+const pharmacies = window.CarePlusData.newestFirst(window.CarePlusData.list("pharmacies")).filter(window.CarePlusPharmacy.isActivePharmacy);
 const currentArea = new URLSearchParams(location.search).get("area") || areaSelect.value;
 const areas = [...new Set(pharmacies.map(pharmacy => pharmacy.area).filter(Boolean))];
 areaSelect.replaceChildren(...areas.map(area => {

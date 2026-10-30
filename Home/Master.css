@@ -1,4 +1,164 @@
 
+/* FAQ styles are scoped to preserve the existing landing page. */
+.cp-faq {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    padding: 96px 6.4% 108px;
+    background: linear-gradient(135deg, #f4fafc, #eaf5f8);
+    color: #0d2b3a;
+}
+.cp-faq-container { position: relative; z-index: 1; max-width: 1240px; margin: 0 auto; }
+.cp-faq::before, .cp-faq::after {
+    content: '';
+    position: absolute;
+    width: 340px;
+    height: 340px;
+    border: 1px solid #23b8be20;
+    border-radius: 50%;
+    pointer-events: none;
+    background: radial-gradient(circle, #23b8be0c, transparent 70%);
+    animation: cp-faq-orbit 16s ease-in-out infinite alternate;
+}
+.cp-faq::before { top: 60px; left: -170px; }
+.cp-faq::after { right: -170px; bottom: 20px; animation-delay: -8s; }
+.cp-faq-heading { max-width: 700px; margin: 0 auto 52px; text-align: center; }
+.cp-faq-label { color: #008f98; font-size: 12px; font-weight: 700; letter-spacing: 2px; }
+.cp-faq-heading h2 { margin: 14px 0 18px; font-family: Georgia, 'Times New Roman', serif; font-size: clamp(34px, 4vw, 50px); font-weight: 600; line-height: 1.15; letter-spacing: -1px; }
+.cp-faq-heading h2 span { color: #23b8be; }
+.cp-faq-heading h2 span {
+    background: linear-gradient(100deg, #008f98 10%, #23b8be 40%, #68d8df 50%, #23b8be 60%, #008f98 90%);
+    background-size: 250% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: cp-faq-shimmer 7s ease-in-out infinite;
+}
+.cp-faq-heading > p { color: #5a7180; font-size: 15px; line-height: 1.8; }
+.cp-faq-layout { display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); align-items: center; gap: clamp(32px, 5vw, 76px); }
+.cp-faq-visual { position: relative; min-width: 0; padding: 14px 18px 30px 0; }
+.cp-faq-photo { height: 500px; overflow: hidden; border: 7px solid white; border-radius: 100px 28px 100px 28px; background: #d6edef; box-shadow: 0 18px 45px #0d2b3a12; }
+.cp-faq-photo img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center; transition: transform .8s cubic-bezier(.22, 1, .36, 1); }
+@media (hover: hover) {
+    .cp-faq-visual:hover .cp-faq-photo img { transform: scale(1.045); }
+}
+.cp-faq-medical { position: absolute; display: grid; place-items: center; width: 64px; height: 64px; border: 1px solid #23b8be35; border-radius: 20px; background: #fff; color: #008f98; box-shadow: 0 12px 30px #0d2b3a12; animation: cp-faq-float 6s ease-in-out infinite; }
+.cp-faq-medical-cross { top: 42px; right: 0; font-size: 42px; font-weight: 400; }
+.cp-faq-medical-heart { bottom: 132px; left: -20px; font-size: 26px; animation-delay: -3s; }
+.cp-faq-caption { position: absolute; right: 0; bottom: 0; left: 28px; display: flex; gap: 14px; align-items: center; padding: 22px; border: 1px solid #e3eff1; border-radius: 18px; background: #fff; box-shadow: 0 12px 35px #0d2b3a12; }
+.cp-faq-caption > span { display: grid; place-items: center; flex: 0 0 42px; height: 42px; border-radius: 14px; background: #e7f7f7; color: #008f98; font-size: 21px; }
+.cp-faq-caption strong { font-size: 14px; line-height: 1.5; }
+.cp-faq-caption p { margin-top: 5px; color: #5a7180; font-size: 12px; line-height: 1.6; }
+.cp-faq-caption { animation: cp-faq-float 7s ease-in-out infinite; animation-delay: -2s; }
+.cp-faq-caption > span i { animation: cp-faq-chat 5s ease-in-out infinite; }
+.cp-faq-photo { position: relative; }
+.cp-faq-illustration { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cp-faq-illustration[hidden] { display: none; }
+.cp-faq-photo.cp-faq-video {
+    height: auto;
+    aspect-ratio: 16 / 10;
+    border-radius: 24px;
+    background: #0d2b3a;
+    animation: none;
+}
+.cp-faq-video iframe { display: block; width: 100%; height: 100%; border: 0; }
+.cp-faq-video video { display: block; width: 100%; height: auto; object-fit: contain; object-position: center; background: #0d2b3a; pointer-events: none; }
+.cp-faq-photo.cp-faq-video:has(video) { aspect-ratio: auto; width: min(100%, 280px); margin-inline: auto; }
+.cp-faq-photo.cp-faq-video::after { display: none; }
+.cp-faq-visual:has(.cp-faq-video)::before { border-radius: 24px; }
+.cp-faq-visual:has(.cp-faq-video) { padding-bottom: 90px; }
+.cp-faq-visual:has(.cp-faq-video) .cp-faq-medical-heart { bottom: 100px; }
+.cp-faq-art-pulse { stroke-dasharray: 320; stroke-dashoffset: 320; animation: cp-faq-draw-pulse 4s ease-in-out infinite; }
+@keyframes cp-faq-draw-pulse {
+    0% { stroke-dashoffset: 320; opacity: .3; }
+    45%, 80% { stroke-dashoffset: 0; opacity: 1; }
+    100% { stroke-dashoffset: -320; opacity: .3; }
+}
+.cp-faq-photo {
+    animation: cp-faq-photo-float 8s ease-in-out infinite;
+}
+.cp-faq-visual::before {
+    content: '';
+    position: absolute;
+    inset: 8px 12px 24px -6px;
+    border: 2px solid #23b8be55;
+    border-radius: 100px 28px 100px 28px;
+    pointer-events: none;
+    animation: cp-faq-photo-pulse 4s ease-in-out infinite;
+}
+.cp-faq-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 35%, #ffffff45 50%, transparent 65%);
+    transform: translateX(-130%);
+    pointer-events: none;
+}
+@media (hover: hover) {
+    .cp-faq-visual:hover .cp-faq-photo::after { animation: cp-faq-photo-shine 1.2s ease both; }
+}
+.cp-faq-list { display: grid; gap: 13px; min-width: 0; }
+.cp-faq-item { border: 1px solid #e1edf0; border-radius: 16px; background: #fff; box-shadow: 0 4px 18px #0d2b3a06; transition: border-color .25s, box-shadow .25s, transform .25s; }
+.cp-faq-item:hover { border-color: #23b8be; transform: translateY(-2px); box-shadow: 0 9px 26px #008f9810; }
+.cp-faq-item.is-open { border-color: #23b8be80; box-shadow: 0 8px 28px #008f9810; }
+.cp-faq-item.is-open .cp-faq-toggle { background: #008f98; color: #fff; }
+.cp-faq-item.is-open .cp-faq-answer p { animation: cp-faq-answer-in .45s ease both; }
+.cp-faq-item:hover .cp-faq-toggle { transform: rotate(180deg); }
+.cp-faq-item h3 { margin: 0; font-size: inherit; }
+.cp-faq-item button { display: flex; align-items: center; justify-content: space-between; gap: 18px; width: 100%; padding: 22px 24px; border: 0; border-radius: 15px; background: transparent; color: #0d2b3a; font-family: inherit; font-size: 15px; font-weight: 600; line-height: 1.6; text-align: left; cursor: pointer; }
+.cp-faq-item button:focus-visible { outline: 3px solid #008f98; outline-offset: 4px; }
+.cp-faq-toggle { position: relative; flex: 0 0 28px; height: 28px; border-radius: 50%; background: #eaf7f8; color: #008f98; transition: background .3s, color .3s, transform .45s; }
+.cp-faq-toggle::before, .cp-faq-toggle::after { content: ''; position: absolute; top: 13px; left: 8px; width: 12px; height: 2px; border-radius: 2px; background: currentColor; transition: transform .3s, opacity .3s; }
+.cp-faq-toggle::after { transform: rotate(90deg); }
+.cp-faq-item button[aria-expanded="true"] .cp-faq-toggle::after { transform: rotate(0); opacity: 0; }
+.cp-faq-answer { display: grid; grid-template-rows: 1fr; opacity: 1; transition: grid-template-rows .35s ease, opacity .3s ease, visibility .35s; }
+.cp-faq-answer > div { min-height: 0; overflow: hidden; }
+.cp-faq-answer p { margin: 0; padding: 0 24px 23px; color: #5a7180; font-size: 14px; line-height: 1.85; }
+.cp-faq-answer a { color: #00767e; text-underline-offset: 3px; }
+.cp-faq-ready .cp-faq-item:not(.is-open) .cp-faq-answer { grid-template-rows: 0fr; opacity: 0; visibility: hidden; }
+.cp-faq-reveal { opacity: 0; transform: translateY(22px); transition: opacity .7s ease, transform .7s ease; }
+.cp-faq-reveal.cp-faq-visible { opacity: 1; transform: none; }
+.cp-faq-item.cp-faq-reveal { transition: opacity .65s ease var(--faq-delay, 0ms), transform .65s cubic-bezier(.22, 1, .36, 1) var(--faq-delay, 0ms), border-color .25s, box-shadow .25s; }
+.cp-faq-item.cp-faq-visible:hover { transform: translateY(-2px); }
+@keyframes cp-faq-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-9px); } }
+@keyframes cp-faq-orbit { to { transform: translate(35px, -45px) scale(1.2); } }
+@keyframes cp-faq-shimmer { 0%, 100% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } }
+@keyframes cp-faq-chat { 0%, 80%, 100% { transform: rotate(0); } 85% { transform: rotate(-12deg); } 92% { transform: rotate(10deg); } }
+@keyframes cp-faq-photo-shine { to { transform: translateX(130%); } }
+@keyframes cp-faq-answer-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes cp-faq-photo-float {
+    0%, 100% { transform: translateY(0) rotate(-.6deg); }
+    50% { transform: translateY(-10px) rotate(.6deg); }
+}
+@keyframes cp-faq-photo-pulse {
+    0%, 100% { transform: scale(1); opacity: .65; }
+    50% { transform: scale(1.035); opacity: .2; }
+}
+@media (max-width: 900px) {
+    .cp-faq { padding: 72px 6.4% 80px; }
+    .cp-faq-layout { grid-template-columns: 1fr; gap: 36px; }
+    .cp-faq-visual { width: min(100%, 520px); margin: 0 auto; }
+    .cp-faq-photo { height: 410px; }
+}
+@media (max-width: 480px) {
+    .cp-faq { padding: 60px 6% 64px; }
+    .cp-faq-heading { margin-bottom: 32px; }
+    .cp-faq-label { font-size: 10px; letter-spacing: 1.5px; }
+    .cp-faq-photo { height: 340px; border-radius: 70px 24px; }
+    .cp-faq-caption { left: 10px; padding: 16px; gap: 10px; }
+    .cp-faq-caption strong { font-size: 12px; }
+    .cp-faq-medical-heart { left: -8px; }
+    .cp-faq-item button { padding: 18px; font-size: 14px; gap: 12px; }
+    .cp-faq-answer p { padding: 0 18px 20px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .cp-faq::before, .cp-faq::after { animation: none !important; }
+    .cp-faq *, .cp-faq *::before, .cp-faq *::after { animation: none !important; transition: none !important; }
+    .cp-faq-reveal { opacity: 1; transform: none; }
+    .cp-faq-item:hover { transform: none; }
+    .cp-faq-item.cp-faq-visible:hover, .cp-faq-visual:hover .cp-faq-photo img { transform: none; }
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -1627,7 +1787,8 @@ body .quick-service:hover .quick-icon {
     body .quick-service { flex: 1 1 calc(50% - 11px); }
 }
 /* How it works palette matched to the supplied teal reference. */
-body .how-it-works {
+body .how-it-works,
+body .cp-faq {
     background: radial-gradient(ellipse at 10% 12%, #d5e6fb 0, transparent 38%),
                 radial-gradient(ellipse at 98% 98%, #fff4d4 0, transparent 29%),
                 #f2f9f9;
@@ -1819,7 +1980,8 @@ body .quick-icon:hover {
     border-color: #008c95;
     color: #fff;
 }
-body .how-it-works {
+body .how-it-works,
+body .cp-faq {
     background: radial-gradient(ellipse at 10% 12%, #d5e6fb 0, transparent 38%),
                 radial-gradient(ellipse at 98% 98%, #e4f5f2 0, transparent 29%),
                 #f2f9f9;
@@ -1880,4 +2042,47 @@ body .hero { background-color: #f2f9f9; }
 body .hero #nav-container {
     display: flow-root;
     background-color: transparent;
+}
+
+/* Shared section eyebrow, matching the CarePlus Services label. */
+body .cp-section-label {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    max-width: 100%;
+    margin: 0 0 22px;
+    color: #008f98;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+body .cp-section-label::before,
+body .cp-section-label::after {
+    content: '';
+    width: 56px;
+    height: 2px;
+    flex: 0 0 56px;
+    background: #70cbc9;
+}
+body .cp-section-label > i { font-size: 27px; flex-shrink: 0; }
+body .cp-section-label > span {
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    letter-spacing: inherit;
+}
+@media (max-width: 600px) {
+    body .cp-section-label { gap: 9px; font-size: 11px; letter-spacing: 2px; }
+    body .cp-section-label::before,
+    body .cp-section-label::after { width: 24px; flex-basis: 24px; }
+    body .cp-section-label > i { font-size: 22px; }
+}
+@media (max-width: 380px) {
+    body .cp-section-label { gap: 7px; font-size: 10px; letter-spacing: 1.5px; }
+    body .cp-section-label::before,
+    body .cp-section-label::after { width: 16px; flex-basis: 16px; }
 }

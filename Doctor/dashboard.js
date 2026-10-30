@@ -58,27 +58,32 @@
   function renderDashboard() {
     const rows = ownedAppointments();
     const todayRows = rows.filter(row => row.date === today).sort((a, b) => String(a.time).localeCompare(String(b.time)));
+    const latestRows = data.newestFirst(rows).slice(0, 3);
     const patients = new Set(rows.map(patientKey));
     document.getElementById("todayLabel").textContent = new Date().toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" }).toUpperCase();
     document.getElementById("statToday").textContent = todayRows.length;
     document.getElementById("statPatients").textContent = patients.size;
     document.getElementById("statUpcoming").textContent = rows.length;
     document.getElementById("statPending").textContent = rows.filter(row => ["Pending Deposit", "Requested"].includes(row.status)).length;
+    document.getElementById("statDepositsPaid").textContent = rows.filter(row =>
+      ["Demo Simulated", "Paid"].includes(row.depositPaymentStatus)
+      || ["paid", "succeeded"].includes(String(row.paymentStatus || "").trim().toLowerCase())
+      || String(row.paymentStatus || "").trim().toLowerCase().startsWith("demo")
+      || Number(row.depositAmount) > 0 && Number(row.depositPaid) >= Number(row.depositAmount)
+    ).length;
     const todayList = document.getElementById("todayList");
-    todayList.innerHTML = todayRows.length ? todayRows.map(row => `<div class="appointment-item"><span class="time-block">${esc(timeText(row.time))}</span><span class="patient-main"><b>${esc(row.patient || "Patient")}</b><small>${esc(dateText(row.date))}${row.specialty ? ` · ${esc(row.specialty)}` : ""}${String(row.source || "").includes("demo") ? " · Sample preview" : ""}</small></span>${statusTag(row.status)}</div>`).join("") : `<div class="empty-state">No appointments are scheduled for today.</div>`;
+    todayList.innerHTML = latestRows.length ? latestRows.map(row => `<div class="appointment-item"><span class="time-block">${esc(timeText(row.time))}</span><span class="patient-main"><b>${esc(row.patient || "Patient")}</b><small>${esc(dateText(row.date))}${row.specialty ? ` · ${esc(row.specialty)}` : ""}${String(row.source || "").includes("demo") ? " · Sample preview" : ""}</small></span>${statusTag(row.status)}</div>`).join("") : `<div class="empty-state">No appointments have been booked yet.</div>`;
     const notices = [];
     const requests = rows.filter(row => ["Pending Deposit", "Requested"].includes(row.status)).length;
     if (requests) notices.push(`<div class="notice"><i>✉</i><span><b>${requests} new booking request${requests === 1 ? "" : "s"}</b><br>Review requests awaiting a response.</span></div>`);
     const next = rows.filter(row => row.date >= today && row.status === "Confirmed").sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))[0];
     if (next) notices.push(`<div class="notice"><i>◷</i><span><b>Upcoming appointment</b><br>${esc(rowPatient(next))} · ${esc(dateText(next.date))} at ${esc(timeText(next.time))}</span></div>`);
     document.getElementById("noticeList").innerHTML = notices.join("") || `<div class="empty-state">You’re all caught up. New updates will appear here.</div>`;
-    document.getElementById("notificationDot").hidden = requests === 0;
   }
   function rowPatient(row) { return row.patient || "Patient"; }
   function renderAppointments() {
     const query = document.getElementById("appointmentSearch").value.trim().toLowerCase();
-    const date = document.getElementById("appointmentDateFilter").value;
-    const filtered = ownedAppointments().filter(row => (activeStatus === "All" || (activeStatus === "Requested" ? row.status === "Requested" : row.status === activeStatus)) && (!date || row.date === date) && (!query || `${row.patient} ${row.phone || ""} ${row.email || ""}`.toLowerCase().includes(query))).sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`));
+    const filtered = data.newestFirst(ownedAppointments().filter(row => (activeStatus === "All" || (activeStatus === "Requested" ? row.status === "Requested" : row.status === activeStatus)) && (!query || `${row.patient} ${row.phone || ""} ${row.email || ""}`.toLowerCase().includes(query))));
     document.getElementById("appointmentRows").innerHTML = filtered.map(row => {
       let actions = "—";
       if (row.status === "Requested") actions = `<div class="row-actions"><button class="action accept" data-action="Confirmed" data-id="${esc(row.id)}">Accept</button><button class="action reject" data-action="Cancelled" data-id="${esc(row.id)}">Reject</button></div>`;
@@ -89,22 +94,32 @@
     document.getElementById("appointmentCount").textContent = `${filtered.length} appointment${filtered.length === 1 ? "" : "s"}`;
   }
   renderAppointments = function renderAppointmentFinance() {
+    const allRows = ownedAppointments();
+    document.getElementById("appointmentSummaryTotal").textContent = allRows.length;
+    document.getElementById("appointmentSummaryPending").textContent = allRows.filter(row => ["Requested", "Pending Deposit"].includes(row.status)).length;
+    document.getElementById("appointmentSummaryPendingOnly").textContent = allRows.filter(row => row.status === "Requested").length;
+    document.getElementById("appointmentSummaryConfirmed").textContent = allRows.filter(row => row.status === "Confirmed").length;
+    document.getElementById("appointmentSummaryCompleted").textContent = allRows.filter(row => row.status === "Completed").length;
     const query = document.getElementById("appointmentSearch").value.trim().toLowerCase();
-    const date = document.getElementById("appointmentDateFilter").value;
-    const filtered = ownedAppointments().filter(row => (activeStatus === "All" || (activeStatus === "Requested" ? ["Requested", "Pending Deposit"].includes(row.status) : row.status === activeStatus)) && (!date || row.date === date) && (!query || `${row.patient} ${row.phone || ""} ${row.email || ""} ${row.id || ""}`.toLowerCase().includes(query))).sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`));
+    const filtered = data.newestFirst(ownedAppointments().filter(row => (activeStatus === "All" || (activeStatus === "Requested" ? ["Requested", "Pending Deposit"].includes(row.status) : row.status === activeStatus)) && (!query || `${row.patient} ${row.phone || ""} ${row.email || ""} ${row.id || ""}`.toLowerCase().includes(query))));
     const money = value => `JOD ${Number(value || 0).toFixed(2)}`;
     document.getElementById("appointmentRows").innerHTML = filtered.map(row => {
       const hasFee = Number(row.consultationFee) > 0;
-      const depositReady = ["Demo Simulated", "Paid"].includes(row.depositPaymentStatus);
+      const normalizedPaymentStatus = String(row.paymentStatus || "").trim().toLowerCase();
+      const depositReady = ["Demo Simulated", "Paid"].includes(row.depositPaymentStatus)
+        || normalizedPaymentStatus === "paid"
+        || normalizedPaymentStatus.startsWith("demo")
+        || normalizedPaymentStatus === "succeeded"
+        || Number(row.depositAmount) > 0 && Number(row.depositPaid) >= Number(row.depositAmount);
       let actions = "—";
-      if (row.status === "Pending Deposit") actions = `<span class="payment-wait">Pending</span>`;
-      else if (row.status === "Requested" && (!hasFee || depositReady)) actions = `<div class="row-actions"><button class="action accept" data-action="Confirmed" data-id="${esc(row.id)}">Accept</button><button class="action reject" data-action="Cancelled" data-id="${esc(row.id)}">Reject</button></div>`;
-      else if (row.status === "Requested") actions = `<span class="payment-wait">Awaiting deposit</span>`;
+      if (["Pending Deposit", "Requested"].includes(row.status) && (!hasFee || depositReady)) actions = `<div class="row-actions"><button class="action accept" data-action="Confirmed" data-id="${esc(row.id)}">Accept</button><button class="action reject" data-action="Cancelled" data-id="${esc(row.id)}">Reject</button></div>`;
+      else if (row.status === "Pending Deposit") actions = `<div class="row-actions"><button class="action accept" type="button" disabled title="Accept after the deposit is completed">Accept</button><button class="action reject" data-action="Cancelled" data-id="${esc(row.id)}">Reject</button></div><small class="payment-wait">Awaiting deposit</small>`;
+      else if (row.status === "Requested") actions = `<div class="row-actions"><button class="action accept" type="button" disabled title="Accept after the deposit is completed">Accept</button><button class="action reject" data-action="Cancelled" data-id="${esc(row.id)}">Reject</button></div><small class="payment-wait">Awaiting deposit</small>`;
       else if (row.status === "Confirmed") actions = `<div class="row-actions"><button class="action" data-action="Completed" data-id="${esc(row.id)}">Complete</button><button class="action cancel" data-action="Cancelled" data-id="${esc(row.id)}">Cancel</button></div>`;
       const paymentStatus = String(row.paymentStatus || "Pending").startsWith("Demo") ? "Paid" : (row.paymentStatus || "Pending");
       const payment = hasFee ? `<small class="finance-lines">Fee ${esc(money(row.consultationFee))} · Deposit paid ${esc(money(row.depositPaid))} / required ${esc(money(row.depositAmount))} · Balance ${esc(money(row.remainingBalance))}<br>CarePlus ${esc(Number(row.commissionRate || 0))}% = ${esc(money(row.commissionAmount))} · Collected ${esc(money(row.commissionCollected))} · To settle ${esc(money(row.commissionRemainingToSettle))}<br>Doctor net ${esc(money(row.doctorNetEarnings))}<br>Payment: ${esc(paymentStatus)}</small>` : `<small class="finance-lines">No payment details recorded</small>`;
-      const appointmentTag = row.status === "Pending Deposit" ? `<span class="status requested">Pending deposit</span>` : statusTag(row.status);
-      return `<tr><td><b>${esc(row.patient || "Patient")}</b><small class="finance-lines">ID ${esc(row.id)}</small></td><td>${esc(dateText(row.date))}</td><td>${esc(timeText(row.time))}</td><td>${appointmentTag}</td><td>${payment}</td><td>${actions}</td></tr>`;
+      const appointmentTag = row.status === "Pending Deposit" && depositReady ? `<span class="status requested">Deposit paid · awaiting review</span>` : row.status === "Pending Deposit" ? `<span class="status requested">Pending deposit</span>` : statusTag(row.status);
+      return `<tr data-appointment-id="${esc(row.id)}"><td><b>${esc(row.patient || "Patient")}</b><small class="finance-lines">ID ${esc(row.id)}</small></td><td>${esc(dateText(row.date))}</td><td>${esc(timeText(row.time))}</td><td>${appointmentTag}</td><td>${payment}</td><td>${actions}</td></tr>`;
     }).join("");
     document.getElementById("appointmentEmpty").hidden = filtered.length > 0;
     document.getElementById("appointmentCount").textContent = `${filtered.length} appointment${filtered.length === 1 ? "" : "s"}`;
@@ -158,19 +173,12 @@
   function renderProfile() {
     const form = document.getElementById("profileForm");
     Object.entries(profile).forEach(([key, value]) => { const input = form.elements.namedItem(key); if (input && input.type !== "file") input.value = value ?? ""; });
-    renderFeeBreakdown();
-  }
-  function renderFeeBreakdown() {
-    const feeInput = document.querySelector('#profileForm [name="fee"]');
-    const rawFee = feeInput.value.trim();
-    const fee = Number(rawFee);
-    const hasFee = rawFee !== "" && Number.isFinite(fee) && fee >= 0;
-    const commission = hasFee ? fee * DOCTOR_COMMISSION_RATE : 0;
-    const formatJod = amount => `JOD ${amount.toFixed(2)}`;
-
-    document.getElementById("doctorFeeGross").textContent = hasFee ? formatJod(fee) : "JOD 0.00";
-    document.getElementById("doctorFeeCommission").textContent = formatJod(commission);
-    document.getElementById("doctorFeeNet").textContent = formatJod(hasFee ? fee - commission : 0);
+    const eligibleEarnings = ownedAppointments().filter(row => row.status === "Completed" && row.commissionStatus !== "Reversed" && row.refundStatus !== "Refunded");
+    const commissionFor = row => row.commissionAmount != null ? Number(row.commissionAmount) : Number(row.consultationFee || 0) * Number(row.commissionRate ?? (DOCTOR_COMMISSION_RATE * 100)) / 100;
+    const netEarned = eligibleEarnings.reduce((sum, row) => sum + Number(row.doctorNetEarnings != null ? row.doctorNetEarnings : Number(row.consultationFee || 0) - commissionFor(row)), 0);
+    const siteCommission = eligibleEarnings.reduce((sum, row) => sum + commissionFor(row), 0);
+    document.getElementById("doctorFeeGross").textContent = `JOD ${netEarned.toFixed(2)}`;
+    document.getElementById("doctorFeeCommission").textContent = `JOD ${siteCommission.toFixed(2)}`;
   }
   function saveProfile(event) {
     event.preventDefault();
@@ -203,19 +211,18 @@
   document.querySelectorAll("[data-go-appointments]").forEach(button => button.addEventListener("click", () => navigate("appointments")));
   document.querySelectorAll("[data-go-schedule]").forEach(button => button.addEventListener("click", () => navigate("schedule")));
   document.getElementById("menuButton").addEventListener("click", () => document.getElementById("sidebar").classList.toggle("open"));
-  document.getElementById("notificationButton").addEventListener("click", () => navigate("appointments"));
   document.getElementById("appointmentSearch").addEventListener("input", renderAppointments);
-  document.getElementById("appointmentDateFilter").addEventListener("change", renderAppointments);
   document.getElementById("patientSearch").addEventListener("input", renderPatients);
-  document.getElementById("statusTabs").addEventListener("click", event => { const button = event.target.closest("[data-status]"); if (!button) return; activeStatus = button.dataset.status; document.querySelectorAll("#statusTabs button").forEach(item => item.classList.toggle("selected", item === button)); renderAppointments(); });
+  document.getElementById("appointmentStatusFilter").addEventListener("change", event => { activeStatus = event.target.value; renderAppointments(); });
   document.getElementById("appointmentRows").addEventListener("click", event => {
     const button = event.target.closest("[data-action]"); if (!button) return;
     const row = ownedAppointments().find(item => String(item.id) === button.dataset.id); if (!row) return;
     const status = button.dataset.action;
-    const changes = { status };
+    const changes = { status, lastActionByRole: "Doctor", lastActionById: String(providerId) };
     if (status === "Completed") changes.commissionStatus = row.paymentStatus === "Paid" && row.balancePaymentStatus === "Paid" ? "Pending Review" : "Not payable — payment or balance unpaid";
+    if (status === "Confirmed" && button.dataset.reopen === "true") changes.commissionStatus = Number(row.commissionCollected || 0) > 0 ? "Review required — appointment reopened" : "Awaiting completion";
     if (status === "Cancelled") {
-      changes.commissionStatus = ["Pending Review", "Payable", "Settled"].includes(row.commissionStatus) ? "Reversed" : "Not earned";
+      changes.commissionStatus = ["Pending Review", "Payable", "Settled", "Review required — appointment reopened"].includes(row.commissionStatus) ? "Reversed" : "Not earned";
         if (Number(row.commissionCollected) > 0) changes.commissionReversedAmount = Number(row.commissionCollected);
         changes.commissionCollected = 0;
         changes.commissionRemainingToSettle = 0;
@@ -229,7 +236,6 @@
   document.getElementById("holidayForm").addEventListener("submit", event => { event.preventDefault(); const date = document.getElementById("holidayDate").value; if (!date) return; if (schedule.holidays.some(item => item.date === date)) return showToast("That unavailable date is already listed."); schedule.holidays.push({ date, note: document.getElementById("holidayNote").value.trim() }); if (!(clinic?.saveSchedule(schedule, providerId) || (!clinic && (() => { try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify(schedule)); return true; } catch { return false; } })()))) return showToast("Could not save unavailable date."); event.currentTarget.reset(); renderSchedule(); showToast("Unavailable date added."); });
   document.getElementById("holidayList").addEventListener("click", event => { const button = event.target.closest("[data-holiday]"); if (!button) return; schedule.holidays.splice(Number(button.dataset.holiday), 1); if (!(clinic?.saveSchedule(schedule, providerId) || (!clinic && (() => { try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify(schedule)); return true; } catch { return false; } })()))) return showToast("Could not update unavailable dates."); renderSchedule(); showToast("Unavailable date removed."); });
   document.getElementById("profileForm").addEventListener("submit", saveProfile);
-  document.querySelector('#profileForm [name="fee"]').addEventListener("input", renderFeeBreakdown);
   clinic?.subscribe(() => { profile = clinic.getProfile(providerId); schedule = clinic.getSchedule(providerId); renderAll(); if (document.querySelector("#page-schedule.active")) renderSchedule(); if (document.querySelector("#page-profile.active")) renderProfile(); });
   document.getElementById("holidayDate").min = today;
   renderAll(); renderSchedule(); renderProfile();

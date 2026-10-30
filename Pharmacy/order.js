@@ -37,7 +37,16 @@ function updateSummary() {
   document.getElementById("orderDelivery").textContent = `JOD ${delivery.toFixed(2)}`;
   document.getElementById("orderTotal").textContent = `JOD ${total.toFixed(2)}`;
   const submitButton = document.querySelector(".order-submit");
-  submitButton.disabled = !document.getElementById("deliveryAddress").value.trim() || document.getElementById("deliveryPhone").value.replace(/\D/g, "").length < 7;
+  const hasAddress = document.getElementById("deliveryAddress").value.trim().length >= 8;
+  const hasValidPhone = document.getElementById("deliveryPhone").value.replace(/\D/g, "").length >= 7;
+  submitButton.disabled = !hasAddress || !hasValidPhone;
+  feedback.classList.remove("error");
+  feedback.textContent = hasAddress && hasValidPhone
+    ? "Your delivery details are ready. Continue to online payment."
+    : `To enable the button, ${[
+        !hasAddress ? "enter a delivery address with at least 8 characters" : "",
+        !hasValidPhone ? "enter a contact phone with at least 7 digits" : ""
+      ].filter(Boolean).join(" and ")}.`;
 }
 
 const customer = api.currentCustomer();

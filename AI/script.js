@@ -10,6 +10,10 @@
   let identity = "demo-account";
   try { identity = sessionStorage.getItem("careplusDemoIdentity") || identity; } catch { /* Use the browser demo account when session storage is unavailable. */ }
   const usageKey = `careplusAiAttempts:${identity.toLowerCase()}`;
+  const usageEventKey = "careplusAiUsageEventsV1";
+  const accessKey = `careplusAiAccessUntil:${identity.toLowerCase()}`;
+  let accessUntil = 0;
+  try { accessUntil = Number(localStorage.getItem(accessKey)) || 0; } catch { /* The current tab still enforces the free attempt limit. */ }
   let attemptsUsed = 0;
   try { attemptsUsed = Math.min(3, Math.max(0, Number(localStorage.getItem(usageKey)) || 0)); } catch { /* The current tab still enforces the limit. */ }
   const attemptsLabel = document.getElementById("attempts-remaining");
@@ -17,14 +21,21 @@
   let isGenerating = false;
   let responseTimer;
   let robotTimer;
+  let accessTimer;
 
   function renderUsage() {
     const remaining = Math.max(0, 3 - attemptsUsed);
-    attemptsLabel.textContent = `${remaining} free ${remaining === 1 ? "attempt" : "attempts"} remaining.`;
-    paymentPrompt.hidden = remaining !== 0;
-    input.disabled = remaining === 0 || isGenerating;
-    sendButton.disabled = remaining === 0 || isGenerating;
-    document.querySelectorAll(".suggestion-card").forEach(button => { button.disabled = remaining === 0; });
+    try { accessUntil = Number(localStorage.getItem(accessKey)) || 0; } catch { /* Keep the current access state. */ }
+    const hasPaidAccess = accessUntil > Date.now();
+    window.clearTimeout(accessTimer);
+    if (hasPaidAccess) accessTimer = window.setTimeout(renderUsage, accessUntil - Date.now());
+    attemptsLabel.textContent = hasPaidAccess
+      ? `Premium access active until ${new Date(accessUntil).toLocaleString()}.`
+      : `${remaining} free ${remaining === 1 ? "attempt" : "attempts"} remaining.`;
+    paymentPrompt.hidden = remaining !== 0 || hasPaidAccess;
+    input.disabled = (!hasPaidAccess && remaining === 0) || isGenerating;
+    sendButton.disabled = (!hasPaidAccess && remaining === 0) || isGenerating;
+    document.querySelectorAll(".suggestion-card").forEach(button => { button.disabled = !hasPaidAccess && remaining === 0; });
   }
 
   function setRobotState(state, label, returnToIdleAfter = 0) {
@@ -113,10 +124,18 @@
 
   function sendMessage(rawText) {
     const text = rawText.trim();
-    if (!text || isGenerating || attemptsUsed >= 3) return;
+    const hasPaidAccess = accessUntil > Date.now();
+    if (!text || isGenerating || (!hasPaidAccess && attemptsUsed >= 3)) return;
 
-    attemptsUsed += 1;
-    try { localStorage.setItem(usageKey, String(attemptsUsed)); } catch { /* The current tab still enforces the limit. */ }
+    if (!hasPaidAccess) {
+      attemptsUsed += 1;
+      try { localStorage.setItem(usageKey, String(attemptsUsed)); } catch { /* The current tab still enforces the limit. */ }
+    }
+    try {
+      const events = JSON.parse(localStorage.getItem(usageEventKey) || "[]");
+      events.push({ identity: identity.toLowerCase(), at: new Date().toISOString(), paidAccess: hasPaidAccess });
+      localStorage.setItem(usageEventKey, JSON.stringify(events.slice(-5000)));
+    } catch { /* Usage metrics are optional; message access remains available. */ }
     renderUsage();
 
     addMessage("user", text);
@@ -181,8 +200,10 @@
     resetConversation("Hi! I'm your CarePlus AI Assistant. How can I help you today?");
   });
 
-  document.getElementById("clear-chat").addEventListener("click", () => {
+  document.getElementById("clear-chat").addEventListener("click", async () => {
+    if (!await window.CarePlusDelete.confirm({ kind: "conversation", name: "Current conversation", description: "This will clear the messages in your current conversation." })) return;
     resetConversation("Your conversation has been cleared. What would you like help with?");
+    window.CarePlusDelete.success({ kind: "conversation" });
   });
 
   document.getElementById("payment-details-toggle").addEventListener("click", event => {
@@ -190,6 +211,7 @@
     details.hidden = !details.hidden;
     event.currentTarget.setAttribute("aria-expanded", String(!details.hidden));
   });
+  window.addEventListener("storage", event => { if (event.key === accessKey) renderUsage(); });
   renderUsage();
   setRobotState("greeting", "Waving hello", 2100);
 })();

@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Services | CarePlus Admin</title>
+  <link rel="stylesheet" href="../admin.css"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../dashboard-ui.css?v=admin-pages-5">
+  <link rel="stylesheet" href="../../shared/notifications.css?v=notifications-6"><link rel="stylesheet" href="ai-services.css?v=ai-admin-6">
+  <link rel="stylesheet" href="../../shared/global-button-theme.css">
+</head>
+<body class="admin-unified ai-admin-page" data-protected="true" data-admin-protected="true">
+  <script src="../../auth.js?v=archive-aware-1"></script>
+  <div class="admin-layout">
+    <aside class="sidebar" id="admin-sidebar">
+      <a class="brand" href="../index.html"><span class="brand-mark">+</span><span>Care<span>Plus</span><small>ADMIN</small></span></a>
+      <nav class="side-nav" aria-label="Admin sections"><a href="../index.html"><span>D</span>Dashboard</a><a href="../Users/index.html"><span>U</span>Users</a><a class="active" href="index.html"><span>AI</span>AI Services</a></nav>
+      <div class="sidebar-bottom"><p>Admin workspace</p><a href="../../Home/Master.html">View CarePlus site</a><a class="sidebar-logout" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar"><button class="menu-toggle" type="button" aria-label="Open admin navigation" aria-controls="admin-sidebar" aria-expanded="false">☰</button><div class="topbar-copy"><span class="eyebrow">CAREPLUS MANAGEMENT</span><h1>AI Services</h1></div><div id="careplus-notification-widget" class="cpn-admin-slot"></div><a class="logout-link" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></header>
+      <section class="page-content ai-services-page">
+        <div class="welcome-row"><div><p class="eyebrow">AI SERVICE MONITORING</p><h2>Usage &amp; access</h2><p>Usage events contain account and timing data only; conversation content is not collected here.</p></div></div>
+        <section class="ai-stat-grid" aria-label="AI service summary">
+          <article class="ai-stat"><i class="ai-stat-icon"><svg viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="10" cy="7" r="4"/><path d="M20 21v-2a4 4 0 0 0-3-3.87"/></svg></i><span>AI Users</span><strong data-ai-users>0</strong></article>
+          <article class="ai-stat"><i class="ai-stat-icon"><svg viewBox="0 0 24 24"><path d="M4 5h16v12H8l-4 4z"/><path d="M8 9h8m-8 4h5"/></svg></i><span>Consultations</span><strong data-ai-consults>0</strong></article>
+          <article class="ai-stat"><i class="ai-stat-icon"><svg viewBox="0 0 24 24"><path d="m13 2-3 8h6l-5 12 1-9H6l7-11Z"/></svg></i><span>Free Attempts Used</span><strong data-ai-free>0</strong></article>
+          <article class="ai-stat"><i class="ai-stat-icon"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18m-13 5h4"/></svg></i><span>Paid Sessions</span><strong data-ai-paid-sessions>0</strong></article>
+          <article class="ai-stat"><i class="ai-stat-icon"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/></svg></i><span>Verified AI Revenue</span><strong data-ai-revenue>JOD 0.00</strong></article>
+          <article class="ai-stat"><i class="ai-stat-icon"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></svg></i><span>Active Access</span><strong data-ai-active>0</strong></article>
+        </section>
+        <section class="ai-analytics-grid">
+          <article class="panel ai-usage-panel"><div class="panel-heading"><div><p class="eyebrow">USAGE</p><h2>AI usage statistics</h2></div><label class="ai-period">View<select data-usage-period><option value="daily">Daily</option><option value="monthly">Monthly</option></select></label></div><div class="ai-usage-chart" data-usage-chart></div><p class="ai-chart-note" data-usage-note></p></article>
+          <article class="panel ai-mix-panel"><div class="panel-heading"><div><p class="eyebrow">FREE VS PAID</p><h2>Session mix</h2></div></div><div class="ai-mix" data-session-mix></div><p class="ai-chart-note">Paid sessions are based on access activity. Revenue counts only verified, non-demo payment records.</p></article>
+        </section>
+        <section class="ai-records-grid" aria-label="AI accounts and payment history">
+        <section class="panel ai-accounts-panel"><div class="panel-heading"><div><p class="eyebrow">SUBSCRIPTIONS</p><h2>AI account access</h2></div><span class="record-count" data-ai-account-count>0 accounts</span></div>
+          <div class="ai-toolbar"><label class="search-control"><svg class="ai-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 4 4"></path></svg><input type="search" data-ai-search placeholder="Search account" aria-label="Search AI account"></label><label>Access<select data-ai-access-filter><option value="">All access</option><option value="Active">Active</option><option value="Free">Free</option></select></label></div>
+          <div class="table-wrap"><table class="ai-table ai-accounts-table"><thead><tr><th>Account</th><th>Status</th><th>Details</th></tr></thead><tbody data-ai-accounts></tbody></table><div class="table-empty" data-ai-accounts-empty>No AI accounts found.</div></div>
+        </section>
+        <section class="panel ai-payments-panel"><div class="panel-heading"><div><p class="eyebrow">PAYMENT HISTORY</p><h2>AI payment records</h2></div><span class="record-count" data-ai-payment-count>0 payments</span></div>
+          <div class="ai-toolbar"><label class="search-control"><svg class="ai-search-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"></circle><path d="m16 16 4 4"></path></svg><input type="search" data-payment-search placeholder="Search payment or account" aria-label="Search AI payments"></label><label>Status<select data-payment-filter><option value="">All statuses</option><option>Demo / Not charged</option><option>Paid</option><option>Failed</option></select></label></div>
+          <div class="table-wrap"><table class="ai-table"><thead><tr><th>Reference</th><th>Account</th><th>Plan</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody data-ai-payments></tbody></table><div class="table-empty" data-ai-payments-empty>No AI payment records found.</div></div>
+        </section>
+        </section>
+        <dialog class="ai-details-dialog" data-ai-details-dialog aria-labelledby="ai-details-title">
+          <div class="ai-details-heading"><div><p class="eyebrow">SUBSCRIPTION DETAILS</p><h2 id="ai-details-title" data-ai-details-title>AI account</h2></div><button type="button" class="icon-button" data-details-close aria-label="Close details">×</button></div>
+          <div class="ai-details-grid" data-ai-details-grid></div>
+          <div class="ai-details-actions"><button type="button" class="ai-revoke" data-details-revoke hidden>Revoke access</button><button type="button" class="secondary-button" data-details-close>Close</button></div>
+        </dialog>
+      </section>
+    </main>
+  </div>
+  <div class="toast" data-ai-toast role="status" aria-live="polite"></div>
+  <script src="../../data/careplus-data.js?v=archive-aware-1"></script><script src="../dashboard-ui.js?v=admin-pages-3"></script><script src="../admin-nav.js?v=nav-3"></script>
+  <script src="../../shared/notifications.js?v=notifications-2"></script><script src="ai-services.js?v=ai-admin-5"></script>
+</body></html>
+

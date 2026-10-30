@@ -1,4 +1,4 @@
-let pharmacies = window.CarePlusData.list("pharmacies").filter(window.CarePlusPharmacy.isActivePharmacy);
+let pharmacies = window.CarePlusData.newestFirst(window.CarePlusData.list("pharmacies")).filter(window.CarePlusPharmacy.isActivePharmacy);
 const pharmacyApi = window.CarePlusPharmacy;
 const params = new URLSearchParams(location.search);
 const medicineInput = document.getElementById("medicine");
@@ -39,6 +39,6 @@ function renderResults() {
 }
 searchForm.addEventListener("submit", event => { event.preventDefault(); const nextMedicine=medicineInput.value.trim(); location.assign(`results.html?medicine=${encodeURIComponent(nextMedicine)}&area=${encodeURIComponent(areaSelect.value)}`); });
 cardsContainer.addEventListener("click", event => { const button=event.target.closest("[data-view-pharmacy]");if(!button)return;const details=cardsContainer.querySelector(`[data-pharmacy-details="${CSS.escape(button.dataset.viewPharmacy)}"]`);if(!details)return;details.hidden=!details.hidden;button.textContent=details.hidden?"View Details":"Hide Details"; });
-pharmacyApi.subscribe(() => { pharmacies=window.CarePlusData.list("pharmacies").filter(pharmacyApi.isActivePharmacy);renderResults(); });
+pharmacyApi.subscribe(() => { pharmacies=window.CarePlusData.newestFirst(window.CarePlusData.list("pharmacies")).filter(pharmacyApi.isActivePharmacy);renderResults(); });
 if (!medicineQuery) { cardsContainer.innerHTML = `<div class="empty">Enter a medicine name to view pharmacy results. <a href="index.html">Start a search</a>.</div>`; }
 else renderResults();

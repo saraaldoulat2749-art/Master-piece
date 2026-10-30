@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#172536">
   <title>Home Care Request | CarePlus</title>
-  <link rel="stylesheet" href="../Nav/style.css"><link rel="stylesheet" href="../Footer/style.css"><link rel="stylesheet" href="style.css">
-</head>
-<body class="elderly-page service-request-page" data-protected="true"><script src="../auth.js"></script>
+  <link rel="stylesheet" href="../Nav/style.css"><link rel="stylesheet" href="../Footer/style.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="deposit.css">
+<link rel="stylesheet" href="../shared/global-button-theme.css"></head>
+<body class="elderly-page service-request-page" data-protected="true"><script src="../auth.js?v=archive-aware-1"></script>
   <div id="nav-container"></div>
   <main>
     <section class="request-hero section-wrap"><a class="breadcrumb" href="index.html">Elderly Care <span aria-hidden="true">/</span> Home Care</a><span class="eyebrow">IN-HOME SUPPORT</span><h1>Home Care, planned <span>around your day.</span></h1><p>Tell us about the routines, schedule, and support tasks you would like to discuss. A CarePlus team member must confirm provider availability and the final arrangements.</p><a class="button button-secondary" href="hospital-companion.html">Looking for an appointment companion?</a></section>
@@ -44,6 +44,8 @@
             <label>Email address *<input name="email" type="email" autocomplete="email" required placeholder="name@example.com"></label>
             <label>Emergency contact phone *<input name="emergencyPhone" type="tel" required placeholder="Contact phone"></label>
             <label class="form-wide">Additional instructions<textarea name="instructions" rows="3" maxlength="400" placeholder="Share non-urgent details you'd like discussed."></textarea></label>
+            <label class="form-wide">Special care requirements<textarea name="specialCareRequirements" rows="3" maxlength="500" placeholder="Share relevant care needs, mobility support, or communication preferences."></textarea></label>
+            <label class="form-wide">Authorized care instructions<textarea name="authorizedCareInstructions" rows="3" maxlength="500" placeholder="Include instructions already provided by the person's care team."></textarea></label>
           </div>
           <label class="consent-field"><input type="checkbox" name="authorization" required><span>I am authorized to request care for myself or the family member named in this request.</span></label>
           <button class="button button-primary submit-button" type="submit">Submit care request <span aria-hidden="true">&rarr;</span></button><p class="form-feedback" id="form-feedback" role="status" aria-live="polite"></p>
@@ -53,7 +55,7 @@
       </div>
     </section>
   </main>
-  <div id="footer-container"></div><script src="../data/careplus-data.js"></script><script src="../data/careplus-pharmacy.js"></script><script src="script.js"></script>
+  <div id="footer-container"></div><script src="../data/careplus-data.js?v=archive-aware-1"></script><script src="../data/careplus-pharmacy.js?v=archive-aware-1"></script><script src="deposit.js"></script><script src="script.js"></script>
   <script src="../Footer/footer.js"></script>
 </body>
 </html>

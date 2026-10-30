@@ -40,7 +40,7 @@
   function get(id = DEFAULT_PHARMACY_ID) { return window.CarePlusData?.get("pharmacies", id) || null; }
   function isActivePharmacy(pharmacy) {
     const status = String(pharmacy?.status || "Active").replace(/[\s_-]/g, "").toLowerCase();
-    return Boolean(pharmacy && pharmacy.deleted !== true && !["inactive", "deleted", "disabled", "removed"].includes(status));
+    return Boolean(pharmacy && pharmacy.deleted !== true && pharmacy.archived !== true && !pharmacy.archivedAt && !["inactive", "deleted", "disabled", "removed"].includes(status));
   }
   function listOrders(pharmacyId) {
     return window.CarePlusData.list("orders").filter(order => order.source === "pharmacy-order" && (pharmacyId == null || String(order.pharmacyId) === String(pharmacyId)));
@@ -64,6 +64,23 @@
       return match ? Math.max(max, Number(match[1])) : max;
     }, 1000);
     return `ORD-${highest + 1}`;
+  }
+  const orderStatusAliases = { Confirmed: "Accepted", "Preparing for Delivery": "Preparing", "Out for Delivery": "Ready for Pickup", Delivered: "Completed" };
+  const canonicalOrderStatus = status => orderStatusAliases[String(status || "")] || String(status || "Pending");
+  function orderHistory(order) {
+    if (Array.isArray(order.statusHistory) && order.statusHistory.length) return order.statusHistory;
+    const placedAt = order.placedAt || order.createdAt || new Date().toISOString();
+    const steps = ["Pending", "Accepted", "Preparing", "Ready for Pickup", "Completed"];
+    const current = canonicalOrderStatus(order.status);
+    const lastIndex = steps.indexOf(current);
+    const history = [{ status: "Pending", at: placedAt, actor: "Customer", note: "Order received" }];
+    if (lastIndex > 0) {
+      const dates = { Accepted: order.acceptedAt || order.confirmedAt, Preparing: order.preparingAt, "Ready for Pickup": order.readyForPickupAt || order.outForDeliveryAt, Completed: order.completedAt || order.deliveredAt };
+      steps.slice(1, lastIndex + 1).forEach(status => history.push({ status, at: dates[status] || order.statusUpdatedAt || placedAt, actor: "Pharmacy" }));
+    } else if (current === "Rejected" || current === "Cancelled") {
+      history.push({ status: current, at: order.rejectedAt || order.cancelledAt || order.statusUpdatedAt || placedAt, actor: current === "Cancelled" && order.customerCancelledAt ? "Customer" : "Pharmacy", reason: order.rejectionReason || order.cancelReason || "" });
+    }
+    return history;
   }
   function customerReference(userId) {
     const value = String(userId || "").replace(/[^a-z0-9]/gi, "").replace(/^demo/i, "") || "GUEST";
@@ -108,10 +125,6 @@
   function migrateOrders() {
     listOrders().forEach(order => {
       const changes = {};
-      if (order.status === "Accepted") { changes.status = "Confirmed"; changes.inventoryReserved = true; }
-      if (order.status === "Rejected") { changes.status = "Cancelled"; changes.cancelReason ||= "Declined in the previous demo flow."; }
-      if (order.status === "Ready for Pickup") changes.status = "Preparing for Delivery";
-      if (order.status === "Completed") changes.status = "Delivered";
       if (!order.paymentStatus) changes.paymentStatus = "Pending";
       if (!order.paymentMethod || order.paymentMethod === "cash-at-pickup") changes.paymentMethod = "cash-on-delivery";
       if (order.paymentVerified === undefined) changes.paymentVerified = false;
@@ -119,6 +132,18 @@
       if (order.commissionAmount === undefined) changes.commissionAmount = 0;
       if (!order.commissionStatus) changes.commissionStatus = "Not Eligible";
       if (!order.customerReference) changes.customerReference = customerReference(order.userId);
+      if (!order.customerName) changes.customerName = window.CarePlusData.get("users", order.userId)?.name || order.customerReference || "Customer";
+      if (!order.pharmacyName) changes.pharmacyName = get(order.pharmacyId)?.name || "CarePlus pharmacy";
+      if (!Array.isArray(order.statusHistory) || !order.statusHistory.length) changes.statusHistory = orderHistory(order);
+      if (Array.isArray(order.items)) {
+        const inventory = get(order.pharmacyId)?.inventory || [];
+        const items = order.items.map(line => {
+          if (line.image) return line;
+          const medicine = inventory.find(item => String(item.id) === String(line.medicineId));
+          return medicine?.image ? { ...line, image: medicine.image } : line;
+        });
+        if (items.some((line, index) => line !== order.items[index])) changes.items = items;
+      }
       if (Object.keys(changes).length) window.CarePlusData.update("orders", order.id, changes);
     });
   }
@@ -131,11 +156,11 @@
           const reference = nextOrderId();
           const sampleOrder = {
             id: reference, reference, pharmacyId: String(pharmacy.id), pharmacyName: pharmacy.name, source: "pharmacy-order", demo: true,
-            userId: "demo-user-001", customerReference: "CUS-USER001",
+            userId: "demo-user-001", customerName: "Sample customer", customerReference: "CUS-USER001",
             deliveryAddress: "12 King Abdullah Street, Amman (sample)", deliveryPhone: "+962 7 9000 1001",
             items: [{ medicineId: medicine.id, name: medicine.name, price: Number(medicine.price), quantity: 2 }],
             subtotal: roundMoney(Number(medicine.price) * 2), total: roundMoney(Number(medicine.price) * 2), placedAt: new Date().toISOString(),
-            status: "Pending", paymentMethod: "cash-on-delivery", paymentStatus: "Pending", paymentVerified: false,
+            status: "Pending", statusHistory: [{ status: "Pending", at: new Date().toISOString(), actor: "Customer", note: "Order received" }], paymentMethod: "cash-on-delivery", paymentStatus: "Pending", paymentVerified: false,
             commissionRate: effectiveRate(pharmacy.id), commissionAmount: 0, commissionStatus: "Not Eligible", cancelReason: "", inventoryReserved: true
           };
           const reserved = updatePharmacy(pharmacy.id, { inventory: pharmacy.inventory.map(item => String(item.id) === String(medicine.id) ? { ...item, quantity: Number(item.quantity) - 2 } : item) });
@@ -193,11 +218,12 @@
       id: reference, reference, pharmacyId: String(pharmacyId), pharmacyName: pharmacy.name, source: "pharmacy-order", demo: false,
       userId: customer.userId, customerReference: customer.reference,
       deliveryAddress: address, deliveryPhone: phone, deliveryZone, deliveryZoneLabel: deliveryZoneLabel(deliveryZone),
-      items: [{ medicineId: medicine.id, name: medicine.name, price: unitPrice, quantity: count }],
+      customerName: customer.name, items: [{ medicineId: medicine.id, name: medicine.name, image: medicine.image || "", price: unitPrice, quantity: count }],
       subtotal, customerCommissionAmount, deliveryFee, total: roundMoney(subtotal + customerCommissionAmount + deliveryFee), currency: "JOD", placedAt: new Date().toISOString(), status: "Pending",
       paymentMethod: "online-gateway", paymentStatus: "Pending", paymentVerified: false,
       commissionRate, commissionAmount: 0, commissionStatus: "Not Eligible", cancelReason: "",
-      idempotencyKey: idempotencyKey || "", inventoryReserved: true
+      idempotencyKey: idempotencyKey || "", inventoryReserved: true,
+      statusHistory: [{ status: "Pending", at: new Date().toISOString(), actor: "Customer", note: "Order received" }]
     };
     // Reserve stock when the customer submits the request so concurrent pending orders cannot oversell it.
     const stockResult = reserveInventory(order, -1);
@@ -232,72 +258,99 @@
   function setOrderStatus(orderId, status, options = {}) {
     const order = window.CarePlusData.get("orders", orderId);
     if (!order || order.source !== "pharmacy-order") return { ok: false, error: "Order could not be found." };
-    const allowed = { Pending: ["Confirmed", "Cancelled"], Confirmed: ["Preparing for Delivery", "Cancelled"], "Preparing for Delivery": ["Out for Delivery", "Cancelled"] };
-    if (!allowed[order.status]?.includes(status)) return { ok: false, error: "This order cannot move to that status." };
-    if (status === "Cancelled" && !String(options.reason || "").trim()) return { ok: false, error: "Enter a cancellation reason." };
-    if (status === "Delivered" && options.deliveryVerified !== true) return { ok: false, error: "Confirm that the customer received the delivery." };
-    if (status === "Delivered" && order.paymentMethod === "cash-on-delivery" && options.paymentCollected !== true) return { ok: false, error: "Confirm delivery and cash collection before completing this order." };
-    if (status === "Delivered" && order.paymentStatus === "Refunded") return { ok: false, error: "A refunded order cannot be delivered." };
+    const pharmacyId = window.CarePlusAuth?.demoPharmacyId?.();
+    if (!pharmacyId || String(pharmacyId) !== String(order.pharmacyId) || String(options.pharmacyId || pharmacyId) !== String(order.pharmacyId)) return { ok: false, error: "You can update orders for your pharmacy only." };
+    status = canonicalOrderStatus(status);
+    const currentStatus = canonicalOrderStatus(order.status);
+    if (!["Pending", "Accepted", "Rejected", "Preparing", "Ready for Pickup", "Completed", "Cancelled"].includes(status) || status === currentStatus) return { ok: false, error: "Choose a different valid order status." };
+    if (["Rejected", "Cancelled"].includes(status) && !String(options.reason || "").trim()) return { ok: false, error: "Enter a rejection reason." };
+    if (status === "Completed" && options.saleVerified !== true) return { ok: false, error: "Verify the sale before completing this order." };
+    if (status === "Completed" && order.paymentMethod === "cash-on-delivery" && options.paymentCollected !== true) return { ok: false, error: "Confirm payment collection before completing this order." };
+    if (status === "Completed" && order.paymentStatus === "Refunded") return { ok: false, error: "A refunded order cannot be completed." };
 
-    let stockResult = null;
-    if (status === "Confirmed" && !order.inventoryReserved) {
-      stockResult = reserveInventory(order, -1);
+    let stockResult = null, stockDirection = 0;
+    const reopeningRejectedOrder = ["Rejected", "Cancelled"].includes(currentStatus) && ["Pending", "Accepted", "Preparing", "Ready for Pickup", "Completed"].includes(status);
+    if (reopeningRejectedOrder) {
+      stockDirection = -1;
+      stockResult = reserveInventory(order, stockDirection);
       if (!stockResult.ok) return stockResult;
     }
-    if (status === "Cancelled" && order.inventoryReserved) {
+    if (["Rejected", "Cancelled"].includes(status) && order.inventoryReserved) {
+      stockDirection = 1;
       stockResult = reserveInventory(order, 1);
       if (!stockResult.ok) return stockResult;
     }
-    const changes = { status };
-    if (status === "Confirmed") changes.inventoryReserved = true;
-    if (status === "Cancelled") {
+    const at = new Date().toISOString();
+    const history = [...orderHistory(order), { status, at, actor: "Pharmacy", pharmacyId: String(pharmacyId), ...(options.reason ? { reason: String(options.reason).trim() } : {}) }];
+    const changes = { status, statusHistory: history, statusUpdatedAt: at };
+    if (["Pending", "Accepted", "Preparing", "Ready for Pickup"].includes(status)) changes.inventoryReserved = reopeningRejectedOrder ? true : Boolean(order.inventoryReserved);
+    if (status === "Accepted") changes.acceptedAt = at;
+    if (status === "Preparing") changes.preparingAt = at;
+    if (status === "Ready for Pickup") changes.readyForPickupAt = at;
+    if (["Rejected", "Cancelled"].includes(status)) {
       changes.inventoryReserved = false;
+      changes.rejectionReason = String(options.reason).trim();
       changes.cancelReason = String(options.reason).trim();
+      if (status === "Rejected") changes.rejectedAt = at;
+      if (status === "Cancelled") changes.cancelledAt = at;
       changes.commissionStatus = "Not Eligible";
       changes.commissionAmount = 0;
       if (options.paymentFailed === true) changes.paymentStatus = "Failed";
     }
-    if (status === "Delivered") {
+    if (status !== "Rejected" && currentStatus === "Rejected") changes.rejectionReason = "";
+    if (status !== "Cancelled" && currentStatus === "Cancelled") changes.cancelReason = "";
+    if (status === "Completed") {
       changes.inventoryReserved = false;
-      changes.deliveredAt = new Date().toISOString();
-      changes.saleCompletedAt = changes.deliveredAt;
+      changes.completedAt = at;
+      changes.saleCompletedAt = at;
+      changes.saleVerified = true;
+      changes.saleVerifiedAt = at;
       if (order.paymentMethod === "cash-on-delivery" && options.paymentCollected === true) {
         changes.paymentStatus = "Paid";
         changes.paymentVerified = true;
         changes.paymentVerifiedAt = new Date().toISOString();
         changes.paymentVerificationMethod = "pharmacist-confirmed-cash-on-delivery-demo";
       }
-      if (changes.paymentVerified === true || order.paymentVerified === true && order.paymentStatus === "Paid") {
-        changes.commissionAmount = roundMoney(Number(order.customerCommissionAmount ?? ((Number(order.subtotal ?? order.total)) * Number(order.commissionRate) / 100)));
-        changes.commissionEligibleSales = Number(order.subtotal ?? order.total);
-        changes.commissionStatus = "Pending Verification";
+      changes.commissionAmount = roundMoney(Number(order.customerCommissionAmount ?? ((Number(order.subtotal ?? order.total)) * Number(order.commissionRate) / 100)));
+      changes.commissionEligibleSales = Number(order.subtotal ?? order.total);
+      changes.commissionStatus = changes.paymentVerified === true || order.paymentVerified === true && order.paymentStatus === "Paid"
+        ? "Pending Verification"
+        : "Awaiting Payment Verification";
+    }
+    if (status !== "Completed") {
+      changes.saleVerified = false;
+      if (currentStatus === "Completed") {
+        changes.commissionStatus = ["Paid", "Payable"].includes(order.commissionStatus) ? "Reversed" : "Not Eligible";
+        changes.commissionReversedAmount = Number(order.commissionAmount) || 0;
+        changes.commissionReversedAt = at;
+        changes.commissionAmount = 0;
       }
     }
     const updated = window.CarePlusData.update("orders", orderId, changes);
-    if (!updated && stockResult?.ok) reserveInventory(order, status === "Confirmed" ? 1 : -1);
+    if (!updated && stockResult?.ok && stockDirection) reserveInventory(order, -stockDirection);
     if (!updated) return { ok: false, error: "Could not save the order update." };
-    audit(order.id, `order-${status.toLowerCase().replace(/\s+/g, "-")}`, { reason: changes.cancelReason || "", paymentStatus: changes.paymentStatus || order.paymentStatus }, "Pharmacy demo");
+    audit(order.id, `order-${status.toLowerCase().replace(/\s+/g, "-")}`, { reason: changes.cancelReason || "", paymentStatus: changes.paymentStatus || order.paymentStatus }, `Pharmacy ${pharmacyId}`);
     return { ok: true, order: updated };
   }
   function cancelCustomerOrder(orderId, userId, reason = "Cancelled by customer") {
     const order = window.CarePlusData.get("orders", orderId);
-    if (!order || String(order.userId) !== String(userId) || !["Pending", "Confirmed", "Preparing for Delivery"].includes(order.status)) return { ok: false, error: "This order cannot be cancelled." };
-    const result = setOrderStatus(orderId, "Cancelled", { reason });
-    if (result.ok) audit(orderId, "customer-cancelled-order", {}, order.customerReference || "Customer");
-    return result;
+    const customer = currentCustomer();
+    if (!customer || String(customer.userId) !== String(userId) || !order || String(order.userId) !== String(userId) || !["Pending", "Accepted", "Preparing"].includes(canonicalOrderStatus(order.status))) return { ok: false, error: "This order cannot be cancelled." };
+    if (order.inventoryReserved) { const restored = reserveInventory(order, 1); if (!restored.ok) return restored; }
+    const at = new Date().toISOString(), history = [...orderHistory(order), { status: "Cancelled", at, actor: "Customer", reason: String(reason || "Cancelled by customer") }];
+    const updated = window.CarePlusData.update("orders", orderId, { status: "Cancelled", statusUpdatedAt: at, cancelledAt: at, customerCancelledAt: at, cancelReason: String(reason || "Cancelled by customer"), inventoryReserved: false, commissionStatus: "Not Eligible", commissionAmount: 0, statusHistory: history });
+    if (!updated) { if (order.inventoryReserved) reserveInventory(order, -1); return { ok: false, error: "Could not save the cancellation." }; }
+    audit(orderId, "customer-cancelled-order", {}, order.customerReference || "Customer");
+    return { ok: true, order: updated };
   }
   function confirmCustomerReceipt(orderId, userId) {
     const order = window.CarePlusData.get("orders", orderId);
-    if (!order || order.source !== "pharmacy-order" || String(order.userId) !== String(userId)) return { ok: false, error: "This order does not belong to your account." };
-    if (order.status !== "Out for Delivery") return { ok: false, error: "You can confirm receipt after the pharmacy dispatches the order." };
+    const customer = currentCustomer();
+    if (!customer || String(customer.userId) !== String(userId) || !order || order.source !== "pharmacy-order" || String(order.userId) !== String(userId)) return { ok: false, error: "This order does not belong to your account." };
+    if (canonicalOrderStatus(order.status) !== "Ready for Pickup") return { ok: false, error: "You can confirm receipt after the pharmacy marks the order ready." };
     if (order.paymentStatus === "Refunded" || order.status === "Cancelled") return { ok: false, error: "This order cannot be marked received." };
     const at = new Date().toISOString();
-    const changes = { status: "Delivered", deliveredAt: at, saleCompletedAt: at, customerReceivedAt: at, deliveryConfirmationMethod: "customer-account-demo", inventoryReserved: false };
-    if (order.paymentStatus === "Paid" && order.paymentVerified === true) {
-      changes.commissionAmount = roundMoney(Number(order.customerCommissionAmount ?? (Number(order.subtotal ?? order.total) * Number(order.commissionRate) / 100)));
-      changes.commissionEligibleSales = Number(order.subtotal ?? order.total);
-      changes.commissionStatus = "Pending Verification";
-    }
+    const changes = { customerReceivedAt: at, deliveryConfirmationMethod: "customer-account-demo", statusHistory: [...orderHistory(order), { status: canonicalOrderStatus(order.status), at, actor: "Customer", note: "Customer confirmed pickup" }] };
     const updated = window.CarePlusData.update("orders", orderId, changes);
     if (!updated) return { ok: false, error: "Could not save the receipt confirmation." };
     audit(orderId, "customer-confirmed-receipt", { status: "Delivered", paymentStatus: updated.paymentStatus, paymentVerified: updated.paymentVerified === true }, order.customerReference || "Customer demo");
@@ -307,7 +360,8 @@
   // Demo only: record a simulated checkout result without recording card data or marking payment Paid.
   function simulateDemoPayment(orderId, userId) {
     const order = window.CarePlusData.get("orders", orderId);
-    if (!order || order.source !== "pharmacy-order" || String(order.userId) !== String(userId) || order.paymentMethod !== "online-gateway") return { ok: false, error: "This order is unavailable for demo checkout." };
+    const customer = currentCustomer();
+    if (!customer || String(customer.userId) !== String(userId) || !order || order.source !== "pharmacy-order" || String(order.userId) !== String(userId) || order.paymentMethod !== "online-gateway") return { ok: false, error: "This order is unavailable for demo checkout." };
     if (order.status === "Cancelled" || order.paymentStatus !== "Pending") return { ok: false, error: "This order is not awaiting payment." };
     if (order.paymentDemoResult === "simulated-success") return { ok: true, order, duplicate: true };
     const updated = window.CarePlusData.update("orders", orderId, { paymentDemoResult: "simulated-success", paymentDemoAt: new Date().toISOString() });
@@ -320,6 +374,7 @@
     const stored = readJson(SETTINGS_KEY, {});
     const defaultRate = Number(stored.defaultRate);
     const careRate = Number(stored.careCommissionRate);
+    const doctorRate = Number(stored.doctorCommissionRate);
     const legacyDeliveryFee = Number(stored.deliveryFee);
     const configuredFees = stored.deliveryFees || {};
     const deliveryFees = {
@@ -327,7 +382,12 @@
       sameCity: Number.isFinite(Number(configuredFees.sameCity)) && Number(configuredFees.sameCity) >= 0 ? roundMoney(configuredFees.sameCity) : Number.isFinite(legacyDeliveryFee) && legacyDeliveryFee >= 0 ? roundMoney(legacyDeliveryFee) : DEFAULT_DELIVERY_FEE,
       far: Number.isFinite(Number(configuredFees.far)) && Number(configuredFees.far) >= 0 ? roundMoney(configuredFees.far) : DEFAULT_DELIVERY_FEES.far
     };
-    return { defaultRate: Number.isFinite(defaultRate) && defaultRate >= 0 && defaultRate <= 100 ? defaultRate : 10, careCommissionRate: Number.isFinite(careRate) && careRate >= 0 && careRate <= 100 ? careRate : 10, deliveryFee: deliveryFees.sameCity, deliveryFees, pharmacyRates: stored.pharmacyRates || {} };
+    return { defaultRate: Number.isFinite(defaultRate) && defaultRate >= 0 && defaultRate <= 100 ? defaultRate : 10, careCommissionRate: Number.isFinite(careRate) && careRate >= 0 && careRate <= 100 ? careRate : 10, doctorCommissionRate: Number.isFinite(doctorRate) && doctorRate >= 0 && doctorRate <= 100 ? doctorRate : 10, deliveryFee: deliveryFees.sameCity, deliveryFees, pharmacyRates: stored.pharmacyRates || {}, doctorRates: stored.doctorRates || {}, careProviderRates: stored.careProviderRates || {} };
+  }
+  function effectiveDoctorRate(doctorId) {
+    const config = settings();
+    const rate = Number(config.doctorRates?.[String(doctorId)] ?? config.doctorCommissionRate);
+    return Number.isFinite(rate) && rate >= 0 && rate <= 100 ? rate : 10;
   }
   function deliveryFeeForZone(zone = "sameCity") {
     const key = ["near", "sameCity", "far"].includes(zone) ? zone : "sameCity";
@@ -336,10 +396,11 @@
   function deliveryZoneLabel(zone = "sameCity") {
     return ({ near: "Nearby area", sameCity: "Same city", far: "Far area" })[zone] || "Same city";
   }
-  function saveSettings({ defaultRate, careCommissionRate, pharmacyId, pharmacyRate, deliveryFee, deliveryFees, clearPharmacyOverrides = false }) {
+  function saveSettings({ defaultRate, careCommissionRate, doctorCommissionRate, pharmacyId, pharmacyRate, doctorId, doctorRate, careProviderId, careProviderRate, deliveryFee, deliveryFees, clearPharmacyOverrides = false }) {
     const current = settings();
     if (defaultRate !== undefined) current.defaultRate = Number(defaultRate);
     if (careCommissionRate !== undefined) current.careCommissionRate = Number(careCommissionRate);
+    if (doctorCommissionRate !== undefined) current.doctorCommissionRate = Number(doctorCommissionRate);
     if (deliveryFee !== undefined) {
       current.deliveryFee = roundMoney(deliveryFee);
       current.deliveryFees.sameCity = current.deliveryFee;
@@ -354,12 +415,20 @@
       if (pharmacyRate === "") delete current.pharmacyRates[String(pharmacyId)];
       else current.pharmacyRates[String(pharmacyId)] = Number(pharmacyRate);
     }
+    if (doctorId) {
+      if (doctorRate === "") delete current.doctorRates[String(doctorId)];
+      else current.doctorRates[String(doctorId)] = Number(doctorRate);
+    }
+    if (careProviderId) {
+      if (careProviderRate === "") delete current.careProviderRates[String(careProviderId)];
+      else current.careProviderRates[String(careProviderId)] = Number(careProviderRate);
+    }
     if (clearPharmacyOverrides) current.pharmacyRates = {};
-    if (!Number.isFinite(current.defaultRate) || current.defaultRate < 0 || current.defaultRate > 100 || !Number.isFinite(current.careCommissionRate) || current.careCommissionRate < 0 || current.careCommissionRate > 100 || Object.values(current.deliveryFees).some(fee => !Number.isFinite(Number(fee)) || Number(fee) > 100 || Number(fee) < 0) || Object.values(current.pharmacyRates).some(rate => !Number.isFinite(Number(rate)) || Number(rate) < 0 || Number(rate) > 100)) return { ok: false, error: "Commission rates must be between 0 and 100%, and each delivery fee between 0 and 100 JOD." };
+    if (!Number.isFinite(current.defaultRate) || current.defaultRate < 0 || current.defaultRate > 100 || !Number.isFinite(current.careCommissionRate) || current.careCommissionRate < 0 || current.careCommissionRate > 100 || !Number.isFinite(current.doctorCommissionRate) || current.doctorCommissionRate < 0 || current.doctorCommissionRate > 100 || Object.values(current.deliveryFees).some(fee => !Number.isFinite(Number(fee)) || Number(fee) > 100 || Number(fee) < 0) || [...Object.values(current.pharmacyRates), ...Object.values(current.doctorRates), ...Object.values(current.careProviderRates)].some(rate => !Number.isFinite(Number(rate)) || Number(rate) < 0 || Number(rate) > 100)) return { ok: false, error: "Commission rates must be between 0 and 100%, and each delivery fee between 0 and 100 JOD." };
     try {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(current));
       emitSettings();
-      audit("", "commission-rates-updated", { defaultRate: current.defaultRate, careCommissionRate: current.careCommissionRate, deliveryFees: { ...current.deliveryFees }, pharmacyRates: { ...current.pharmacyRates } }, "Admin demo");
+      audit("", "commission-rates-updated", { defaultRate: current.defaultRate, careCommissionRate: current.careCommissionRate, doctorCommissionRate: current.doctorCommissionRate, deliveryFees: { ...current.deliveryFees }, pharmacyRates: { ...current.pharmacyRates }, doctorRates: { ...current.doctorRates }, careProviderRates: { ...current.careProviderRates } }, "Admin demo");
       return { ok: true, settings: current };
     } catch { return { ok: false, error: "Commission settings could not be saved." }; }
   }
@@ -381,16 +450,19 @@
   }
   function recordPaymentFailure(orderId, reason) {
     const order = window.CarePlusData.get("orders", orderId);
-    if (!order || !["Pending", "Confirmed", "Preparing for Delivery"].includes(order.status) || order.paymentStatus !== "Pending" || !String(reason || "").trim()) return { ok: false, error: "A pending order and a reason are required to record a failed demo payment." };
+    const customer = currentCustomer();
+    if (!customer || String(customer.userId) !== String(order?.userId) || !order || !["Pending", "Accepted", "Preparing"].includes(canonicalOrderStatus(order.status)) || order.paymentStatus !== "Pending" || !String(reason || "").trim()) return { ok: false, error: "A pending order and a reason are required to record a failed demo payment." };
     if (order.inventoryReserved) {
       const release = reserveInventory(order, 1);
       if (!release.ok) return release;
     }
     const failureReason = String(reason).trim();
+    const at = new Date().toISOString();
     const updated = window.CarePlusData.update("orders", orderId, {
-      status: "Cancelled", inventoryReserved: false, cancelReason: `Payment not collected: ${failureReason}`,
+      status: "Cancelled", statusUpdatedAt: at, cancelledAt: at, inventoryReserved: false, cancelReason: `Payment not collected: ${failureReason}`,
       paymentStatus: "Failed", paymentFailureReason: failureReason, paymentFailedAt: new Date().toISOString(),
-      commissionStatus: "Not Eligible", commissionAmount: 0
+      commissionStatus: "Not Eligible", commissionAmount: 0,
+      statusHistory: [...orderHistory(order), { status: "Cancelled", at, actor: "Payment", reason: failureReason }]
     });
     if (updated) audit(orderId, "demo-payment-failed-order-cancelled", { reason: failureReason }, "Admin demo");
     return updated ? { ok: true, order: updated } : { ok: false, error: "Payment status could not be saved." };
@@ -436,7 +508,7 @@
 
   window.CarePlusPharmacy = {
     DEFAULT_PHARMACY_ID, DEFAULT_DELIVERY_FEE, sampleInventory, get, isActivePharmacy, bootstrap, updatePharmacy, createOrder, setOrderStatus, cancelCustomerOrder,
-    currentCustomer, listOrders, nextOrderId, effectiveRate, isExpired, settings, saveSettings, deliveryFeeForZone, deliveryZoneLabel, auditEntries, audit, simulateDemoPayment,
+    currentCustomer, listOrders, nextOrderId, effectiveRate, effectiveDoctorRate, isExpired, settings, saveSettings, deliveryFeeForZone, deliveryZoneLabel, auditEntries, audit, simulateDemoPayment,
     confirmCustomerReceipt,
     reviewCommission, markCommissionPaid, recordPaymentFailure, refundOrder, subscribe
   };

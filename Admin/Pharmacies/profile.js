@@ -54,7 +54,7 @@
   }
   function renderMedicines(items) {
     const body = root.querySelector("[data-medicines]"); const empty = root.querySelector("[data-medicines-empty]"); body.replaceChildren(); empty.hidden = items.length > 0;
-    items.forEach(item => {
+    store.newestFirst(items).forEach(item => {
       const tr=document.createElement("tr"), name=document.createElement("td"), block=document.createElement("div"); block.className="medicine-cell";
       if (item.image) { const img=document.createElement("img");img.className="medicine-image";img.src=item.image;img.alt="";img.onerror=()=>img.remove();block.append(img); }
       const strong=document.createElement("strong");strong.textContent=item.name || "Medicine";block.append(strong);name.append(block);
@@ -74,8 +74,7 @@
       [order.reference||order.id,order.customerReference||order.customerName||"Customer",names||"—",dateText(order.placedAt||order.createdAt,true),`JOD ${Number(order.total||0).toFixed(2)}`].forEach(value=>tr.append(cell(value)));
       const orderStatus=document.createElement("td"),badge=document.createElement("span");badge.className="status-badge";badge.textContent=order.status||"Pending";orderStatus.append(badge);tr.append(orderStatus,cell(order.paymentStatus||"Not recorded"));
       const actionTd=document.createElement("td"),manage=document.createElement("div");manage.className="order-manage";
-      const transitions={Pending:["Confirmed","Cancelled"],Confirmed:["Preparing for Delivery","Cancelled"],"Preparing for Delivery":["Out for Delivery","Cancelled"]}[order.status]||[];
-      if(transitions.length){const select=document.createElement("select");select.setAttribute("aria-label",`Next status for ${order.reference||order.id}`);select.dataset.orderStatus=String(order.id);const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent="Update status";select.append(placeholder);transitions.forEach(next=>{const option=document.createElement("option");option.value=next;option.textContent=next;select.append(option);});const save=document.createElement("button");save.type="button";save.className="text-button";save.dataset.saveOrderStatus=String(order.id);save.textContent="Save";manage.append(select,save);}
+      const note=document.createElement("span");note.className="order-readonly-note";note.textContent="Pharmacy managed";manage.append(note);
       const button=document.createElement("button");button.type="button";button.className="text-button";button.dataset.orderDetail=String(order.id);button.textContent="View";manage.append(button);actionTd.append(manage);tr.append(actionTd);body.append(tr);
     });
   }
@@ -102,7 +101,7 @@
   }
   root.querySelector("[data-edit-profile]").addEventListener("click",()=>openForm("profile"));
   root.querySelector("[data-add-medicine]").addEventListener("click",()=>openForm("medicine"));
-  root.querySelector("[data-medicines]").addEventListener("click",event=>{
+  root.querySelector("[data-medicines]").addEventListener("click",async event=>{
     const button=event.target.closest("[data-medicine-action]");if(!button)return;
     const row=pharmacy(),med=inventory(row).find(item=>String(item.id)===button.dataset.medicineId);if(!med)return;
     const action=button.dataset.medicineAction;
@@ -113,8 +112,11 @@
       const next=inventory(row).map(item=>String(item.id)===String(med.id)?{...item,listed:available,available:available&&Number(item.quantity)>0,updatedAt:new Date().toISOString()}:item);
       if(pharmacyApi.updatePharmacy(id,{inventory:next}))toast(`Availability updated for ${med.name}.`);else toast("Could not save medicine availability.",true);
     }
-    if(action==="remove"&&window.confirm(`Remove ${med.name} from this pharmacy inventory?`)){
-      if(pharmacyApi.updatePharmacy(id,{inventory:inventory(row).filter(item=>String(item.id)!==String(med.id))}))toast("Medicine removed.");else toast("Could not remove medicine.",true);
+    if(action==="remove" && await window.CarePlusDelete.confirm({ kind: "medicine", name: med.name, meta: row.name, description: "This medicine will be removed from this pharmacy's inventory." })){
+      if (!window.CarePlusAuth?.hasDemoAdminSession()) return;
+      const current = pharmacy();
+      if (!current) { toast("Pharmacy is no longer available.", true); return; }
+      if(pharmacyApi.updatePharmacy(id,{inventory:inventory(current).filter(item=>String(item.id)!==String(med.id))}))window.CarePlusDelete.success({ kind: "medicine" });else toast("Could not remove medicine.",true);
     }
   });
   form?.addEventListener("submit",event=>{
@@ -147,27 +149,20 @@
     else{
       const quantity=Number(value("quantity"));if(!Number.isInteger(quantity)||quantity<0){feedback.textContent="Stock quantity must be a whole number greater than or equal to zero.";return;}
       const previous=old.find(item=>String(item.id)===medicineId);const medicine={...(previous||{}),id:medicineId||globalThis.crypto?.randomUUID?.()||`med-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,name:value("name"),image:value("image"),category:value("category"),activeIngredient:value("activeIngredient"),price,quantity,expiry:value("expiry"),listed:data.get("listed")==="on",updatedAt:new Date().toISOString()};medicine.available=medicine.listed&&quantity>0;
+      if (!previous) medicine.createdAt = new Date().toISOString();
       next=previous?old.map(item=>String(item.id)===medicineId?medicine:item):[...old,medicine];
     }
     if(!pharmacyApi.updatePharmacy(id,{inventory:next})){feedback.textContent="Could not save medicine changes.";return;}
     dialog.close();toast(kind==="price"?"Medicine price updated.":medicineId?"Medicine updated.":"Medicine added.");render();
   });
   root.querySelector("[data-orders]").addEventListener("click",event=>{
-    const save=event.target.closest("[data-save-order-status]");
-    if(save){
-      const select=root.querySelector(`[data-order-status="${CSS.escape(save.dataset.saveOrderStatus)}"]`),status=select?.value;
-      if(!status){toast("Choose an order status first.",true);return;}
-      const order=orders().find(item=>String(item.id)===save.dataset.saveOrderStatus);if(!order)return;
-      const reason=status==="Cancelled"?window.prompt("Enter a cancellation reason:",""):"";if(status==="Cancelled"&&!String(reason||"").trim())return;
-      const result=pharmacyApi.setOrderStatus(order.id,status,status==="Cancelled"?{reason}:{});
-      if(!result.ok){toast(result.error||"Could not update order.",true);return;}
-      toast(`Order ${order.reference||order.id} updated to ${status}.`);render();return;
-    }
     const button=event.target.closest("[data-order-detail]");if(!button)return;const order=orders().find(item=>String(item.id)===button.dataset.orderDetail);if(!order)return;
     const modal=document.querySelector("[data-order-dialog]");const target=modal.querySelector("[data-order-detail]");target.replaceChildren();
     const grid=document.createElement("div");grid.className="order-detail-grid";
-    [["Order ID",order.reference||order.id],["Customer",order.customerReference||order.customerName||"Customer"],["Items",(order.items||[]).map(line=>`${line.name} × ${line.quantity}`).join(", ")||"—"],["Order date",dateText(order.placedAt||order.createdAt,true)],["Subtotal",`JOD ${Number(order.subtotal||0).toFixed(2)}`],["Delivery",`JOD ${Number(order.deliveryFee||0).toFixed(2)}`],["Total",`JOD ${Number(order.total||0).toFixed(2)}`],["Order status",order.status||"Pending"],["Payment status",order.paymentStatus||"Not recorded"],["Payment method",order.paymentMethod||"Not recorded"]].forEach(([label,value])=>{const p=document.createElement("p"),strong=document.createElement("strong");strong.textContent=`${label}: `;p.append(strong,document.createTextNode(String(value)));grid.append(p);});
-    target.append(grid);modal.showModal();
+    [["Order ID",order.reference||order.id],["Customer",order.customerName||order.customerReference||"Customer"],["Items",(order.items||[]).map(line=>`${line.name} × ${line.quantity}`).join(", ")||"—"],["Order date",dateText(order.placedAt||order.createdAt,true)],["Subtotal",`JOD ${Number(order.subtotal||0).toFixed(2)}`],["Delivery",`JOD ${Number(order.deliveryFee||0).toFixed(2)}`],["Total",`JOD ${Number(order.total||0).toFixed(2)}`],["Order status",order.status||"Pending"],["Payment status",order.paymentStatus||"Not recorded"],["Payment method",order.paymentMethod||"Not recorded"],["CarePlus commission",`JOD ${Number(order.commissionAmount||0).toFixed(2)} · ${order.commissionStatus||"Not eligible"}`],...(order.rejectionReason||order.cancelReason?[["Rejection reason",order.rejectionReason||order.cancelReason]]:[])].forEach(([label,value])=>{const p=document.createElement("p"),strong=document.createElement("strong");strong.textContent=`${label}: `;p.append(strong,document.createTextNode(String(value)));grid.append(p);});
+    target.append(grid);
+    if(Array.isArray(order.statusHistory)&&order.statusHistory.length){const history=document.createElement("ol");history.className="order-history";order.statusHistory.forEach(entry=>{const li=document.createElement("li"),dot=document.createElement("i"),copy=document.createElement("div"),title=document.createElement("b"),meta=document.createElement("small");title.textContent=entry.status||"Status update";meta.textContent=`${dateText(entry.at,true)} · ${entry.actor||"CarePlus"}${entry.reason?` · ${entry.reason}`:""}`;copy.append(title,meta);li.append(dot,copy);history.append(li);});target.append(history);}
+    modal.showModal();
   });
   document.querySelectorAll("[data-close]").forEach(button=>button.addEventListener("click",()=>button.closest("dialog")?.close()));
   document.querySelectorAll("dialog").forEach(modal=>modal.addEventListener("click",event=>{if(event.target===modal)modal.close();}));

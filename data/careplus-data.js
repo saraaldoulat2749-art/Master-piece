@@ -3,8 +3,10 @@
  * shared by same-origin tabs in this browser only; it is not a backend/database.
  */
 (() => {
+  // LocalStorage event adapter; replace notifyCreated/notifyUpdated with API writes and a SignalR subscription when the ASP.NET Core backend is added.
   const KEY = "careplusMockDataV1";
-  const collections = ["users", "appointments", "products", "pharmacies", "careRequests", "orders"];
+  const collections = ["users", "appointments", "products", "pharmacies", "careRequests", "orders", "notifications"];
+  const appRoot = new URL("../", document.currentScript.src);
   const id = () => globalThis.crypto?.randomUUID?.() || `cp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   function read() {
     try {
@@ -40,6 +42,143 @@
     try { localStorage.setItem(KEY, JSON.stringify(data)); window.dispatchEvent(new CustomEvent("careplus:data", { detail: { data } })); return true; }
     catch (error) { console.error("CarePlus demo data could not be saved", error); return false; }
   };
+  const safeName = value => String(value || "").trim() || "Customer";
+  const roleName = value => String(value || "").toLowerCase();
+  function portalUrl(path, params = {}) {
+    const url = new URL(path, appRoot);
+    Object.entries(params).forEach(([key, value]) => { if (value != null && value !== "") url.searchParams.set(key, String(value)); });
+    return url.href;
+  }
+  function customerAccount(record) {
+    return data.users.find(user => String(user.id) === String(record.userId || record.bookingUserId || ""))
+      || data.users.find(user => record.email && String(user.email || "").toLowerCase() === String(record.email).toLowerCase())
+      || data.users.find(user => record.phone && String(user.phone || "") === String(record.phone))
+      || null;
+  }
+  function addNotification(recipientRole, recipientId, category, eventKey, title, message, recordType, recordId, link) {
+    if (!recipientId) return;
+    const duplicate = data.notifications.some(item => item.eventKey === eventKey && item.recipientRole === recipientRole && String(item.recipientId) === String(recipientId));
+    if (duplicate) return;
+    data.notifications.push({
+      id: id(), eventKey, recipientRole, recipientId: String(recipientId), category, title, message,
+      createdAt: new Date().toISOString(), readAt: "", deletedAt: "", recordType, recordId: String(recordId), link,
+      actionLabel: recordType === "appointment" ? recipientRole === "doctor" ? "View Booking" : "View Appointment"
+        : recordType === "order" || recordType === "storeOrder" ? "View Order" : "View Request"
+    });
+  }
+  function nurseRecipients(request) {
+    const assigned = request.assignedNurseId || request.nurseId;
+    if (assigned) return [String(assigned)];
+    return data.users.filter(user => roleName(user.role) === "nurse" && roleName(user.accountStatus || user.status) === "active" && user.archived !== true && !user.archivedAt)
+      .map(user => String(user.nurseId || user.id));
+  }
+  function notifyCreated(collection, record) {
+    const eventTime = record.createdAt || new Date().toISOString();
+    const baseKey = `${collection}:${record.id}:created:${eventTime}`;
+    if (collection === "appointments" && record.source === "user-booking") {
+      const doctor = String(record.doctor || "your practice");
+      const customer = safeName(record.patient || customerAccount(record)?.name);
+      addNotification("doctor", record.doctorId, "appointment", baseKey, "New appointment request",
+        `${customer} · ${record.id} · ${record.specialty || "Appointment"} · ${record.date || "Date pending"} ${record.time || ""}`,
+        "appointment", record.id, portalUrl("Doctor/index.html", { page: "appointments", appointmentId: record.id }));
+      return;
+    }
+    if (collection === "orders" && record.source === "pharmacy-order") {
+      const item = record.items?.[0] || {};
+      addNotification("pharmacy", record.pharmacyId, "pharmacy", baseKey, "New medicine order",
+        `${safeName(record.customerName || customerAccount(record)?.name)} · ${record.reference || record.id} · ${item.name || "Medicine"} × ${Number(item.quantity) || 1} · ${new Date(record.placedAt || eventTime).toLocaleString()}`,
+        "order", record.id, portalUrl("Pharmacy/dashboard.html", { page: "orders", orderId: record.id }));
+      return;
+    }
+    if (collection === "careRequests" && record.source === "user-request") {
+      const customer = safeName(record.client || customerAccount(record)?.name);
+      nurseRecipients(record).forEach(nurseId => addNotification("nurse", nurseId, "care", baseKey, "New elderly-care request",
+        `${customer} · ${record.id} · ${record.service || "Care request"} · ${record.date || "Date pending"} ${record.time || ""}`,
+        "careRequest", record.id, portalUrl("Nurse/index.html", { page: "requests", requestId: record.id })));
+      return;
+    }
+    if (collection === "orders" && record.source === "store-checkout") {
+      addNotification("customer", customerAccount(record)?.id || record.userId, "store", baseKey, "Store order placed",
+        `Order ${record.reference || record.id} was received and is being reviewed.`,
+        "storeOrder", record.id, portalUrl("Profile/index.html", { tab: "orders", recordId: record.id }));
+    }
+  }
+  function notifyUpdated(collection, before, after) {
+    if (!before || !after) return;
+    const at = after.updatedAt || new Date().toISOString();
+    const actor = roleName(after.lastActionByRole || after.statusHistory?.at?.(-1)?.actor || "");
+    const statusChanged = String(before.status || "") !== String(after.status || "");
+    const scheduleChanged = ["date", "time", "service", "schedule"].some(key => before[key] !== after[key]);
+    const assignmentChanged = String(before.assignedNurseId || before.nurseId || "") !== String(after.assignedNurseId || after.nurseId || "");
+    const eventKind = statusChanged ? `status-${String(after.status || "updated").toLowerCase()}` : scheduleChanged ? "details-updated" : assignmentChanged ? "assigned" : "";
+    if (!eventKind) return;
+    const baseKey = `${collection}:${after.id}:${eventKind}:${at}`;
+    const customer = customerAccount(after);
+    const customerId = customer?.id || after.userId;
+    if (collection === "appointments") {
+      const customerName = safeName(after.patient || customer?.name);
+      const appointmentText = `${after.id} · ${after.specialty || "Appointment"} · ${after.date || "Date pending"} ${after.time || ""}`;
+      const depositReady = ["Demo Simulated", "Paid"].includes(after.depositPaymentStatus)
+        || String(after.paymentStatus || "").toLowerCase().startsWith("demo")
+        || String(after.paymentStatus || "").toLowerCase() === "paid"
+        || Number(after.depositAmount) > 0 && Number(after.depositPaid) >= Number(after.depositAmount);
+      const depositJustPaid = statusChanged && String(after.status).toLowerCase() === "requested" && depositReady;
+      if ((statusChanged || scheduleChanged) && customerId) {
+        addNotification("customer", customerId, "appointment", baseKey, "Appointment updated",
+          `Your appointment with ${after.doctor || "your doctor"} is now ${after.status || "updated"}. ${appointmentText}`,
+          "appointment", after.id, portalUrl("Profile/index.html", { tab: "appointments", recordId: after.id }));
+      }
+      if ((String(after.status).toLowerCase() === "cancelled" || scheduleChanged || depositJustPaid) && actor !== "doctor") {
+        const title = depositJustPaid ? "Deposit received · booking ready" : String(after.status).toLowerCase() === "cancelled" ? "Appointment cancelled" : "Appointment changed";
+        addNotification("doctor", after.doctorId, "appointment", baseKey, title,
+          `${customerName} · ${appointmentText}`,
+          "appointment", after.id, portalUrl("Doctor/index.html", { page: "appointments", appointmentId: after.id }));
+      }
+      return;
+    }
+    if (collection === "orders" && after.source === "pharmacy-order" && statusChanged) {
+      const lastEvent = after.statusHistory?.at?.(-1) || {};
+      const status = String(after.status || "updated");
+      const reason = after.rejectionReason || after.cancelReason || lastEvent.reason || "";
+      const message = `${after.reference || after.id} · ${(after.items || []).map(item => `${item.name} × ${Number(item.quantity) || 1}`).join(", ") || "Medicine order"}${reason ? ` · Reason: ${reason}` : ""}`;
+      const customerDidIt = actor === "customer" || lastEvent.actor === "Customer" || Boolean(after.customerCancelledAt);
+      if (customerDidIt) {
+        addNotification("pharmacy", after.pharmacyId, "pharmacy", baseKey, "Customer updated an order", `${safeName(after.customerName || customer?.name)} · ${status} · ${message}`,
+          "order", after.id, portalUrl("Pharmacy/dashboard.html", { page: "orders", orderId: after.id }));
+      } else if (customerId) {
+        addNotification("customer", customerId, "pharmacy", baseKey, `Order ${status.toLowerCase()}`, message,
+          "order", after.id, portalUrl("Pharmacy/orders.html", { orderId: after.id }));
+      }
+      return;
+    }
+    if (collection === "careRequests") {
+      const customerName = safeName(after.client || customer?.name);
+      const serviceText = `${after.id} · ${after.service || "Care request"} · ${after.date || "Date pending"} ${after.time || ""}`;
+      if ((statusChanged || scheduleChanged) && ["nurse", "admin", "administrator"].includes(actor) && customerId) {
+        const reason = after.rejectionReason ? ` · Reason: ${after.rejectionReason}` : "";
+        addNotification("customer", customerId, "care", baseKey, `Care request ${String(after.status || "updated").toLowerCase()}`,
+          `${serviceText}${reason}`, "careRequest", after.id, portalUrl("Profile/index.html", { tab: "care", recordId: after.id }));
+      } else if ((statusChanged || scheduleChanged) && !assignmentChanged && ["customer", ""].includes(actor)) {
+        nurseRecipients(after).forEach(nurseId => addNotification("nurse", nurseId, "care", baseKey,
+          String(after.status).toLowerCase() === "cancelled" ? "Care request cancelled" : "Care request updated",
+          `${customerName} · ${serviceText}`, "careRequest", after.id,
+          portalUrl("Nurse/index.html", { page: "requests", requestId: after.id })));
+      }
+      const assignedNurseId = after.assignedNurseId || after.nurseId;
+      if (assignedNurseId && assignmentChanged && actor !== "nurse") {
+        addNotification("nurse", assignedNurseId, "care", `${baseKey}:assigned`, "Care request assigned to you", `${customerName} · ${serviceText}`,
+          "careRequest", after.id, portalUrl("Nurse/index.html", { page: "requests", requestId: after.id }));
+      }
+      return;
+    }
+    if (collection === "orders" && after.source === "store-checkout" && statusChanged && customerId) {
+      const status = String(after.status || "updated");
+      const reason = after.rejectionReason || after.cancelReason;
+      addNotification("customer", customerId, "store", baseKey, `Store order ${status.toLowerCase()}`,
+        `Order ${after.reference || after.id} is now ${status}.${reason ? ` Reason: ${reason}` : ""}`,
+        "storeOrder", after.id, portalUrl("Profile/index.html", { tab: "orders", recordId: after.id }));
+    }
+  }
   function seedDemoCollection(name, rows, marker) {
     let seeded = false;
     try { seeded = localStorage.getItem(marker) === "1"; } catch {}
@@ -123,11 +262,33 @@
   if (demoDataUpdated) write();
   const api = {
     mode: "browser-demo",
+    newestFirst(rows) {
+      const timestamp = row => {
+        const value = Date.parse(row.createdAt || row.placedAt || row.addedAt || "");
+        return Number.isFinite(value) ? value : 0;
+      };
+      return rows.map((row, index) => ({ row, index }))
+        .sort((a, b) => timestamp(b.row) - timestamp(a.row) || b.index - a.index)
+        .map(item => item.row);
+    },
     list(name) { return (data[name] || []).map(item => ({ ...item })); },
     get(name, recordId) { const item = (data[name] || []).find(row => String(row.id) === String(recordId)); return item ? { ...item } : null; },
     seed(name, rows) { if (!data[name]?.length && rows?.length) { data[name] = rows.map(row => ({ id: row.id ?? id(), ...row })); write(); } return api.list(name); },
-    create(name, row) { if (!collections.includes(name)) return null; const record = { id: row.id ?? id(), createdAt: new Date().toISOString(), ...row }; data[name].push(record); return write() ? { ...record } : null; },
-    update(name, recordId, changes) { const row = (data[name] || []).find(item => String(item.id) === String(recordId)); if (!row) return null; Object.assign(row, changes, { updatedAt: new Date().toISOString() }); return write() ? { ...row } : null; },
+    create(name, row) {
+      if (!collections.includes(name)) return null;
+      const record = { id: row.id ?? id(), createdAt: new Date().toISOString(), ...row };
+      data[name].push(record);
+      if (name !== "notifications") notifyCreated(name, record);
+      return write() ? { ...record } : null;
+    },
+    update(name, recordId, changes) {
+      const row = (data[name] || []).find(item => String(item.id) === String(recordId));
+      if (!row) return null;
+      const before = { ...row };
+      Object.assign(row, changes, { updatedAt: new Date().toISOString() });
+      if (name !== "notifications") notifyUpdated(name, before, row);
+      return write() ? { ...row } : null;
+    },
     remove(name, recordId) { const rows = data[name] || []; const index = rows.findIndex(item => String(item.id) === String(recordId)); if (index < 0) return false; rows.splice(index, 1); return write(); },
     upsertDemoUser(identity) {
       const value = String(identity || "").trim(); if (!value) return null;

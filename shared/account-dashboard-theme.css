@@ -1,0 +1,202 @@
+/* Shared visual language for doctor, nurse, and pharmacy workspaces. */
+body:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) {
+  --account-bg: #f0f1f3;
+  --account-card: #fff;
+  --account-line: #e7e9ee;
+  --account-ink: #272b3c;
+  --account-muted: #7b8090;
+  --account-accent: #4d82ed;
+  background: var(--account-bg);
+  color: var(--account-ink);
+  font-family: Arial, Helvetica, sans-serif;
+}
+body:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) :is(.sidebar, aside.sidebar) {
+  background: linear-gradient(155deg, #041b2a, #07394b);
+  box-shadow: 5px 0 24px rgba(4, 27, 42, .12);
+}
+body:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) :is(.main, .main-area, .content, .page-content) {
+  color: var(--account-ink);
+}
+body:is([data-doctor-protected], [data-nurse-protected]) .content { padding-top: 26px; }
+body:is([data-doctor-protected], [data-nurse-protected]) .page-heading { margin-bottom: 19px; }
+body:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) :is(h1, h2, h3) { color: #252b3e; }
+body:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) :is(.eyebrow, .page-heading p:not(.eyebrow)) { color: var(--account-muted); }
+body:is([data-doctor-protected], [data-nurse-protected]) .page.active { animation: account-card-in .3s ease-out both; }
+body:is([data-doctor-protected], [data-nurse-protected]) .dashboard-grid > .panel { animation: account-card-in .38s ease-out both; }
+body:is([data-doctor-protected], [data-nurse-protected]) .dashboard-grid > .panel:nth-child(2) { animation-delay: .06s; }
+body:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) :is(.panel, .stat-card, .patient-card, .fee-breakdown) {
+  border: 1px solid var(--account-line);
+  border-radius: 10px;
+  background: var(--account-card);
+  box-shadow: 0 4px 13px rgba(30, 39, 58, .035);
+}
+body:is([data-doctor-protected], [data-nurse-protected]) .stat-grid,
+body[data-pharmacy-protected] .stats-grid { gap: 11px; }
+body:is([data-doctor-protected], [data-nurse-protected]) .stat-card,
+body[data-pharmacy-protected] .stats-grid .stat-card {
+  display: grid;
+  min-height: 104px;
+  grid-template-columns: 46px minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
+  align-content: center;
+  align-items: center;
+  column-gap: 11px;
+  padding: 14px 15px;
+  border-color: #ebedf0;
+  border-radius: 10px;
+  box-shadow: 0 3px 10px rgba(30, 39, 58, .025);
+  animation: account-card-in .35s ease-out both;
+}
+body:is([data-doctor-protected], [data-nurse-protected]) .stat-card:nth-child(2),
+body[data-pharmacy-protected] .stats-grid .stat-card:nth-child(2) { animation-delay: .04s; }
+body:is([data-doctor-protected], [data-nurse-protected]) .stat-card:nth-child(3),
+body[data-pharmacy-protected] .stats-grid .stat-card:nth-child(3) { animation-delay: .08s; }
+body:is([data-doctor-protected], [data-nurse-protected]) .stat-card:nth-child(4),
+body[data-pharmacy-protected] .stats-grid .stat-card:nth-child(4) { animation-delay: .12s; }
+body:is([data-doctor-protected], [data-nurse-protected]) .stat-card:nth-child(5),
+body[data-pharmacy-protected] .stats-grid .stat-card:nth-child(5) { animation-delay: .16s; }
+body:is([data-doctor-protected], [data-nurse-protected]) .stat-card > .stat-icon,
+body[data-pharmacy-protected] .stats-grid .stat-card .stat-icon {
+  position: static;
+  grid-column: 1;
+  grid-row: 1 / 4;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #e9edf5;
+  border-radius: 13px;
+  background: #e9f0ff;
+  color: #4d82ed;
+}
+body:is([data-doctor-protected], [data-nurse-protected]) .stat-card > span:not(.stat-icon),
+body[data-pharmacy-protected] .stats-grid .stat-card .stat-top { grid-column: 2; grid-row: 1; margin: 0; color: #777e8e; font-size: 11px; }
+body[data-pharmacy-protected] .stats-grid .stat-card .stat-top { display: contents; }
+body[data-pharmacy-protected] .stats-grid .stat-card .stat-top > span:not(.stat-icon) { grid-column: 2; grid-row: 1; }
+body:is([data-doctor-protected], [data-nurse-protected]) .stat-card > b,
+body[data-pharmacy-protected] .stats-grid .stat-card > strong { grid-column: 2; grid-row: 2; margin: 1px 0 0; color: #293044; font-size: 22px; line-height: 1.15; }
+body:is([data-doctor-protected], [data-nurse-protected]) .stat-card > small,
+body[data-pharmacy-protected] .stats-grid .stat-card > small { grid-column: 2; grid-row: 3; margin: 2px 0 0; color: #9298a5; font-size: 10px; }
+body:is([data-doctor-protected], [data-nurse-protected]) .stat-card b,
+body[data-pharmacy-protected] .stat-card > strong { color: #293044; }
+body:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) :is(.primary-button, .button.primary) {
+  border-color: transparent;
+  border-radius: 8px;
+  background: #4d82ed;
+  color: #fff;
+}
+body:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) :is(.primary-button, .button.primary):hover {
+  background: #356edb;
+}
+body:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) :is(.count-pill, .open-chip, .soft-chip) {
+  border: 1px solid #e4e7ec;
+  border-radius: 999px;
+  background: #fff;
+  color: #697286;
+}
+body:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) :is(input, select, textarea, .search, .search-box) {
+  border-color: #e2e7ef;
+  border-radius: 8px;
+}
+body:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) :is(th, td) { border-color: #edf0f3; }
+body[data-nurse-protected] .content { max-width: 1440px; padding: 27px clamp(22px, 4vw, 54px) 48px; }
+body[data-nurse-protected] .sidebar { width: 248px; padding: 25px 17px 18px; }
+body[data-nurse-protected] .brand { margin: 0 8px 34px; padding: 0; color: #fff; font-size: 19px; }
+body[data-nurse-protected] .nav-link { min-height: 44px; padding: 0 12px; border: 1px solid transparent; border-radius: 10px; color: #e8f3f6; font-size: 13px; }
+body[data-nurse-protected] .nav-link > span { display: grid; width: 22px; height: 22px; place-items: center; color: #b1e5e6; }
+body[data-nurse-protected] .nav-link.active { border-color: rgba(148,213,214,.38); background: rgba(148,213,214,.16); color: #fff; }
+body[data-nurse-protected] .nav-link.active > span { color: #94d5d6; }
+body[data-nurse-protected] .page-heading { align-items: center; margin: 0 0 19px; }
+body[data-nurse-protected] .page-heading h1 { margin: 0 0 6px; color: #252b3e; font: 700 23px Arial, Helvetica, sans-serif; letter-spacing: -.4px; }
+body[data-nurse-protected] .eyebrow { color: #7b8291; }
+body[data-nurse-protected] .stat-grid { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-bottom: 16px; }
+body[data-nurse-protected] .dashboard-grid { gap: 14px; }
+body[data-nurse-protected] .panel { padding: 17px 18px; }
+body[data-nurse-protected] .records-panel { padding: 0; overflow: hidden; }
+body[data-nurse-protected] .panel-head h2 { color: #252b3e; font: 700 15px Arial, Helvetica, sans-serif; }
+body[data-nurse-protected] .panel-head p { color: #7b8090; }
+body[data-nurse-protected] .filter-row { display: flex; align-items: center; gap: 10px; margin: 0; padding: 15px 18px; border-bottom: 1px solid #e7e9ee; background: #fff; }
+body[data-nurse-protected] .admin-inline-toolbar { display: flex !important; flex-direction: row !important; flex-wrap: wrap; align-items: center; gap: 12px; }
+body[data-nurse-protected] .admin-inline-filters { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; }
+body[data-nurse-protected] label.admin-inline-filter { display: flex !important; flex: 0 1 auto; align-items: center; gap: 9px; width: auto; margin: 0; color: #71798b; font: 700 11px Arial, Helvetica, sans-serif; }
+body[data-nurse-protected] label.admin-inline-filter > select,
+body[data-nurse-protected] label.admin-inline-filter > input { min-width: 150px; max-width: 190px; min-height: 42px; padding: 0 30px 0 12px; border: 1px solid #e2e7ef; border-radius: 9px; background: #f8faff; color: #354d79; font: 12px Arial, Helvetica, sans-serif; }
+body[data-nurse-protected] label.admin-inline-filter > select:focus-visible,
+body[data-nurse-protected] label.admin-inline-filter > input:focus-visible { border-color: #4d82ed; outline: 3px solid rgba(77,130,237,.1); }
+body[data-nurse-protected] .filter-row .search { min-height: 42px; max-width: none; padding: 0 12px; border-color: #e2e7ef; border-radius: 9px; background: #f8faff; }
+body[data-nurse-protected] .filter-row .search:focus-within { border-color: #4d82ed; box-shadow: 0 0 0 3px rgba(77,130,237,.1); }
+body[data-nurse-protected] .filter-row .search input { border: 0; background: transparent; }
+body[data-nurse-protected] .filter-row :is(.select-filter, .date-filter) { min-height: 42px; padding: 4px 8px 4px 12px; border: 1px solid #e2e7ef; border-radius: 9px; background: #fff; color: #71798b; font-weight: 700; }
+body[data-nurse-protected] .filter-row select,
+body[data-nurse-protected] .filter-row input[type="date"] { min-height: 31px; padding: 0 9px; border: 0; border-radius: 7px; background: #f1f5ff; color: #354d79; font-size: 11px; }
+body[data-nurse-protected] .tabs { margin: 0; padding: 0 17px; background: #fff; }
+body[data-nurse-protected] .tabs button { color: #747b8a; }
+body[data-nurse-protected] .tabs button.selected { border-color: #4d82ed; color: #356edb; }
+body[data-nurse-protected] .table-wrap { overflow: auto; }
+body[data-nurse-protected] table { min-width: 680px; }
+body[data-nurse-protected] th { padding: 12px 14px; background: #f8f9fb; color: #747d8d; font-weight: 700; }
+body[data-nurse-protected] td { padding: 13px 14px; color: #485467; }
+body[data-nurse-protected] .nurse-logout { display: flex; min-height: 40px; align-items: center; justify-content: center; margin: 12px 0 0; padding: 0 15px; border: 1px solid rgba(255,255,255,.22); border-radius: 9px; color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .4px; text-decoration: none; }
+body[data-nurse-protected] .nurse-logout:hover { border-color: #94d5d6; background: #94d5d6; color: #041b2a; }
+body[data-nurse-protected] .profile-form :is(input, select, textarea) { min-height: 40px; padding: 9px 11px; border: 1px solid #d5e1e6; border-radius: 8px; background: #fbfdfd; color: #345f71; }
+body[data-nurse-protected] .profile-form :is(input, select, textarea):focus { border-color: #4d82ed; outline: 3px solid rgba(77,130,237,.12); }
+body[data-nurse-protected] .button.secondary { border: 1px solid #e2e7ef; background: #fff; color: #526a79; }
+body[data-nurse-protected] .action { min-height: 32px; padding: 0 10px; border-color: #e2e7ef; border-radius: 7px; font-weight: 700; }
+body[data-nurse-protected] .record-dialog { border-color: #e2e7ef; border-radius: 15px; box-shadow: 0 24px 70px rgba(30,39,58,.18); }
+body[data-nurse-protected] .page-heading h1 { color: #008c95; }
+body[data-nurse-protected] .status { display: inline-flex; align-items: center; gap: 7px; padding: 7px 10px; border: 1px solid transparent; border-radius: 8px; font-size: 10px; font-weight: 700; }
+body[data-nurse-protected] .status::before { width: 6px; height: 6px; flex: 0 0 6px; border-radius: 50%; background: currentColor; content: ""; }
+body[data-nurse-protected] .status.new,
+body[data-nurse-protected] .status.reviewing { border-color: #efdfad; background: #fff6df; color: #89640c; }
+body[data-nurse-protected] .status.contacted { border-color: #f3d8bb; background: #fff0e4; color: #9c5e1b; }
+body[data-nurse-protected] .status.accepted,
+body[data-nurse-protected] .status.confirmed { border-color: #cddff7; background: #eaf2ff; color: #346aad; }
+body[data-nurse-protected] .status.in-progress { border-color: #e1d2f7; background: #f2ebff; color: #7b4bac; }
+body[data-nurse-protected] .status.completed { border-color: #c8e8d4; background: #e8f7ee; color: #2b7950; }
+body[data-nurse-protected] .status.cancelled,
+body[data-nurse-protected] .status.rejected { border-color: #f0cbd4; background: #ffedf1; color: #b13f59; }
+body[data-nurse-protected] .action { min-height: 34px; padding: 0 11px; border: 1px solid #d7e5ed; border-radius: 8px; background: #f8fcfe; color: #365e74; font: 700 11px Arial, Helvetica, sans-serif; }
+body[data-nurse-protected] .action.accept { border-color: #008f98; background: #008f98; color: #fff; }
+body[data-nurse-protected] .action.reject,
+body[data-nurse-protected] .action.cancel { border-color: #f0cbd4; background: #fff6f7; color: #b13f59; }
+body[data-nurse-protected] .action:hover { filter: brightness(.97); }
+body[data-nurse-protected] .nurse-page-summary { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin: 0 0 22px; }
+body[data-nurse-protected] .nurse-summary-card { display: flex; min-width: 0; min-height: 164px; align-items: center; gap: 19px; padding: 21px 26px; border: 1px solid #dce9ee; border-top: 3px solid var(--nurse-metric-color, #008f98); border-radius: 22px; background: linear-gradient(125deg, var(--nurse-metric-wash, #f4fcfb), #fff 76%); box-shadow: 0 4px 15px rgba(13,43,58,.035); animation: account-card-in .3s ease-out both; transition: transform .2s, border-color .2s, box-shadow .2s; }
+body[data-nurse-protected] .nurse-summary-card:nth-child(2) { --nurse-metric-color: #4a78ce; --nurse-metric-tint: #e9f0ff; --nurse-metric-wash: #f5f8ff; animation-delay: .04s; }
+body[data-nurse-protected] .nurse-summary-card:nth-child(3) { --nurse-metric-color: #8c61bd; --nurse-metric-tint: #f0e9fa; --nurse-metric-wash: #faf7ff; animation-delay: .08s; }
+body[data-nurse-protected] .nurse-summary-card:nth-child(4) { --nurse-metric-color: #b78320; --nurse-metric-tint: #fff1d5; --nurse-metric-wash: #fffbf2; animation-delay: .12s; }
+body[data-nurse-protected] .nurse-summary-card:hover { transform: translateY(-3px); border-color: var(--nurse-metric-color); box-shadow: 0 10px 25px rgba(30,39,58,.07); }
+body[data-nurse-protected] .nurse-summary-icon { display: grid; width: 58px; height: 58px; flex: 0 0 58px; place-items: center; border: 1px solid color-mix(in srgb, var(--nurse-metric-color, #008f98) 14%, transparent); border-radius: 16px; background: var(--nurse-metric-tint, #e1f5f4); color: var(--nurse-metric-color, #008f98); }
+body[data-nurse-protected] .nurse-summary-icon svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+body[data-nurse-protected] .nurse-summary-card > div { display: grid; min-width: 0; gap: 5px; }
+body[data-nurse-protected] .nurse-summary-card p { margin: 0; color: #62808e; font-size: 12px; font-weight: 600; line-height: 1.4; }
+body[data-nurse-protected] .nurse-summary-card strong { color: #193c50; font-size: 36px; line-height: 1.05; letter-spacing: -.7px; }
+body[data-nurse-protected] .nurse-summary-card small { color: #879eaa; font-size: 11px; line-height: 1.5; }
+body[data-nurse-protected] .stat-grid .stat-card { display: grid; min-height: 164px; grid-template-columns: 58px minmax(0, 1fr); grid-template-rows: auto auto auto; align-content: center; align-items: center; column-gap: 15px; padding: 20px 22px; border: 1px solid #dce9ee; border-top: 3px solid var(--nurse-metric-color, #008f98); border-radius: 22px; background: linear-gradient(125deg, var(--nurse-metric-wash, #f4fcfb), #fff 76%); box-shadow: 0 4px 15px rgba(13,43,58,.035); animation: account-card-in .3s ease-out both; }
+body[data-nurse-protected] .stat-grid .stat-card:nth-child(2) { --nurse-metric-color: #4a78ce; --nurse-metric-tint: #e9f0ff; --nurse-metric-wash: #f5f8ff; }
+body[data-nurse-protected] .stat-grid .stat-card:nth-child(3) { --nurse-metric-color: #8c61bd; --nurse-metric-tint: #f0e9fa; --nurse-metric-wash: #faf7ff; }
+body[data-nurse-protected] .stat-grid .stat-card:nth-child(4) { --nurse-metric-color: #b78320; --nurse-metric-tint: #fff1d5; --nurse-metric-wash: #fffbf2; }
+body[data-nurse-protected] .stat-grid .stat-card:nth-child(5) { --nurse-metric-color: #2b9b70; --nurse-metric-tint: #e8f7ee; --nurse-metric-wash: #f5fcf7; }
+body[data-nurse-protected] .stat-grid .stat-icon { position: static; grid-column: 1; grid-row: 1 / 4; width: 58px; height: 58px; border: 1px solid color-mix(in srgb, var(--nurse-metric-color, #008f98) 14%, transparent); border-radius: 16px; background: var(--nurse-metric-tint, #e1f5f4); color: var(--nurse-metric-color, #008f98); }
+body[data-nurse-protected] .stat-grid .stat-card > span:not(.stat-icon) { grid-column: 2; grid-row: 1; margin: 0; color: #62808e; font-size: 12px; font-weight: 600; }
+body[data-nurse-protected] .stat-grid .stat-card > b { grid-column: 2; grid-row: 2; margin: 2px 0; color: #193c50; font-size: 36px; line-height: 1.05; }
+body[data-nurse-protected] .stat-grid .stat-card > small { grid-column: 2; grid-row: 3; margin: 0; color: #879eaa; font-size: 11px; }
+body[data-nurse-protected] .stat-grid .stat-card:hover { transform: translateY(-3px); border-color: var(--nurse-metric-color); box-shadow: 0 10px 25px rgba(30,39,58,.07); }
+@media (max-width: 1250px) { body[data-nurse-protected] .nurse-page-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 520px) { body[data-nurse-protected] .nurse-page-summary { grid-template-columns: 1fr; gap: 11px; } body[data-nurse-protected] .nurse-summary-card, body[data-nurse-protected] .stat-grid .stat-card { min-height: 142px; padding: 20px; border-radius: 17px; } }
+@keyframes account-card-in { from { opacity: 0; transform: translateY(7px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) {
+  body:is([data-doctor-protected], [data-nurse-protected], [data-pharmacy-protected]) * { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important; }
+}
+@media (max-width: 680px) {
+  body:is([data-doctor-protected], [data-nurse-protected]) .content { padding-top: 16px; }
+  body[data-nurse-protected] .content { padding: 70px 16px 35px; }
+  body[data-nurse-protected] .page-heading { align-items: flex-start; }
+  body[data-nurse-protected] .page-heading h1 { font-size: 21px; }
+  body[data-nurse-protected] .filter-row { align-items: stretch; flex-direction: column; padding: 13px; }
+  body[data-nurse-protected] .filter-row .search { width: 100%; }
+  body[data-nurse-protected] .filter-row :is(.select-filter, .date-filter) { justify-content: space-between; }
+  body[data-nurse-protected] .admin-inline-filters { width: 100%; gap: 9px; }
+  body[data-nurse-protected] label.admin-inline-filter { flex: 1 1 170px; justify-content: space-between; }
+  body[data-nurse-protected] label.admin-inline-filter > :is(select, input) { flex: 1; min-width: 0; max-width: none; }
+  body[data-nurse-protected] .records-panel { padding: 0; }
+  body[data-nurse-protected] .patient-care-layout { gap: 12px; }
+}

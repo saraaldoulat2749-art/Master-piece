@@ -1,0 +1,38 @@
+.account-status-toggle {
+  display: inline-flex;
+  min-height: 34px;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border: 1px solid #d8e2e6;
+  border-radius: 9px;
+  background: #f5f7f8;
+  color: #71818a;
+  font: 700 11px Arial, Helvetica, sans-serif;
+  cursor: pointer;
+}
+.account-status-toggle.is-on {
+  border-color: #c8ead7;
+  background: #eaf7ef;
+  color: #278050;
+}
+.account-status-toggle__track {
+  display: inline-flex;
+  width: 30px;
+  height: 17px;
+  align-items: center;
+  padding: 2px;
+  border-radius: 99px;
+  background: #a8b4bb;
+  transition: background .18s ease;
+}
+.account-status-toggle.is-on .account-status-toggle__track { background: #38a66d; }
+.account-status-toggle__track span {
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px #0003;
+  transition: transform .18s ease;
+}
+.account-status-toggle.is-on .account-status-toggle__track span { transform: translateX(13px); }

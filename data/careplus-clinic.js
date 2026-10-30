@@ -41,6 +41,7 @@
     const accounts = window.CarePlusData?.list("users") || [];
     const account = accounts.find(user => String(user.role || "").toLowerCase() === "doctor"
       && String(user.accountStatus || user.status || "").toLowerCase() === "active"
+      && user.archived !== true && !user.archivedAt
       && (requestedId ? String(user.doctorId || user.id) === String(requestedId) : String(user.name || "").trim().toLowerCase() === String(doctorName || "").trim().toLowerCase()));
     if (!account) return null;
     const doctorId = account.doctorId || account.id;
@@ -51,8 +52,9 @@
     return { account, doctorId, profile: { ...savedProfile, name: savedProfile.name || account.name, doctorId } };
   }
   function listDoctors() {
-    return (window.CarePlusData?.list("users") || []).filter(user => String(user.role || "").toLowerCase() === "doctor"
-      && String(user.accountStatus || user.status || "").toLowerCase() === "active")
+    const users = window.CarePlusData?.list("users") || [];
+    return (window.CarePlusData?.newestFirst(users) || users).filter(user => String(user.role || "").toLowerCase() === "doctor"
+      && String(user.accountStatus || user.status || "").toLowerCase() === "active" && user.archived !== true && !user.archivedAt)
       .map(user => {
         const doctorId = user.doctorId || user.id;
         const scopedProfile = getProfile(doctorId);
@@ -110,7 +112,12 @@
     const existing = listAppointments().slice().reverse().find(item => item.source === "user-booking" && item.idempotencyKey && item.idempotencyKey === booking.idempotencyKey && !["Cancelled", "Rejected"].includes(item.status));
     if (existing) return { ok: true, appointment: existing };
     if (!isAvailable(bookingWithDoctor)) return { ok: false, error: "That appointment time is no longer available." };
-    const commissionRate = 10;
+    let commissionRate = 10;
+    try {
+      const financeSettings = JSON.parse(localStorage.getItem("careplusCommissionSettingsV1") || "{}");
+      const configuredRate = Number(financeSettings.doctorRates?.[String(doctorId)] ?? resolved.account.commissionRate ?? financeSettings.doctorCommissionRate);
+      if (Number.isFinite(configuredRate) && configuredRate >= 0 && configuredRate <= 100) commissionRate = configuredRate;
+    } catch {}
     const depositRate = 10;
     const commissionAmount = Number((fee * commissionRate / 100).toFixed(2));
     const depositAmount = Number((fee * depositRate / 100).toFixed(2));
@@ -138,6 +145,8 @@
       paymentStatus: "Demo Simulated (Not Charged)",
       paymentMethod: "Demo checkout",
       paymentVerification: "Simulated only; no funds collected",
+      depositPaid: Number(appointment.depositAmount || 0),
+      lastActionByRole: "Customer", lastActionById: String(appointment.userId || appointment.bookingUserId || ""),
       status: "Requested", commissionStatus: "Awaiting appointment"
     });
   }

@@ -154,6 +154,7 @@ function getVisibleProducts() {
     const matchesSearch = `${product.name} ${product.description} ${categoryName(product.category)}`.toLowerCase().includes(query);
     return matchesSearch && (category === "all" || product.category === category) && product.price >= min && product.price <= max && (stock === "all" || (stock === "in" ? product.inStock : !product.inStock));
   });
+  if (sort === "newest") return window.CarePlusData.newestFirst(result);
   if (sort === "price-asc") result.sort((a, b) => a.price - b.price);
   if (sort === "price-desc") result.sort((a, b) => b.price - a.price);
   if (sort === "name") result.sort((a, b) => a.name.localeCompare(b.name));
@@ -223,7 +224,18 @@ $("#product-grid").addEventListener("click", event => {
 });
 $("#details-content").addEventListener("click", event => { const button = event.target.closest("[data-add]"); if (button) addToCart(button.dataset.add); });
 $("#category-cards").addEventListener("click", event => { const card = event.target.closest("[data-category-card]"); if (!card) return; $("#category-filter").value = card.dataset.categoryCard; renderProducts(); $("#products").scrollIntoView({ behavior: "smooth" }); });
-$("#cart-items").addEventListener("click", event => { const button = event.target.closest("[data-cart-qty]"); if (!button) return; const id = String(button.dataset.cartQty); const item = cart.get(id); if (!item) return; item.quantity += Number(button.dataset.change); if (item.quantity <= 0) cart.delete(id); renderCart(); });
+$("#cart-items").addEventListener("click", async event => {
+  const button = event.target.closest("[data-cart-qty]"); if (!button) return;
+  const id = String(button.dataset.cartQty); const item = cart.get(id); if (!item) return;
+  const change = Number(button.dataset.change);
+  if (item.quantity + change <= 0) {
+    if (!await window.CarePlusDelete.confirm({ kind: "cart item", name: item.product.name, description: "This item will be removed from your shopping cart. You can add it again from the store." })) return;
+    if (cart.get(id) !== item || item.quantity + change > 0) return;
+    cart.delete(id);
+    try { renderCart(); } catch { cart.set(id, item); showToast("Could not save changes to your cart. Please try again."); return; }
+    window.CarePlusDelete.success({ kind: "cart item" });
+  } else { item.quantity += change; renderCart(); }
+});
 ["#product-search", "#min-price", "#max-price"].forEach(selector => $(selector).addEventListener("input", renderProducts));
 ["#category-filter", "#stock-filter", "#sort-filter"].forEach(selector => $(selector).addEventListener("change", renderProducts));
 document.addEventListener("error", event => {
@@ -232,7 +244,7 @@ document.addEventListener("error", event => {
   image.dataset.fallback = "true";
   image.src = categoryPhotos[image.dataset.category];
 }, true);
-$("#clear-filters").addEventListener("click", () => { $("#product-search").value = ""; $("#category-filter").value = "all"; $("#min-price").value = ""; $("#max-price").value = ""; $("#stock-filter").value = "all"; $("#sort-filter").value = "featured"; renderProducts(); });
+$("#clear-filters").addEventListener("click", () => { $("#product-search").value = ""; $("#category-filter").value = "all"; $("#min-price").value = ""; $("#max-price").value = ""; $("#stock-filter").value = "all"; $("#sort-filter").value = "newest"; renderProducts(); });
 $("#cart-toggle").addEventListener("click", () => setCartOpen(true)); $("#cart-close").addEventListener("click", () => setCartOpen(false)); $("#cart-scrim").addEventListener("click", () => setCartOpen(false));
 $("#details-close").addEventListener("click", () => $("#details-dialog").close()); $("#details-dialog").addEventListener("click", event => { if (event.target === $("#details-dialog")) $("#details-dialog").close(); });
 document.addEventListener("keydown", event => { if (event.key === "Escape") setCartOpen(false); });

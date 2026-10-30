@@ -63,6 +63,7 @@ if (form) {
   // Editable prototype rates; these do not represent live provider quotes.
   const PRICING = Object.freeze({ homeHourlyJod: 8, companionHourlyJod: 7, sampleReturnFeeJod: 5 });
   const isHome = form.dataset.service === "home";
+  let submittedRequest = null;
   const duration = form.elements.namedItem("duration");
   const tripOption = form.elements.namedItem("tripOption");
   const money = amount => `JOD ${amount.toFixed(2)}`;
@@ -81,14 +82,29 @@ if (form) {
     const list = sharedPanel.querySelector(".shared-request-list");
     list.replaceChildren();
     if (!requests.length) { const empty = document.createElement("p"); empty.textContent = "No submitted care requests for this login yet."; list.append(empty); return; }
-    requests.slice().reverse().forEach(request => {
+    window.CarePlusData.newestFirst(requests).forEach(request => {
       const item = document.createElement("article"); item.className = "shared-request-item";
       const title = document.createElement("strong"); title.textContent = request.service;
       const detail = document.createElement("span"); detail.textContent = `Preferred date: ${request.date || "Not specified"}${Number.isFinite(Number(request.estimatedTotal)) ? ` · Estimate: ${money(Number(request.estimatedTotal))}` : ""}`;
       const status = document.createElement("b");
       const rawStatus = String(request.status || "New");
       status.textContent = ["accepted", "approved"].includes(rawStatus.toLowerCase()) ? "Accepted by CarePlus" : rawStatus;
-      item.append(title, detail, status); list.append(item);
+      item.append(title, detail, status);
+      if (request.demoPaymentStatus === "Succeeded" && request.demoTransactionReference) {
+        const paid = document.createElement("b");
+        paid.textContent = `Deposit paid: ${money(Number(request.depositAmount))}`;
+        paid.style.color = "#087e80";
+        item.append(paid);
+      }
+      if (request.status === "Pending Payment" && request.depositRate === 0.1 && request.demoPaymentStatus !== "Succeeded") {
+        const resume = document.createElement("button");
+        resume.type = "button";
+        resume.className = "button button-primary";
+        resume.textContent = "View deposit";
+        resume.addEventListener("click", () => window.CarePlusDeposit.open(request.id));
+        item.append(resume);
+      }
+      list.append(item);
     });
   }
   window.CarePlusData?.subscribe(renderMyRequests);
@@ -120,6 +136,7 @@ if (form) {
 
   form.addEventListener("submit", event => {
     event.preventDefault();
+    if (submittedRequest) { window.CarePlusDeposit.open(submittedRequest.id); return; }
     if (!form.reportValidity()) return;
 
     const values = new FormData(form);
@@ -149,13 +166,23 @@ if (form) {
       shift: String(values.get("shift") || ""),
       tasks: values.getAll("tasks"),
       notes: String(values.get("instructions") || "").trim(),
+      specialCareRequirements: String(values.get("specialCareRequirements") || "").trim(),
+      authorizedCareInstructions: String(values.get("authorizedCareInstructions") || "").trim(),
       duration: Number(duration.value) || 1,
       estimatedBaseAmount: estimate.base,
       estimatedReturnFee: estimate.returnFee,
       careCommissionRate: estimate.rate,
       careCommissionAmount: estimate.commission,
       estimatedTotal: estimate.total,
-      status: "New", source: "user-request",
+      totalPrice: Math.round(estimate.total * 100) / 100,
+      depositAmount: Math.round(estimate.total * 10) / 100,
+      remainingBalance: (Math.round(estimate.total * 100) - Math.round(estimate.total * 10)) / 100,
+      depositRate: 0.1,
+      currency: "JOD",
+      paymentStatus: "Unpaid",
+      paymentMode: "demo",
+      transactionReference: null,
+      status: "Pending Payment", source: "user-request",
       userId: window.CarePlusData?.list("users").find(user => user.email?.toLowerCase() === sessionStorage.getItem("careplusDemoIdentity")?.toLowerCase() || user.phone === sessionStorage.getItem("careplusDemoIdentity"))?.id || ""
     });
     if (!request) {
@@ -163,9 +190,10 @@ if (form) {
       return;
     }
     const submitButton = form.querySelector(".submit-button");
-    submitButton.textContent = "Request saved ✓";
-    submitButton.disabled = true;
-    document.getElementById("form-feedback").textContent = "Your request has been saved and appears in My Care Requests. CarePlus will review it and confirm availability.";
+    submittedRequest = request;
+    submitButton.textContent = "View deposit requirement";
+    document.getElementById("form-feedback").textContent = "Booking request saved — Pending Payment. This is not a confirmed booking.";
+    window.CarePlusDeposit.open(request.id);
   });
 
   window.addEventListener("careplus:commission", updateEstimate);

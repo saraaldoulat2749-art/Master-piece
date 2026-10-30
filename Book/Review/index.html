@@ -8,8 +8,8 @@
 
     <link rel="stylesheet" href="style.css">
        <link rel="stylesheet" href="../../Footer/style.css">
-</head>
-<body data-protected="true"><script src="../../auth.js"></script>
+<link rel="stylesheet" href="../../shared/global-button-theme.css"></head>
+<body data-protected="true"><script src="../../auth.js?v=archive-aware-1"></script>
        <div id="nav-container"></div>
 <script>
 fetch("../../Nav/index.html")
@@ -96,7 +96,7 @@ fetch("../../Nav/index.html")
                 <div class="detail-row"><div class="detail-label">Full consultation fee</div><div class="detail-value" id="consultationFee">Not available</div></div>
                 <div class="detail-row"><div class="detail-label">Required deposit (10%)</div><div class="detail-value" id="requiredDeposit">Not available</div></div>
                 <div class="detail-row"><div class="detail-label">Remaining balance</div><div class="detail-value" id="remainingBalance">Not available</div></div>
-                <div class="detail-row"><div class="detail-label">CarePlus commission</div><div class="detail-value"><span id="commissionAmount">Not available</span> Â· 10% of the full consultation fee</div></div>
+                <div class="detail-row"><div class="detail-label">CarePlus commission</div><div class="detail-value"><span id="commissionAmount">Not available</span> · 10% of the full consultation fee</div></div>
             </section>
             <!-- Patient information -->
             <section>
@@ -160,7 +160,8 @@ fetch("../../Nav/index.html")
         })
         .catch(error => console.error("Error loading footer:", error));
 </script>
-<script src="../../data/careplus-data.js"></script><script src="../../data/careplus-clinic.js"></script><script src="script.js"></script>
+<script src="../../data/careplus-data.js?v=archive-aware-1"></script><script src="../../data/careplus-clinic.js?v=archive-aware-1"></script><script src="script.js"></script>
     <script src="../../Footer/footer.js"></script>
 </body>
 </html>
+

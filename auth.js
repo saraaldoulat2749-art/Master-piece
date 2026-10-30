@@ -24,6 +24,7 @@
   }
   function accountRole(account) { return String(account?.role || "Customer").trim().toLowerCase(); }
   function accountState(account) {
+    if (account?.archived === true || account?.archivedAt) return "archived";
     const role = accountRole(account);
     if (["doctor", "pharmacy"].includes(role)) {
       const state = String(account.accountStatus || account.status || "Pending").toLowerCase();
@@ -186,7 +187,7 @@
       if (accountState(user) !== "active") return { ok: false, error: "This account is pending approval or inactive. Contact CarePlus administration." };
       if (targetRole === "doctor" && !user.doctorId) return { ok: false, error: "This doctor account is not linked to a doctor profile yet." };
       if (targetRole === "pharmacy" && (!user.pharmacyId || !window.CarePlusData?.get("pharmacies", user.pharmacyId))) return { ok: false, error: "This pharmacy account is not linked to a pharmacy profile yet." };
-      return startDemoSession(targetRole, normalizedEmail) ? { ok: true, user, role: targetRole } : { ok: false, error: "Could not start your session." };
+      return startDemoSession(targetRole, normalizedEmail) ? { ok: true, user, role: targetRole, mustChangePassword: Boolean(user.mustChangePassword) } : { ok: false, error: "Could not start your session." };
     } catch { return { ok: false, error: "Could not verify your account in this browser." }; }
   }
 
@@ -197,21 +198,48 @@
     const pharmacy = hasDemoPharmacySession();
     const doctor = hasDemoDoctorSession();
     const nurse = hasDemoNurseSession();
-    document.querySelectorAll(".careplus-navbar__signup, .careplus-navbar__signup-mobile").forEach(link => { link.hidden = customer; });
+    const loggedIn = customer || admin || pharmacy || doctor || nurse;
+    const notificationWidget = document.getElementById("careplus-notification-widget");
+    if (notificationWidget) notificationWidget.hidden = !customer;
+    if (customer && notificationWidget) {
+      const notificationCss = new URL("shared/notifications.css?v=notifications-5", root).href;
+      const notificationJs = new URL("shared/notifications.js?v=notifications-5", root).href;
+      if (![...document.querySelectorAll('link[rel="stylesheet"]')].some(link => new URL(link.href).pathname.endsWith("/shared/notifications.css"))) {
+        const link = document.createElement("link"); link.rel = "stylesheet"; link.href = notificationCss; document.head.appendChild(link);
+      }
+      if (window.CarePlusData && ![...document.scripts].some(script => new URL(script.src || location.href).pathname.endsWith("/shared/notifications.js"))) {
+        const script = document.createElement("script"); script.src = notificationJs; script.dataset.careplusNotifications = "true"; document.body.appendChild(script);
+      }
+    }
+    const dashboard = admin ? new URL("Admin/index.html", root).href
+      : doctor ? new URL("Doctor/index.html", root).href
+      : nurse ? new URL("Nurse/index.html", root).href
+      : pharmacy ? new URL("Pharmacy/dashboard.html", root).href : profile;
+    document.querySelectorAll(".careplus-navbar__signup, .careplus-navbar__signup-mobile").forEach(link => { link.hidden = loggedIn; });
     document.querySelectorAll("[data-customer-profile]").forEach(profileControl => { profileControl.hidden = !customer; });
     document.querySelectorAll("[data-auth-toggle]").forEach(link => {
+      if (!link.closest('.careplus-navbar')) {
+        link.hidden = false;
+        if (link.textContent !== 'LOG OUT') link.textContent = 'LOG OUT';
+        link.href = home;
+        link.setAttribute('aria-label', 'Log out');
+        link.onclick = event => {
+          event.preventDefault();
+          endDemoSession();
+          window.location.assign(home);
+        };
+        return;
+      }
       if (customer) { link.hidden = true; return; }
       link.hidden = false;
-      const loggedIn = admin || pharmacy || doctor || nurse;
-      const label = loggedIn ? "LOG OUT" : "Log In";
+      const label = loggedIn ? (customer ? "My Profile" : "Dashboard") : "Log In";
       if (link.textContent !== label) link.textContent = label;
-      link.href = loggedIn ? home : login;
-      link.setAttribute("aria-label", loggedIn ? "Log out" : "Log in");
+      link.href = loggedIn ? dashboard : login;
+      link.setAttribute("aria-label", loggedIn ? (customer ? "Go to my profile" : "Back to dashboard") : "Log in");
       link.onclick = event => {
         event.preventDefault();
         if (loggedIn) {
-          endDemoSession();
-          window.location.assign(home);
+          window.location.assign(dashboard);
         } else {
           window.location.assign(loginUrl());
         }
@@ -237,6 +265,11 @@
       window.location.replace(loginUrl());
       return;
     }
+    const changePasswordPage = decodeURIComponent(location.pathname).toLowerCase().endsWith("/log in/change-password.html");
+    if (hasDemoSession() && currentAccount()?.mustChangePassword && !changePasswordPage) {
+      window.location.replace(new URL("log%20in/change-password.html", root).href);
+      return;
+    }
     if (document.body?.dataset.adminProtected === "true" && !hasDemoAdminSession()) {
       window.location.replace(hasDemoSession() ? home : login);
     }
@@ -255,6 +288,30 @@
       const credentials = readCredentials(); credentials[normalized] = { salt: toBase64(salt), hash: toBase64(hash) };
       localStorage.setItem(CREDENTIALS_KEY, JSON.stringify(credentials)); return true;
     } catch { return false; }
+  }
+  async function changeOwnPassword(password) {
+    const account = currentAccount();
+    const nextPassword = String(password || "");
+    if (!account || !account.mustChangePassword) return { ok: false, error: "No password change is required for this account." };
+    if (nextPassword.length < 8) return { ok: false, error: "Your new password must be at least 8 characters." };
+    try {
+      const email = String(account.email || "").trim().toLowerCase();
+      const current = readCredentials()[email];
+      if (current) {
+        const candidate = new Uint8Array(await passwordHash(nextPassword, fromBase64(current.salt)));
+        const existingHash = fromBase64(current.hash);
+        let same = candidate.length ^ existingHash.length;
+        for (let index = 0; index < Math.min(candidate.length, existingHash.length); index += 1) same |= candidate[index] ^ existingHash[index];
+        if (!same) return { ok: false, error: "Choose a password different from your temporary password." };
+      }
+      const updated = window.CarePlusData.update("users", account.id, { mustChangePassword: false, passwordChangedAt: new Date().toISOString() });
+      if (!updated) return { ok: false, error: "Could not update your account. Please try again." };
+      if (!(await setDemoPassword(email, nextPassword))) {
+        window.CarePlusData.update("users", account.id, { mustChangePassword: true, passwordChangedAt: "" });
+        return { ok: false, error: "Could not save your new password. Please try again." };
+      }
+      return { ok: true, role: accountRole(account) };
+    } catch { return { ok: false, error: "Could not update the password in this browser." }; }
   }
   function removeDemoPassword(email) { const credentials = readCredentials(); delete credentials[String(email || "").trim().toLowerCase()]; try { localStorage.setItem(CREDENTIALS_KEY, JSON.stringify(credentials)); } catch {} }
   function moveDemoPassword(oldEmail, newEmail) {
@@ -328,7 +385,7 @@
       try { localStorage.setItem(demo.marker, "1"); } catch {}
     }
   }
-  window.CarePlusAuth = { hasDemoSession, hasDemoAdminSession, hasDemoPharmacySession, demoPharmacyId, demoPharmacyAccount, updatePharmacyLoginEmail, hasDemoDoctorSession, demoDoctorAccount, hasDemoNurseSession, demoNurseAccount, hasDemoCustomerSession, endDemoSession, registerCustomer, loginCustomer, setDemoPassword, removeDemoPassword, moveDemoPassword, ensureDemoAdmin, ensureDemoRoleAccounts, paintNavigation, guardProtectedPage };
+  window.CarePlusAuth = { hasDemoSession, hasDemoAdminSession, hasDemoPharmacySession, demoPharmacyId, demoPharmacyAccount, updatePharmacyLoginEmail, hasDemoDoctorSession, demoDoctorAccount, hasDemoNurseSession, demoNurseAccount, hasDemoCustomerSession, endDemoSession, registerCustomer, loginCustomer, setDemoPassword, changeOwnPassword, removeDemoPassword, moveDemoPassword, ensureDemoAdmin, ensureDemoRoleAccounts, paintNavigation, guardProtectedPage };
   guardProtectedPage();
   new MutationObserver(paintNavigation).observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener("DOMContentLoaded", () => { guardProtectedPage(); paintNavigation(); });

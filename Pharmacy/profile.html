@@ -8,9 +8,13 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="dashboard.css?v=profile-link-fix-2">
-</head>
-<body data-pharmacy-protected="true">
+  <link rel="stylesheet" href="dashboard.css?v=pharmacy-profile-finances-1">
+  <link rel="stylesheet" href="../shared/account-dashboard-theme.css">
+  <link rel="stylesheet" href="../Admin/theme.css">
+  <link rel="stylesheet" href="../Admin/dashboard-ui.css?v=shared-careplus-admin-v2">
+  <link rel="stylesheet" href="../shared/admin-dashboard-compat.css">
+<link rel="stylesheet" href="../shared/global-button-theme.css"></head>
+<body class="admin-unified" data-pharmacy-protected="true">
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
       <a class="brand" href="../Home/Master.html" aria-label="CarePlus home"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><path d="M24 41S6 29 6 17.5C6 10.8 10.8 7 16.1 7c3.4 0 6.1 1.8 7.9 4.8C25.8 8.8 28.5 7 31.9 7 37.2 7 42 10.8 42 17.5 42 29 24 41 24 41Z"/><path d="M11 24h7l3-6 5.5 13 4-8H37"/></svg></span><span>Care<span>Plus</span></span></a>
@@ -46,6 +50,11 @@
               <label class="check-field"><input id="profileEmergency" type="checkbox"><span>Emergency / 24-hour service</span></label>
               <label class="wide-field">About this pharmacy<textarea id="profileDescription" rows="3" maxlength="240" placeholder="A short introduction for customers"></textarea></label>
             </div>
+            <section class="fee-breakdown pharmacy-finance" aria-live="polite" aria-labelledby="pharmacyFinanceTitle">
+              <div class="fee-breakdown-heading"><div><p class="eyebrow">PHARMACY EARNINGS</p><h2 id="pharmacyFinanceTitle">Sales &amp; CarePlus commission</h2><p>Calculated from completed orders handed over to customers.</p></div><strong class="fee-rate" id="pharmacyCommissionRate">—</strong></div>
+              <div class="fee-breakdown-values lifetime-values"><div><span>Pharmacy medicine sales</span><strong id="pharmacyNetEarnings">JOD 0.00</strong></div><div><span>Total CarePlus commission</span><strong id="pharmacyCarePlusCommission">JOD 0.00</strong></div></div>
+              <p class="fee-breakdown-note">Cancelled and refunded orders are excluded. Totals are based on verified handover; actual payout transfers are not tracked here.</p>
+            </section>
             <div class="profile-record-meta"><span>Profile added <strong id="profileCreatedAt">—</strong></span><span>Last updated <strong id="profileUpdatedAt">—</strong></span></div>
             <p class="form-message" id="profileMessage" role="status" aria-live="polite"></p>
             <button class="primary-button" type="submit">Save profile changes</button>
@@ -55,9 +64,9 @@
     </main>
   </div>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-  <script src="../data/careplus-data.js"></script>
-  <script src="../data/careplus-pharmacy.js"></script>
-  <script src="../auth.js"></script>
-  <script src="profile.js?v=profile-link-fix-2"></script>
+  <script src="../data/careplus-data.js?v=archive-aware-1"></script>
+  <script src="../data/careplus-pharmacy.js?v=archive-aware-1"></script>
+  <script src="../auth.js?v=archive-aware-1"></script>
+  <script src="profile.js?v=pharmacy-profile-finances-6"></script>
 </body>
 </html>

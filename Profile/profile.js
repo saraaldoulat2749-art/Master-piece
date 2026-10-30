@@ -124,6 +124,7 @@
     const badge = makeElement("span", "status-badge", label);
     if (["confirmed", "completed", "delivered", "approved", "accepted by careplus", "in progress", "paid"].includes(String(label).toLowerCase())) badge.classList.add("is-good");
     else if (["upcoming", "requested", "processing", "shipped", "pending", "placed", "due", "not due"].includes(String(label).toLowerCase())) badge.classList.add("is-waiting");
+    else if (["rejected", "cancelled", "canceled", "refunded", "failed"].includes(String(label).toLowerCase())) badge.classList.add("is-negative");
     else badge.classList.add("is-muted");
     return badge;
   }
@@ -193,14 +194,16 @@
       const group = status === "cancelled" ? "cancelled" : isAppointmentUpcoming(item) ? "upcoming" : "past";
       const searchText = [item.id, item.doctor, item.specialty, item.area, item.date, item.paymentStatus].join(" ").toLowerCase();
       return group === appointmentFilter && searchText.includes(query);
-    }).sort((a, b) => `${a.date} ${a.time || ""}`.localeCompare(`${b.date} ${b.time || ""}`));
+    });
+    const sortedVisible = dataStore.newestFirst(visible);
     const list = byId("appointment-list"); list.replaceChildren();
     if (!visible.length) {
       list.append(emptyState("calendar", `No ${appointmentFilter} appointments`, "Appointments booked with your CarePlus login will appear here.", "Book an appointment", "../Book/index.html"));
       return;
     }
-    visible.forEach(appointment => {
+    sortedVisible.forEach(appointment => {
       const card = makeElement("article", "record-card appointment-card");
+      card.dataset.recordId = String(appointment.id);
       const top = makeElement("div", "record-card__top");
       top.append(makeElement("span", "record-avatar", initials(appointment.doctor || "Doctor")));
       const copy = makeElement("div", "record-copy");
@@ -251,7 +254,7 @@
   }
 
   function renderCareRequests() {
-    const requests = ownedRecords("careRequests").slice().sort((a, b) => String(b.date || "").localeCompare(String(a.date || "")));
+    const requests = dataStore.newestFirst(ownedRecords("careRequests"));
     const list = byId("care-list"); list.replaceChildren();
     if (!requests.length) {
       list.append(emptyState("heart", "No care requests yet", "When you request elderly care, you can follow its status here.", "Request elderly care", "../elederly/index.html"));
@@ -259,25 +262,48 @@
     }
     requests.forEach(request => {
       const card = makeElement("article", "record-card care-card");
+      card.dataset.recordId = String(request.id);
       const top = makeElement("div", "record-card__top");
       const careIcon = makeElement("span", "record-avatar"); careIcon.append(makeIcon("heart")); top.append(careIcon);
       const copy = makeElement("div", "record-copy");
       copy.append(makeElement("h3", "", request.elderlyName || request.client || "Care recipient"), makeElement("p", "", request.service || "Elderly care"));
       const status = requestStatus(request); top.append(copy, setStatusBadge(status));
+      const depositPaid = request.paymentMode === "demo" && request.demoPaymentStatus === "Succeeded" && Boolean(request.demoTransactionReference);
+      if (depositPaid) top.append(setStatusBadge("Deposit paid"));
       if (["accepted", "approved"].includes(String(request.status || "").toLowerCase())) top.append(setStatusBadge(request.paymentStatus || "Due"));
       card.append(top);
       const meta = makeElement("div", "record-meta");
       appendMeta(meta, "calendar", `Visit date: ${dateFormat(request.date)}`);
+      if (depositPaid) {
+        appendMeta(meta, "clock", `Deposit paid: JOD ${Number(request.depositAmount).toFixed(2)}`);
+        appendMeta(meta, "clock", `Remaining balance: JOD ${Number(request.remainingBalance).toFixed(2)}`);
+      }
       appendMeta(meta, "clock", request.time || "Time to be confirmed");
       appendMeta(meta, "pin", [request.address || request.pickupAddress, request.area, request.city].filter(Boolean).join(", ") || "Address to be confirmed");
       appendMeta(meta, "duration", request.duration ? `${request.duration} ${Number(request.duration) === 1 ? "hour" : "hours"} per visit` : request.schedule || "Schedule to be confirmed");
       card.append(meta);
+      if (request.totalPrice != null) {
+        const costSummary = makeElement("div", "care-cost-summary");
+        const commission = Number(request.careCommissionAmount ?? (Number(request.totalPrice) * Number(request.careCommissionRate ?? 10) / 100));
+        const costRows = [
+          ["Service total", request.totalPrice],
+          ["CarePlus commission", commission],
+          ...(request.depositAmount != null ? [[depositPaid ? "Deposit paid" : "Deposit", request.depositAmount]] : []),
+          ...(request.remainingBalance != null ? [["Remaining balance", request.remainingBalance]] : [])
+        ];
+        costRows.forEach(([label, amount]) => {
+          const line = makeElement("div", label === "Service total" ? "care-cost-line care-cost-line--total" : "care-cost-line");
+          line.append(makeElement("span", "", label), makeElement("strong", "", `JOD ${Number(amount || 0).toFixed(2)}`));
+          costSummary.append(line);
+        });
+        card.append(costSummary);
+      }
       const actions = makeElement("div", "record-actions");
       const details = makeElement("button", "button button--outline", "View details"); details.type = "button";
-      details.addEventListener("click", () => showDetails("Care request details", [["Care recipient", request.elderlyName || request.client], ["Service", request.service], ["Duration", request.duration ? `${request.duration} hours per visit` : "Not provided"], ["Schedule", request.schedule], ["Preferred time", request.time], ["Pickup address", [request.address || request.pickupAddress, request.area, request.city].filter(Boolean).join(", ")], ["Destination", request.destination], ["Emergency contact", [request.emergencyName, request.emergencyPhone].filter(Boolean).join(" · ")], ["Submitted", dateFormat(request.createdAt || request.date)], ["Status", status], ["Payment", request.paymentStatus || "Not due"], ["Notes", request.notes]]));
+      details.addEventListener("click", () => showDetails("Care request details", [["Care recipient", request.elderlyName || request.client], ["Service", request.service], ["Duration", request.duration ? `${request.duration} hours per visit` : "Not provided"], ["Schedule", request.schedule], ["Preferred time", request.time], ["Pickup address", [request.address || request.pickupAddress, request.area, request.city].filter(Boolean).join(", ")], ["Destination", request.destination], ["Emergency contact", [request.emergencyName, request.emergencyPhone].filter(Boolean).join(" · ")], ["Submitted", dateFormat(request.createdAt || request.date)], ["Status", status], ["Payment", depositPaid ? "Deposit paid" : request.paymentStatus || "Not due"], ["Total service price", request.totalPrice != null ? `JOD ${Number(request.totalPrice).toFixed(2)}` : "Not provided"], [depositPaid ? "Deposit paid (10%)" : "Required deposit (10%)", request.depositAmount != null ? `JOD ${Number(request.depositAmount).toFixed(2)}` : "Not provided"], ["Remaining balance", request.remainingBalance != null ? `JOD ${Number(request.remainingBalance).toFixed(2)}` : "Not provided"], ["Notes", request.notes]]));
       actions.append(details);
       const accepted = ["accepted", "approved"].includes(String(request.status || "").toLowerCase());
-      if (accepted && String(request.paymentStatus || "").toLowerCase() !== "paid") {
+      if (accepted && !depositPaid && String(request.paymentStatus || "").toLowerCase() !== "paid") {
         const pay = makeElement("button", "button button--primary", "Pay now"); pay.type = "button";
         pay.addEventListener("click", () => { window.location.href = `payment.html?requestId=${encodeURIComponent(request.id)}`; });
         actions.append(pay);
@@ -293,6 +319,10 @@
   }
 
   function orderStatus(order) {
+    if (order?.source === "pharmacy-order") {
+      const pharmacyStatuses = { Confirmed: "Accepted", "Preparing for Delivery": "Preparing", "Out for Delivery": "Ready for Pickup", Delivered: "Completed" };
+      return pharmacyStatuses[order.status] || order.status || "Pending";
+    }
     const status = String(order.status || "Placed").toLowerCase();
     return ({ placed: "Placed", processing: "Processing", shipped: "Shipped", delivered: "Delivered", cancelled: "Cancelled" })[status] || order.status || "Placed";
   }
@@ -305,11 +335,12 @@
     const orders = ownedRecords("orders").slice().sort((a, b) => String(b.placedAt || b.createdAt || "").localeCompare(String(a.placedAt || a.createdAt || "")));
     const list = byId("order-list"); list.replaceChildren();
     if (!orders.length) {
-      list.append(emptyState("bag", "No orders yet", "Your CarePlus Medical Store purchases will appear here.", "Visit the medical store", "../Store/index.html"));
+      list.append(emptyState("bag", "No orders yet", "Your CarePlus pharmacy and medical store orders will appear here.", "Browse CarePlus", "../Pharmacy/index.html"));
       return;
     }
     orders.forEach(order => {
       const card = makeElement("article", "record-card order-card");
+      card.dataset.recordId = String(order.id);
       const header = makeElement("div", "record-card__top");
       const orderIcon = makeElement("span", "record-avatar"); orderIcon.append(makeIcon("bag")); header.append(orderIcon);
       const copy = makeElement("div", "record-copy");
@@ -332,10 +363,53 @@
         item.append(detail); itemsHolder.append(item);
       });
       card.append(itemsHolder);
-      card.append(makeElement("strong", "order-total", `Total · JOD ${Number(order.total || 0).toFixed(2)}`));
+      if (order.source === "pharmacy-order") {
+        const stages = ["Pending", "Accepted", "Preparing", "Ready for Pickup", "Completed"];
+        if (["Rejected", "Cancelled"].includes(orderStatus(order))) stages.push(orderStatus(order));
+        const history = Array.isArray(order.statusHistory) ? order.statusHistory : [{ status: "Pending", at: order.placedAt || order.createdAt }];
+        const timeline = makeElement("ol", "profile-order-timeline");
+        const stageIcons = {
+          Pending: "<path d=\"M4 7h16v13H4z\"/><path d=\"M4 8l8 6 8-6M8 4h8\"/>",
+          Accepted: "<path d=\"m5 12 4 4L19 6\"/>",
+          Preparing: "<path d=\"M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1\"/><circle cx=\"12\" cy=\"12\" r=\"4\"/>",
+          "Ready for Pickup": "<path d=\"M4 8h16l1 12H3L4 8Z\"/><path d=\"M8 8a4 4 0 0 1 8 0\"/>",
+          Completed: "<path d=\"m5 12 4 4L19 6\"/><circle cx=\"12\" cy=\"12\" r=\"10\"/>",
+          Rejected: "<path d=\"m7 7 10 10M17 7 7 17\"/>",
+          Cancelled: "<path d=\"m7 7 10 10M17 7 7 17\"/>"
+        };
+        stages.forEach(stage => {
+          const event = history.slice().reverse().find(entry => ({ Confirmed: "Accepted", "Preparing for Delivery": "Preparing", "Out for Delivery": "Ready for Pickup", Delivered: "Completed" }[entry.status] || entry.status) === stage);
+          const step = makeElement("li", `${event ? "is-recorded" : ""} ${orderStatus(order) === stage ? "is-current" : ""}`.trim());
+          const stepIcon = makeElement("i"); stepIcon.setAttribute("aria-hidden", "true");
+          const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+          svg.setAttribute("viewBox", "0 0 24 24"); svg.setAttribute("focusable", "false"); svg.innerHTML = stageIcons[stage] || stageIcons.Pending;
+          stepIcon.append(svg);
+          step.append(stepIcon, makeElement("strong", "", stage));
+          if (event?.at) step.append(makeElement("small", "", new Date(event.at).toLocaleString()));
+          timeline.append(step);
+        });
+        card.append(timeline);
+        if (order.rejectionReason || order.cancelReason) card.append(makeElement("p", "profile-order-reason", `Reason: ${order.rejectionReason || order.cancelReason}`));
+      }
+      const costSummary = makeElement("div", "order-cost-summary");
+      if (order.source === "pharmacy-order") {
+        [
+          ["Medicine subtotal", order.subtotal ?? order.total],
+          ["CarePlus commission", order.customerCommissionAmount ?? order.commissionAmount],
+          [order.deliveryZoneLabel ? `Delivery · ${order.deliveryZoneLabel}` : "Delivery", order.deliveryFee]
+        ].forEach(([label, amount]) => {
+          const line = makeElement("div", "order-cost-line");
+          line.append(makeElement("span", "", label), makeElement("strong", "", `JOD ${Number(amount || 0).toFixed(2)}`));
+          costSummary.append(line);
+        });
+      }
+      const totalLine = makeElement("div", "order-total");
+      totalLine.append(makeElement("span", "", "Order total"), makeElement("strong", "", `JOD ${Number(order.total || 0).toFixed(2)}`));
+      costSummary.append(totalLine);
+      card.append(costSummary);
       const meta = makeElement("div", "record-meta");
       appendMeta(meta, "pin", [order.customer?.address, order.customer?.area, order.customer?.city].filter(Boolean).join(", ") || "Delivery address on file");
-      appendMeta(meta, "payment", order.payment || "Payment details unavailable"); card.append(meta);
+      appendMeta(meta, "payment", order.payment || order.paymentMethod || order.paymentStatus || "Payment details unavailable"); card.append(meta);
       const actions = makeElement("div", "record-actions");
       const details = makeElement("button", "button button--outline", "Order details"); details.type = "button";
       details.addEventListener("click", () => showOrderDetails(order)); actions.append(details);
@@ -348,7 +422,11 @@
       const product = line.product || line;
       return [`${product.name || "Medical product"} × ${Number(line.quantity) || 1}`, `JOD ${(Number(product.price || line.price || 0) * (Number(line.quantity) || 1)).toFixed(2)}`];
     });
-    showDetails("Order details", [["Order number", order.reference || order.id], ["Order date", dateFormat(order.placedAt || order.createdAt)], ["Status", orderStatus(order)], ["Total", `JOD ${Number(order.total || 0).toFixed(2)}`], ["Delivery address", [order.customer?.address, order.customer?.area, order.customer?.city].filter(Boolean).join(", ")], ["Payment method", order.payment || "Not provided"]], items);
+    if (order.source === "pharmacy-order") {
+      items.push(...(Array.isArray(order.statusHistory) ? order.statusHistory : []).map(event => [`${orderStatus({ ...order, status: event.status })} · ${event.actor || "CarePlus"}`, `${dateFormat(event.at)}${event.reason ? ` · ${event.reason}` : ""}`]));
+      if (order.rejectionReason || order.cancelReason) items.push(["Rejection reason", order.rejectionReason || order.cancelReason]);
+    }
+    showDetails("Order details", [["Order number", order.reference || order.id], ["Order date", dateFormat(order.placedAt || order.createdAt)], ["Status", orderStatus(order)], ["Total", `JOD ${Number(order.total || 0).toFixed(2)}`], ...(order.source === "pharmacy-order" ? [["Pharmacy", order.pharmacyName || "CarePlus pharmacy"], ["Payment status", order.paymentStatus || "Pending"]] : []), ["Delivery address", [order.customer?.address, order.customer?.area, order.customer?.city].filter(Boolean).join(", ") || order.deliveryAddress], ["Payment method", order.payment || order.paymentMethod || "Not provided"]], items);
   }
 
   function renderSummary() {
@@ -396,7 +474,7 @@
 
   function cancelAppointment(appointment) {
     if (!window.confirm(`Cancel your appointment with ${appointment.doctor || "this doctor"}?`)) return;
-    const changes = { status: "Cancelled" };
+    const changes = { status: "Cancelled", lastActionByRole: "Customer", lastActionById: String(user.id) };
     if (Number(appointment.consultationFee) > 0) {
       changes.commissionStatus = ["Pending Review", "Payable", "Settled"].includes(appointment.commissionStatus) ? "Reversed" : "Not earned";
       if (Number(appointment.commissionCollected) > 0) changes.commissionReversedAmount = Number(appointment.commissionCollected);
@@ -409,7 +487,7 @@
 
   function cancelCareRequest(request) {
     if (!window.confirm("Cancel this elderly care request?")) return;
-    if (dataStore.update("careRequests", request.id, { status: "Cancelled" })) { refreshUser(); showToast("Care request cancelled."); }
+    if (dataStore.update("careRequests", request.id, { status: "Cancelled", lastActionByRole: "Customer", lastActionById: String(user.id) })) { refreshUser(); showToast("Care request cancelled."); }
   }
 
   function openReschedule(appointment) {
@@ -488,7 +566,7 @@
     if (!appointment || !window.CarePlusClinic?.isAvailable({ doctor: appointment.doctor, date, time, ignoreId: id })) {
       byId("reschedule-feedback").textContent = "That time is unavailable for this doctor. Choose another date and time."; return;
     }
-    const updated = window.CarePlusClinic.updateAppointment(id, { date, time, status: "Requested" });
+    const updated = window.CarePlusClinic.updateAppointment(id, { date, time, status: "Requested", lastActionByRole: "Customer", lastActionById: String(user.id) });
     if (!updated) { byId("reschedule-feedback").textContent = "Could not update this appointment."; return; }
     byId("reschedule-dialog").close(); refreshUser(); showToast("New appointment time requested.");
   });

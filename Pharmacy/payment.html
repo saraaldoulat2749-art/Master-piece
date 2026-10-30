@@ -13,8 +13,8 @@
     .demo-payment-form{display:grid;grid-template-columns:1fr 1fr;gap:13px}.demo-payment-form label{display:grid;gap:6px;color:#546f7c;font-size:12px;font-weight:700}.demo-payment-form .wide{grid-column:1/-1}.demo-payment-form input{width:100%;min-height:43px;padding:9px 11px;border:1px solid #d7e5e8;border-radius:9px;background:#fff;color:#264c5a;font:13px 'DM Sans',Arial,sans-serif}.demo-payment-form button,.demo-payment-form .after-payment{grid-column:1/-1;width:100%;min-height:45px}.demo-payment-message{min-height:18px;margin:0;color:#16836d;font-size:12px;line-height:1.5}.demo-payment-message.error{color:#b95459}.demo-payment-note{margin:14px 0 0;color:#85949b;font-size:10px;line-height:1.6}
     @media(max-width:520px){.demo-payment-form{grid-template-columns:1fr}.demo-payment-form .wide{grid-column:auto}}
   </style>
-</head>
-<body data-protected="true"><script src="../auth.js"></script><div id="nav-container"></div>
+<link rel="stylesheet" href="../shared/global-button-theme.css"></head>
+<body data-protected="true"><script src="../auth.js?v=archive-aware-1"></script><div id="nav-container"></div>
   <main class="page order-page">
     <a href="orders.html" class="back-to-services"><span aria-hidden="true">←</span> My orders</a>
     <section class="order-page-heading"><p class="order-eyebrow">STEP 3 · CHECKOUT</p><h1>Pay for your <span>medicine order</span></h1><p>Enter your card details to complete your order.</p></section>
@@ -35,6 +35,6 @@
   </main>
   <div id="footer-container"></div>
   <script>fetch("../Nav/index.html").then(r=>r.text()).then(html=>document.getElementById("nav-container").innerHTML=html);fetch("../Footer/index.html").then(r=>r.text()).then(html=>document.getElementById("footer-container").innerHTML=html);</script>
-  <script src="../data/careplus-data.js"></script><script src="../data/careplus-pharmacy.js"></script><script src="payment.js"></script><script src="../Footer/footer.js"></script>
+  <script src="../data/careplus-data.js?v=archive-aware-1"></script><script src="../data/careplus-pharmacy.js?v=archive-aware-1"></script><script src="payment.js"></script><script src="../Footer/footer.js"></script>
 </body>
 </html>

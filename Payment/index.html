@@ -7,10 +7,10 @@
   <link rel="stylesheet" href="../Nav/style.css">
   <link rel="stylesheet" href="../Footer/style.css">
   <link rel="stylesheet" href="style.css">
-</head>
+<link rel="stylesheet" href="../shared/global-button-theme.css"></head>
 <body data-protected="true">
-  <script src="../data/careplus-data.js"></script>
-  <script src="../auth.js"></script>
+  <script src="../data/careplus-data.js?v=archive-aware-1"></script>
+  <script src="../auth.js?v=archive-aware-1"></script>
   <div id="nav-container"></div>
   <script>
     fetch("../Nav/index.html")
@@ -37,9 +37,9 @@
 
         <div class="checkout-section-heading"><span class="checkout-step">2</span><h2 id="payment-method-title">Payment method</h2></div>
         <div class="card-method" aria-label="Credit or debit card">
-          <span class="card-method-icon" aria-hidden="true">▰</span>
+          <span class="card-method-icon" aria-hidden="true">?</span>
           <span><strong>Credit or debit card</strong><small>Card payment</small></span>
-          <span class="card-brands" aria-label="Visa and Mastercard">VISA&nbsp; · &nbsp;MC</span>
+          <span class="card-brands" aria-label="Visa and Mastercard">VISA&nbsp; � &nbsp;MC</span>
         </div>
 
         <form id="checkout-form" novalidate>
@@ -47,10 +47,10 @@
           <input id="cardholder" type="text" autocomplete="off" placeholder="Cardholder name" required>
 
           <label class="field-label" for="card-number">Card number</label>
-          <div class="input-with-icon"><input id="card-number" type="text" inputmode="numeric" autocomplete="off" maxlength="23" placeholder="1234  5678  9012  3456" required><span aria-hidden="true">▤</span></div>
+          <div class="input-with-icon"><input id="card-number" type="text" inputmode="numeric" autocomplete="off" maxlength="23" placeholder="1234 5678 9012 3456" required><span aria-hidden="true">?</span></div>
 
           <div class="field-row">
-            <div><label class="field-label" for="card-expiry">Expiry date</label><input id="card-expiry" type="text" inputmode="numeric" autocomplete="off" maxlength="5" placeholder="MM / YY" required></div>
+            <div><label class="field-label" for="card-expiry">Expiry date</label><input id="card-expiry" type="text" inputmode="numeric" autocomplete="cc-exp" maxlength="7" aria-describedby="expiry-hint" placeholder="MM / YY" required><small class="field-hint" id="expiry-hint">Enter month and year as MM / YY, for example 12 / 30.</small></div>
             <div><label class="field-label" for="card-cvc">Security code</label><input id="card-cvc" type="password" inputmode="numeric" autocomplete="off" maxlength="4" placeholder="CVC" required></div>
           </div>
 
@@ -59,12 +59,13 @@
 
           <button class="checkout-submit" type="submit">Continue to payment</button>
           <p class="checkout-result" id="checkout-result" role="status" aria-live="polite" hidden></p>
+          <a class="summary-back" id="return-to-ai" href="../AI/index.html" hidden>Return to CarePlus AI</a>
         </form>
       </section>
 
       <aside class="order-summary" aria-labelledby="summary-title">
         <h2 id="summary-title">Order summary</h2>
-        <div class="summary-service"><span class="summary-icon" aria-hidden="true">✦</span><span><strong>CarePlus AI</strong><small>Additional service access</small></span></div>
+        <div class="summary-service"><span class="summary-icon" aria-hidden="true">?</span><span><strong>CarePlus AI</strong><small>Additional service access</small></span></div>
         <div class="summary-line"><span>Access period</span><strong id="summary-period">1 day</strong></div>
         <div class="summary-line"><span>Service price</span><strong id="summary-price">JOD 1.00</strong></div>
         <div class="summary-total"><span>Total due</span><strong id="summary-total">JOD 1.00</strong></div>
@@ -82,6 +83,7 @@
       .catch(error => console.error("Error loading footer:", error));
   </script>
   <script src="../Footer/footer.js"></script>
-  <script src="payment.js"></script>
+  <script src="payment.js?v=ai-history-1"></script>
 </body>
 </html>
+

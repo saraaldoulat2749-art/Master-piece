@@ -16,11 +16,11 @@
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-</head>
+<link rel="stylesheet" href="../shared/global-button-theme.css"></head>
 
 <body>
-    <script src="../data/careplus-data.js"></script>
-    <script src="../auth.js"></script>
+    <script src="../data/careplus-data.js?v=archive-aware-1"></script>
+    <script src="../auth.js?v=archive-aware-1"></script>
 
     <!-- ================= HERO SECTION ================= -->
     <section class="hero" id="home">
@@ -197,7 +197,7 @@ fetch("../Nav/index.html")
         <!-- SECTION HEADING -->
         <div class="quick-services-heading">
 
-            <span>--- Our Services ---</span>
+            <div class="cp-section-label"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i><span>Our Services</span></div>
 
             <h2>Healthcare at Your Fingertips</h2>
 
@@ -258,7 +258,7 @@ fetch("../Nav/index.html")
 
         <div class="section-header">
 
-            <div class="section-label">
+            <div class="section-label cp-section-label">
                 <i class="fa-solid fa-heart-pulse"></i>
                 <span>CarePlus Services</span>
             </div>
@@ -346,10 +346,59 @@ fetch("../Nav/index.html")
 
     </section>
 
+    <section class="cp-faq" id="faq" aria-labelledby="faq-title">
+        <div class="cp-faq-container">
+            <header class="cp-faq-heading" data-faq-reveal>
+                <div class="cp-faq-label cp-section-label"><i class="fa-solid fa-heart-pulse" aria-hidden="true"></i><span>Frequently Asked Questions</span></div>
+                <h2 id="faq-title">Questions &amp; <span>Answers</span></h2>
+                <p>Find quick answers to the most common questions about CarePlus and our healthcare services.</p>
+            </header>
+            <div class="cp-faq-layout">
+                <div class="cp-faq-visual" data-faq-reveal>
+                    <div class="cp-faq-photo cp-faq-video">
+                        <video autoplay muted loop playsinline preload="auto" disablepictureinpicture disableremoteplayback aria-label="Animated heart">
+                            <source src="media/careplus-heart.mp4" type="video/mp4">
+                            Your browser does not support video playback.
+                        </video>
+                    </div>
+                    <span class="cp-faq-medical cp-faq-medical-cross" aria-hidden="true">+</span>
+                    <span class="cp-faq-medical cp-faq-medical-heart" aria-hidden="true"><i class="fa-solid fa-heart-pulse"></i></span>
+                    <div class="cp-faq-caption"><span aria-hidden="true"><i class="fa-regular fa-comments"></i></span><div><strong>A little clarity. A little more care.</strong><p>Get to know your CarePlus services.</p></div></div>
+                </div>
+                <div class="cp-faq-list" data-faq-reveal>
+                    <article class="cp-faq-item">
+                        <h3><button id="faq-question-1" aria-expanded="true" aria-controls="faq-answer-1">How can I book an appointment?<span class="cp-faq-toggle" aria-hidden="true"></span></button></h3>
+                        <div class="cp-faq-answer" id="faq-answer-1" role="region" aria-labelledby="faq-question-1"><div><p>Navigate to the <a href="../services/details/appointments.html">Appointments section</a>, select a doctor, choose an available time slot, and confirm your booking.</p></div></div>
+                    </article>
+                    <article class="cp-faq-item">
+                        <h3><button id="faq-question-2" aria-expanded="true" aria-controls="faq-answer-2">Can I search for medicines on CarePlus?<span class="cp-faq-toggle" aria-hidden="true"></span></button></h3>
+                        <div class="cp-faq-answer" id="faq-answer-2" role="region" aria-labelledby="faq-question-2"><div><p>Yes, use the <a href="../services/details/medicine.html">Medicine Search feature</a> to find medicines and view their available information.</p></div></div>
+                    </article>
+                    <article class="cp-faq-item">
+                        <h3><button id="faq-question-3" aria-expanded="true" aria-controls="faq-answer-3">Do I need an account to use CarePlus?<span class="cp-faq-toggle" aria-hidden="true"></span></button></h3>
+                        <div class="cp-faq-answer" id="faq-answer-3" role="region" aria-labelledby="faq-question-3"><div><p>Some services are available to visitors, while personalized features such as managing appointments may require <a href="../log%20in/login.html">signing in</a>.</p></div></div>
+                    </article>
+                    <article class="cp-faq-item">
+                        <h3><button id="faq-question-4" aria-expanded="true" aria-controls="faq-answer-4">Is my personal information safe?<span class="cp-faq-toggle" aria-hidden="true"></span></button></h3>
+                        <div class="cp-faq-answer" id="faq-answer-4" role="region" aria-labelledby="faq-question-4"><div><p>CarePlus is designed with privacy and security in mind. Share only the information needed for the service you use, and keep your sign-in details private.</p></div></div>
+                    </article>
+                    <article class="cp-faq-item">
+                        <h3><button id="faq-question-5" aria-expanded="true" aria-controls="faq-answer-5">Can I use CarePlus for elderly care?<span class="cp-faq-toggle" aria-hidden="true"></span></button></h3>
+                        <div class="cp-faq-answer" id="faq-answer-5" role="region" aria-labelledby="faq-question-5"><div><p>Yes, CarePlus includes <a href="../services/details/elderly.html">elderly care features and services</a> designed to support older adults.</p></div></div>
+                    </article>
+                    <article class="cp-faq-item">
+                        <h3><button id="faq-question-6" aria-expanded="true" aria-controls="faq-answer-6">What is the AI Symptom Checker?<span class="cp-faq-toggle" aria-hidden="true"></span></button></h3>
+                        <div class="cp-faq-answer" id="faq-answer-6" role="region" aria-labelledby="faq-question-6"><div><p>The <a href="../services/details/ai.html">AI Symptom Checker</a> provides general symptom guidance. It does not replace professional medical advice, diagnosis, or treatment.</p></div></div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
 <div id="footer-container"></div>
 
 <script>
-    fetch("../Footer/index.html")
+    fetch("../Footer/index.html?v=2", { cache: "no-store" })
         .then(response => response.text())
         .then(data => {
             document.getElementById("footer-container").innerHTML = data;
@@ -368,6 +417,7 @@ fetch("../Nav/index.html")
         }
     </script>
     <script src="Master.js"></script>
+    <script src="faq.js"></script>
 
     <script src="../Footer/footer.js"></script>
 </body>

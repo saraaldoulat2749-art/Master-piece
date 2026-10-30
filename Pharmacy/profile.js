@@ -20,6 +20,7 @@
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? "Not available" : new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(date);
   };
+  const formatMoney = value => `JOD ${Number(value || 0).toFixed(2)}`;
   const showToast = message => {
     toastNode.textContent = message;
     toastNode.classList.add("show");
@@ -55,6 +56,21 @@
     $("openLabel").textContent = pharmacy.open === false ? "Closed" : "Open";
     $("profileCreatedAt").textContent = formatDate(pharmacy.createdAt);
     $("profileUpdatedAt").textContent = formatDate(pharmacy.updatedAt);
+
+    const eligibleOrders = pharmacyApi.listOrders(pharmacyId).filter(order =>
+      ["Completed", "Delivered"].includes(order.status) &&
+      order.saleVerified !== false && order.commissionStatus !== "Reversed" &&
+      order.paymentStatus !== "Refunded" && order.refundStatus !== "Refunded"
+    );
+    const pharmacySales = eligibleOrders.reduce((total, order) => total + Number(order.subtotal ?? order.total ?? 0), 0);
+    const carePlusCommission = eligibleOrders.reduce((total, order) => {
+      const orderCommission = Number(order.customerCommissionAmount ?? order.commissionAmount ?? (Number(order.subtotal ?? order.total ?? 0) * Number(order.commissionRate || 0) / 100));
+      return total + orderCommission;
+    }, 0);
+    const commissionRate = Number(pharmacyApi.effectiveRate?.(pharmacyId) ?? pharmacy.commissionRate ?? 0);
+    $("pharmacyNetEarnings").textContent = formatMoney(pharmacySales);
+    $("pharmacyCarePlusCommission").textContent = formatMoney(carePlusCommission);
+    $("pharmacyCommissionRate").textContent = `${commissionRate}%`;
   }
 
   $("openToggle").addEventListener("change", () => {

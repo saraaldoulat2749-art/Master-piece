@@ -7,10 +7,11 @@
   <title>My Profile | CarePlus Healthcare</title>
   <link rel="stylesheet" href="../Nav/style.css">
   <link rel="stylesheet" href="../Footer/style.css">
-  <link rel="stylesheet" href="profile.css">
-</head>
+  <link rel="stylesheet" href="profile.css?v=profile-appointments-redesign-1">
+  <link rel="stylesheet" href="../shared/notifications.css?v=notifications-6">
+<link rel="stylesheet" href="../shared/global-button-theme.css"></head>
 <body class="profile-page" data-protected="true">
-  <script src="../auth.js"></script>
+  <script src="../auth.js?v=archive-aware-1"></script>
   <div id="nav-container"></div>
 
   <main class="profile-main">
@@ -22,16 +23,16 @@
           <p class="profile-kicker">YOUR CAREPLUS ACCOUNT</p>
           <h1 id="profile-name">Welcome to CarePlus</h1>
           <p class="profile-welcome" id="profile-welcome">Your health services, all in one place.</p>
-          <div class="profile-contact"><span id="profile-email"></span><span class="contact-divider" aria-hidden="true">·</span><span id="profile-phone"></span></div>
-          <div class="profile-membership"><span class="membership-dot" aria-hidden="true"></span><span id="profile-membership">CarePlus Member</span><span class="membership-separator" aria-hidden="true">·</span><span id="profile-created">Member since today</span></div>
+          <div class="profile-contact"><span id="profile-email"></span><span class="contact-divider" aria-hidden="true">�</span><span id="profile-phone"></span></div>
+          <div class="profile-membership"><span class="membership-dot" aria-hidden="true"></span><span id="profile-membership">CarePlus Member</span><span class="membership-separator" aria-hidden="true">�</span><span id="profile-created">Member since today</span></div>
         </div>
-        <button class="button button--light" type="button" data-edit-profile><span aria-hidden="true">✎</span> Edit Profile</button>
+        <button class="button button--light" type="button" data-edit-profile><span aria-hidden="true">?</span> Edit Profile</button>
       </section>
 
       <section class="summary-grid" aria-label="Your CarePlus summary">
         <article class="summary-card summary-card--appointments"><span class="summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16m-11 4h3m-3 3h6"/></svg></span><div><strong id="summary-appointments">0</strong><span>Total appointments</span></div></article>
         <article class="summary-card summary-card--care"><span class="summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.5 8.7c0 5.3-8.5 10.6-8.5 10.6S3.5 14 3.5 8.7A4.7 4.7 0 0 1 12 6.3a4.7 4.7 0 0 1 8.5 2.4Z"/><path d="M8 12h8m-4-4v8"/></svg></span><div><strong id="summary-care">0</strong><span>Active care requests</span></div></article>
-        <article class="summary-card summary-card--orders"><span class="summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h16l1 12H3L4 8Z"/><path d="M8 8a4 4 0 0 1 8 0m-4 4v4m-2-2h4"/></svg></span><div><strong id="summary-orders">0</strong><span>Store orders</span></div></article>
+        <article class="summary-card summary-card--orders"><span class="summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 8h16l1 12H3L4 8Z"/><path d="M8 8a4 4 0 0 1 8 0m-4 4v4m-2-2h4"/></svg></span><div><strong id="summary-orders">0</strong><span>My orders</span></div></article>
         <article class="summary-card summary-card--upcoming"><span class="summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg></span><div><strong id="summary-upcoming">0</strong><span>Upcoming appointments</span></div></article>
       </section>
 
@@ -44,29 +45,30 @@
             <button id="tab-care" class="profile-tab" type="button" role="tab" aria-selected="false" aria-controls="panel-care" data-tab="care"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 8.7c0 5.3-8.5 10.6-8.5 10.6S3.5 14 3.5 8.7A4.7 4.7 0 0 1 12 6.3a4.7 4.7 0 0 1 8.5 2.4Z"/><path d="M8 12h8m-4-4v8"/></svg> Elderly Care Requests</button>
             <button id="tab-orders" class="profile-tab" type="button" role="tab" aria-selected="false" aria-controls="panel-orders" data-tab="orders"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16l1 12H3L4 8Z"/><path d="M8 8a4 4 0 0 1 8 0"/></svg> My Orders</button>
           </nav>
-          <div class="sidebar-help"><span class="help-icon" aria-hidden="true">♥</span><strong>Here for your health</strong><p>Explore CarePlus services whenever you need them.</p><a href="../Home/Master.html#services">Explore services <span aria-hidden="true">→</span></a></div>
+          <div class="sidebar-help"><span class="help-icon" aria-hidden="true">?</span><strong>Here for your health</strong><p>Explore CarePlus services whenever you need them.</p><a href="../Home/Master.html#services">Explore services <span aria-hidden="true">?</span></a></div>
+          <button class="profile-tab profile-logout" type="button" data-profile-logout><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H4v16h6m5-12 4 4-4 4m-7-4h11"/></svg> Log Out</button>
         </aside>
 
         <div class="profile-panels">
           <section class="profile-panel is-active" id="panel-personal" role="tabpanel" aria-labelledby="tab-personal" data-panel="personal">
             <div class="section-heading"><div><p class="eyebrow">YOUR ACCOUNT</p><h2>Personal Information</h2><p>Keep your contact details up to date.</p></div></div>
             <div class="info-grid" id="personal-info"></div>
-            <div class="membership-card"><span class="membership-card__icon" aria-hidden="true">✦</span><div><strong>CarePlus member</strong><p>Your profile helps keep your appointments and care requests together.</p></div><span class="membership-pill">ACTIVE</span></div>
+            <div class="membership-card"><span class="membership-card__icon" aria-hidden="true">?</span><div><strong>CarePlus member</strong><p>Your profile helps keep your appointments and care requests together.</p></div><span class="membership-pill">ACTIVE</span></div>
           </section>
 
           <section class="profile-panel" id="panel-appointments" role="tabpanel" aria-labelledby="tab-appointments" data-panel="appointments" hidden>
-            <div class="section-heading"><div><p class="eyebrow">YOUR HEALTH JOURNEY</p><h2>My Appointments</h2><p>View and manage your doctor visits.</p></div><a class="button button--primary" href="../Book/index.html">Book appointment <span aria-hidden="true">→</span></a></div>
-            <div class="list-toolbar"><div class="filter-tabs" role="group" aria-label="Filter appointments"><button class="filter-chip is-active" type="button" data-appointment-filter="upcoming">Upcoming</button><button class="filter-chip" type="button" data-appointment-filter="past">Past</button><button class="filter-chip" type="button" data-appointment-filter="cancelled">Cancelled</button></div><label class="search-box"><span aria-hidden="true">⌕</span><input id="appointment-search" type="search" placeholder="Search appointments" aria-label="Search appointments"></label></div>
+            <div class="section-heading"><div><p class="eyebrow">YOUR HEALTH JOURNEY</p><h2>My Appointments</h2><p>View and manage your doctor visits.</p></div><a class="button button--primary" href="../Book/index.html">Book appointment <span aria-hidden="true">?</span></a></div>
+            <div class="list-toolbar"><div class="filter-tabs" role="group" aria-label="Filter appointments"><button class="filter-chip is-active" type="button" data-appointment-filter="upcoming">Upcoming</button><button class="filter-chip" type="button" data-appointment-filter="past">Past</button><button class="filter-chip" type="button" data-appointment-filter="cancelled">Cancelled</button></div><label class="search-box"><span aria-hidden="true">?</span><input id="appointment-search" type="search" placeholder="Search appointments" aria-label="Search appointments"></label></div>
             <div class="record-list" id="appointment-list" aria-live="polite"></div>
           </section>
 
           <section class="profile-panel" id="panel-care" role="tabpanel" aria-labelledby="tab-care" data-panel="care" hidden>
-            <div class="section-heading"><div><p class="eyebrow">PERSONALIZED SUPPORT</p><h2>Elderly Care Requests</h2><p>Follow the progress of your care requests.</p></div><a class="button button--primary" href="../elederly/index.html">Request elderly care <span aria-hidden="true">→</span></a></div>
+            <div class="section-heading"><div><p class="eyebrow">PERSONALIZED SUPPORT</p><h2>Elderly Care Requests</h2><p>Follow the progress of your care requests.</p></div><a class="button button--primary" href="../elederly/index.html">Request elderly care <span aria-hidden="true">?</span></a></div>
             <div class="record-list" id="care-list" aria-live="polite"></div>
           </section>
 
           <section class="profile-panel" id="panel-orders" role="tabpanel" aria-labelledby="tab-orders" data-panel="orders" hidden>
-            <div class="section-heading"><div><p class="eyebrow">CAREPLUS MEDICAL STORE</p><h2>My Orders</h2><p>Your medical essentials and purchase history.</p></div></div>
+            <div class="section-heading"><div><p class="eyebrow">CAREPLUS ORDERS</p><h2>My Orders</h2><p>Track pharmacy purchases and CarePlus medical store orders.</p></div></div>
             <div class="record-list" id="order-list" aria-live="polite"></div>
           </section>
 
@@ -78,7 +80,7 @@
   <div id="profile-toast" class="profile-toast" role="status" aria-live="polite"></div>
   <dialog class="profile-dialog" id="edit-dialog" aria-labelledby="edit-title">
     <form id="profile-form">
-      <div class="dialog-heading"><div><p class="eyebrow">YOUR ACCOUNT</p><h2 id="edit-title">Edit personal information</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">×</button></div>
+      <div class="dialog-heading"><div><p class="eyebrow">YOUR ACCOUNT</p><h2 id="edit-title">Edit personal information</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">�</button></div>
       <div class="edit-fields">
         <label>Full name<input name="name" required autocomplete="name"></label>
         <label>Email address<input name="email" type="email" required autocomplete="email"></label>
@@ -94,12 +96,13 @@
       <div class="dialog-actions"><button class="button button--outline" type="button" data-close-dialog>Cancel</button><button class="button button--primary" type="submit">Save changes</button></div>
     </form>
   </dialog>
-  <dialog class="profile-dialog profile-dialog--details" id="details-dialog" aria-labelledby="details-title"><div class="dialog-heading"><div><p class="eyebrow">CAREPLUS DETAILS</p><h2 id="details-title">Details</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">×</button></div><div class="detail-content" id="details-content"></div><div class="dialog-actions"><button class="button button--primary" type="button" data-close-dialog>Done</button></div></dialog>
-  <dialog class="profile-dialog" id="reschedule-dialog" aria-labelledby="reschedule-title"><form id="reschedule-form"><div class="dialog-heading"><div><p class="eyebrow">APPOINTMENT UPDATE</p><h2 id="reschedule-title">Reschedule appointment</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">×</button></div><input type="hidden" name="appointmentId"><div class="edit-fields edit-fields--compact"><label>New date<input name="date" type="date" required></label><label>New time<input name="time" type="time" required></label></div><p class="dialog-feedback" id="reschedule-feedback" role="status"></p><div class="dialog-actions"><button class="button button--outline" type="button" data-close-dialog>Cancel</button><button class="button button--primary" type="submit">Save new time</button></div></form></dialog>
+  <dialog class="profile-dialog profile-dialog--details" id="details-dialog" aria-labelledby="details-title"><div class="dialog-heading"><div><p class="eyebrow">CAREPLUS DETAILS</p><h2 id="details-title">Details</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">�</button></div><div class="detail-content" id="details-content"></div><div class="dialog-actions"><button class="button button--primary" type="button" data-close-dialog>Done</button></div></dialog>
+  <dialog class="profile-dialog" id="reschedule-dialog" aria-labelledby="reschedule-title"><form id="reschedule-form"><div class="dialog-heading"><div><p class="eyebrow">APPOINTMENT UPDATE</p><h2 id="reschedule-title">Reschedule appointment</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">�</button></div><input type="hidden" name="appointmentId"><div class="edit-fields edit-fields--compact"><label>New date<input name="date" type="date" required></label><label>New time<input name="time" type="time" required></label></div><p class="dialog-feedback" id="reschedule-feedback" role="status"></p><div class="dialog-actions"><button class="button button--outline" type="button" data-close-dialog>Cancel</button><button class="button button--primary" type="submit">Save new time</button></div></form></dialog>
 
   <div id="footer-container" data-footer-autoload></div>
-  <script src="../data/careplus-data.js"></script><script src="../data/careplus-clinic.js"></script>
-  <script src="profile.js"></script>
+  <script src="../data/careplus-data.js?v=archive-aware-1"></script><script src="../data/careplus-clinic.js?v=archive-aware-1"></script>
+  <script src="profile.js?v=notifications-1"></script><script src="../shared/notifications.js?v=notifications-2"></script>
   <script src="../Footer/footer.js"></script>
 </body>
 </html>
+

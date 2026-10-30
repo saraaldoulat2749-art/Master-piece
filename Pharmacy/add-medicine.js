@@ -53,7 +53,7 @@
       return;
     }
     const id = `med-${globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`}`;
-    const medicine = { id, name, category, price, quantity, expiry, listed, available: listed && quantity > 0 };
+    const medicine = { id, name, category, price, quantity, expiry, listed, available: listed && quantity > 0, createdAt: new Date().toISOString() };
     const saved = pharmacyApi.updatePharmacy(pharmacyId, { inventory: [...(current.inventory || []), medicine] });
     const savedItem = saved && pharmacyApi.get(pharmacyId)?.inventory?.find(item => String(item.id) === id);
     if (!savedItem) {

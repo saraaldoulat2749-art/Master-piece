@@ -4,8 +4,8 @@
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#172536">
   <title>Medical Equipment &amp; Supplies | CarePlus</title>
   <link rel="stylesheet" href="../Nav/style.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="../Footer/style.css">
-</head>
-<body class="store-layout" data-protected="true"><script src="../auth.js"></script>
+<link rel="stylesheet" href="../shared/global-button-theme.css"></head>
+<body class="store-layout" data-protected="true"><script src="../auth.js?v=archive-aware-1"></script>
   <div id="nav-container"></div>
   <main class="store-page">
     <a class="back-to-services" href="../services/index.html">&#8592; Back to Services</a>
@@ -28,7 +28,7 @@
         <label class="filter-field price-filter">Min JOD<input id="min-price" type="number" min="0" step="0.5" placeholder="0"></label>
         <label class="filter-field price-filter">Max JOD<input id="max-price" type="number" min="0" step="0.5" placeholder="Any"></label>
         <label class="filter-field">Availability<select id="stock-filter"><option value="all">All products</option><option value="in">In Stock</option><option value="out">Out of Stock</option></select></label>
-        <label class="filter-field">Sort by<select id="sort-filter"><option value="featured">Featured</option><option value="price-asc">Price: Low to High</option><option value="price-desc">Price: High to Low</option><option value="name">Name: A to Z</option></select></label>
+        <label class="filter-field">Sort by<select id="sort-filter"><option value="newest" selected>Newest first</option><option value="featured">Featured</option><option value="price-asc">Price: Low to High</option><option value="price-desc">Price: High to Low</option><option value="name">Name: A to Z</option></select></label>
       </div>
       <div class="results-line"><span id="product-count" aria-live="polite"></span><button id="clear-filters" class="clear-filters" type="button">Clear filters</button></div>
       <div class="product-grid" id="product-grid" aria-live="polite"></div>
@@ -38,7 +38,7 @@
     <div class="cart-scrim" id="cart-scrim"></div>
     <dialog class="details-dialog" id="details-dialog"><button class="icon-button dialog-close" id="details-close" aria-label="Close details">&#215;</button><div id="details-content"></div></dialog>
   </main>
-  <div id="footer-container"></div><script src="../data/careplus-data.js"></script><script src="script.js"></script>
+  <div id="footer-container"></div><script src="../data/careplus-data.js?v=archive-aware-1"></script><script src="../shared/delete-dialog.js"></script><script src="script.js?v=newest-first-1"></script>
   <script src="../Footer/footer.js"></script>
 </body>
 </html>

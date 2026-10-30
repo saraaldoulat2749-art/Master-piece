@@ -3,7 +3,7 @@
   if (!loaderScript) return;
 
   const footerUrl = new URL("index.html", loaderScript.src);
-  const styleUrl = new URL("style.css", footerUrl);
+  const styleUrl = new URL("style.css?v=3", footerUrl);
   const stylesheetExists = [...document.querySelectorAll('link[rel="stylesheet"]')]
     .some(link => link.href === styleUrl.href);
 
@@ -23,7 +23,7 @@
 
     footer.querySelectorAll("a[href]").forEach(link => {
       const href = link.getAttribute("href");
-      if (!href || href.startsWith("mailto:") || href.startsWith("tel:") || href.startsWith("http")) return;
+      if (!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("tel:") || href.startsWith("http")) return;
       link.href = new URL(href, footerUrl).href;
     });
     return true;

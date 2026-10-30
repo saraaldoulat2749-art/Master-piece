@@ -1,0 +1,55 @@
+.cpn-widget { position: relative; display: inline-flex; align-items: center; z-index: 30; }
+.cpn-trigger { position: relative; display: inline-flex; width: 42px; height: 42px; align-items: center; justify-content: center; border: 1px solid #dbe7eb; border-radius: 12px; background: #fff; color: #315766; cursor: pointer; box-shadow: 0 4px 12px #153b4c0a; }
+.cpn-trigger:hover, .cpn-trigger[aria-expanded="true"] { border-color: #7dc5c8; background: #f1fafa; color: #087f86; }
+.cpn-trigger svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.cpn-badge { position: absolute; top: -6px; right: -6px; min-width: 19px; height: 19px; padding: 0 5px; display: grid; place-items: center; border: 2px solid #fff; border-radius: 20px; background: #d95362; color: #fff; font-size: 10px; font-weight: 800; }
+.cpn-trigger .cpn-badge { width: 11px; min-width: 11px; height: 11px; padding: 0; border: 2px solid #fff; border-radius: 50%; background: #f39a32; color: transparent; font-size: 0; box-shadow: 0 0 0 1px #e38420; }
+.cpn-badge[hidden] { display: none; }
+.cpn-popover { position: absolute; top: calc(100% + 9px); right: 0; width: min(370px, calc(100vw - 28px)); max-height: min(520px, calc(100vh - 90px)); overflow: auto; border: 1px solid #dce8eb; border-radius: 15px; background: #fff; box-shadow: 0 18px 46px #173b4c24; color: #173b4c; }
+.cpn-popover[hidden] { display: none; }
+.cpn-popover-head { position: sticky; top: 0; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 14px 15px; border-bottom: 1px solid #e8eff1; background: #fff; }
+.cpn-popover-head strong { font: 700 14px Manrope, 'DM Sans', Arial, sans-serif; }
+.cpn-popover-head button, .cpn-action-link { border: 0; background: none; color: #07858d; font-size: 11px; font-weight: 700; cursor: pointer; text-decoration: none; }
+.cpn-items { display: grid; }
+.cpn-item { display: grid; grid-template-columns: 34px minmax(0, 1fr) 24px; gap: 10px; align-items: start; padding: 12px 14px; border-bottom: 1px solid #eff3f4; color: inherit; text-decoration: none; }
+.cpn-item:hover { background: #f7fbfb; }
+.cpn-item.is-unread { background: #f0f9fa; }
+.cpn-icon { width: 32px; height: 32px; display: grid; place-items: center; border-radius: 10px; background: #e9f5f5; color: #087f86; font-size: 15px; }
+.cpn-copy { min-width: 0; }
+.cpn-copy strong { display: block; margin-bottom: 3px; color: #244653; font-size: 12px; }
+.cpn-copy span { display: block; color: #607987; font-size: 11px; line-height: 1.45; overflow-wrap: anywhere; }
+.cpn-copy time { display: block; margin-top: 5px; color: #91a0a7; font-size: 10px; }
+.cpn-unread-dot { width: 8px; height: 8px; margin: 5px auto 0; border-radius: 50%; background: #078f9c; }
+.cpn-empty { padding: 20px 16px; color: #81939b; font-size: 12px; text-align: center; }
+.cpn-popover-foot { padding: 11px 14px; text-align: center; }
+.cpn-side-slot { width: 100%; margin: 0 0 8px; }
+.cpn-trigger-label { display: none; }
+.cpn-side-slot .cpn-trigger { width: 100%; justify-content: flex-start; gap: 12px; padding: 0 13px; border-color: transparent; background: transparent; box-shadow: none; color: #657c89; font-size: 13px; font-weight: 600; }
+.cpn-side-slot .cpn-trigger-label { display: inline; }
+.cpn-side-slot .cpn-trigger:hover, .cpn-side-slot .cpn-trigger[aria-expanded="true"] { transform: translateX(2px); border-color: transparent; background: #ffffff14; color: #fff; }
+.cpn-side-slot .cpn-trigger svg { width: 20px; height: 20px; }
+.cpn-side-slot .cpn-badge { top: 0; left: 29px; right: auto; }
+.cpn-side-slot .cpn-popover { top: auto; right: auto; bottom: calc(100% + 8px); left: 0; }
+.cpn-navbar-slot .cpn-trigger { flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 2px solid #078f9c; border-radius: 50%; background: transparent; color: #078f9c; box-shadow: none; }
+.cpn-navbar-slot .cpn-trigger:hover, .cpn-navbar-slot .cpn-trigger[aria-expanded="true"] { border-color: #067b85; background: #078f9c0d; color: #067b85; box-shadow: none; }
+.cpn-navbar-slot .cpn-trigger svg { width: 23px; height: 23px; }
+.cpn-admin-slot { margin-left: auto; margin-right: 12px; }
+.cpn-page { min-height: 100vh; padding: 36px 20px 64px; background: #f4f8fa; color: #173b4c; font-family: 'DM Sans', Arial, sans-serif; }
+.cpn-page-inner { width: min(100%, 1000px); margin: 0 auto; }
+.cpn-page-back { display: inline-block; margin-bottom: 18px; color: #087f86; font-size: 13px; font-weight: 700; text-decoration: none; }
+.cpn-page h1 { margin: 0 0 7px; color: #173b4c; font: 700 30px Manrope, 'DM Sans', Arial, sans-serif; }
+.cpn-page-intro { margin: 0 0 22px; color: #708591; font-size: 13px; }
+.cpn-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 15px; }
+.cpn-toolbar select, .cpn-toolbar button { min-height: 39px; padding: 0 12px; border: 1px solid #d9e6e9; border-radius: 9px; background: #fff; color: #315766; font: 600 12px 'DM Sans', Arial, sans-serif; }
+.cpn-toolbar button { border-color: #078f9c; background: #078f9c; color: #fff; cursor: pointer; }
+.cpn-page-list { display: grid; gap: 10px; }
+.cpn-page-card { display: grid; grid-template-columns: 42px minmax(0,1fr) auto; gap: 13px; align-items: start; padding: 16px; border: 1px solid #dce8eb; border-radius: 13px; background: #fff; box-shadow: 0 6px 20px #153b4c08; }
+.cpn-page-card.is-unread { border-left: 4px solid #078f9c; background: #f7fcfc; }
+.cpn-page-card .cpn-icon { width: 40px; height: 40px; font-size: 17px; }
+.cpn-page-card .cpn-copy strong { font-size: 13px; }
+.cpn-page-card .cpn-copy span { font-size: 12px; }
+.cpn-card-actions { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+.cpn-card-actions button, .cpn-card-actions a { padding: 7px 9px; border: 1px solid #dbe7eb; border-radius: 7px; background: #fff; color: #315766; font-size: 10px; font-weight: 700; text-decoration: none; cursor: pointer; }
+.cpn-card-actions .cpn-delete { border-color: #f2d7da; color: #b34e5a; }
+.cpn-admin-note { margin-top: 16px; color: #708591; font-size: 11px; }
+@media (max-width: 620px) { .cpn-navbar-slot .cpn-trigger { flex-basis: 40px; width: 40px; height: 40px; } .cpn-page { padding: 24px 13px 42px; } .cpn-page-card { grid-template-columns: 36px minmax(0,1fr); } .cpn-card-actions { grid-column: 2; justify-content: flex-start; } .cpn-page-card .cpn-icon { width: 34px; height: 34px; } }
