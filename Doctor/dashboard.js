@@ -12,6 +12,8 @@
   let schedule = clinic?.getSchedule(providerId) || read(SCHEDULE_KEY, { days: [1, 2, 3, 4, 5], start: "09:00", end: "17:00", duration: 30, breakStart: "", breakEnd: "", holidays: [] });
   let activeStatus = "All";
   let toastTimer;
+  let pendingRejectionId = "";
+  let savedBreak = { start: schedule.breakStart || "", end: schedule.breakEnd || "" };
 
   function read(key, fallback) { try { return { ...fallback, ...JSON.parse(localStorage.getItem(key) || "{}") }; } catch { return { ...fallback }; } }
   function localDate(date = new Date()) { const y = date.getFullYear(); const m = String(date.getMonth() + 1).padStart(2, "0"); const d = String(date.getDate()).padStart(2, "0"); return `${y}-${m}-${d}`; }
@@ -86,7 +88,7 @@
     const filtered = data.newestFirst(ownedAppointments().filter(row => (activeStatus === "All" || (activeStatus === "Requested" ? row.status === "Requested" : row.status === activeStatus)) && (!query || `${row.patient} ${row.phone || ""} ${row.email || ""}`.toLowerCase().includes(query))));
     document.getElementById("appointmentRows").innerHTML = filtered.map(row => {
       let actions = "—";
-      if (row.status === "Requested") actions = `<div class="row-actions"><button class="action accept" data-action="Confirmed" data-id="${esc(row.id)}">Accept</button><button class="action reject" data-action="Cancelled" data-id="${esc(row.id)}">Reject</button></div>`;
+      if (row.status === "Requested") actions = `<div class="row-actions"><button class="action accept" data-action="Confirmed" data-id="${esc(row.id)}">Accept</button><button class="action reject" data-action="Rejected" data-id="${esc(row.id)}">Reject</button></div>`;
       else if (row.status === "Confirmed") actions = `<div class="row-actions"><button class="action" data-action="Completed" data-id="${esc(row.id)}">Complete</button><button class="action cancel" data-action="Cancelled" data-id="${esc(row.id)}">Cancel</button></div>`;
       return `<tr><td><b>${esc(row.patient || "Patient")}</b>${String(row.source || "").includes("demo") ? `<small class="sample-label">Sample preview</small>` : ""}</td><td>${esc(dateText(row.date))}</td><td>${esc(timeText(row.time))}</td><td>${statusTag(row.status)}</td><td>${actions}</td></tr>`;
     }).join("");
@@ -101,7 +103,7 @@
     document.getElementById("appointmentSummaryConfirmed").textContent = allRows.filter(row => row.status === "Confirmed").length;
     document.getElementById("appointmentSummaryCompleted").textContent = allRows.filter(row => row.status === "Completed").length;
     const query = document.getElementById("appointmentSearch").value.trim().toLowerCase();
-    const filtered = data.newestFirst(ownedAppointments().filter(row => (activeStatus === "All" || (activeStatus === "Requested" ? ["Requested", "Pending Deposit"].includes(row.status) : row.status === activeStatus)) && (!query || `${row.patient} ${row.phone || ""} ${row.email || ""} ${row.id || ""}`.toLowerCase().includes(query))));
+    const filtered = data.newestFirst(ownedAppointments().filter(row => (activeStatus === "All" || (activeStatus === "Requested" ? ["Requested", "Pending Deposit"].includes(row.status) : activeStatus === "Cancelled" ? ["Cancelled", "Rejected"].includes(row.status) : row.status === activeStatus)) && (!query || `${row.patient} ${row.phone || ""} ${row.email || ""} ${row.id || ""}`.toLowerCase().includes(query))));
     const money = value => `JOD ${Number(value || 0).toFixed(2)}`;
     document.getElementById("appointmentRows").innerHTML = filtered.map(row => {
       const hasFee = Number(row.consultationFee) > 0;
@@ -112,14 +114,15 @@
         || normalizedPaymentStatus === "succeeded"
         || Number(row.depositAmount) > 0 && Number(row.depositPaid) >= Number(row.depositAmount);
       let actions = "—";
-      if (["Pending Deposit", "Requested"].includes(row.status) && (!hasFee || depositReady)) actions = `<div class="row-actions"><button class="action accept" data-action="Confirmed" data-id="${esc(row.id)}">Accept</button><button class="action reject" data-action="Cancelled" data-id="${esc(row.id)}">Reject</button></div>`;
-      else if (row.status === "Pending Deposit") actions = `<div class="row-actions"><button class="action accept" type="button" disabled title="Accept after the deposit is completed">Accept</button><button class="action reject" data-action="Cancelled" data-id="${esc(row.id)}">Reject</button></div><small class="payment-wait">Awaiting deposit</small>`;
-      else if (row.status === "Requested") actions = `<div class="row-actions"><button class="action accept" type="button" disabled title="Accept after the deposit is completed">Accept</button><button class="action reject" data-action="Cancelled" data-id="${esc(row.id)}">Reject</button></div><small class="payment-wait">Awaiting deposit</small>`;
+      if (["Pending Deposit", "Requested"].includes(row.status) && (!hasFee || depositReady)) actions = `<div class="row-actions"><button class="action accept" data-action="Confirmed" data-id="${esc(row.id)}">Accept</button><button class="action reject" data-action="Rejected" data-id="${esc(row.id)}">Reject</button></div>`;
+      else if (row.status === "Pending Deposit") actions = `<div class="row-actions"><button class="action accept" type="button" disabled title="Accept after the deposit is completed">Accept</button><button class="action reject" data-action="Rejected" data-id="${esc(row.id)}">Reject</button></div><small class="payment-wait">Awaiting deposit</small>`;
+      else if (row.status === "Requested") actions = `<div class="row-actions"><button class="action accept" type="button" disabled title="Accept after the deposit is completed">Accept</button><button class="action reject" data-action="Rejected" data-id="${esc(row.id)}">Reject</button></div><small class="payment-wait">Awaiting deposit</small>`;
       else if (row.status === "Confirmed") actions = `<div class="row-actions"><button class="action" data-action="Completed" data-id="${esc(row.id)}">Complete</button><button class="action cancel" data-action="Cancelled" data-id="${esc(row.id)}">Cancel</button></div>`;
       const paymentStatus = String(row.paymentStatus || "Pending").startsWith("Demo") ? "Paid" : (row.paymentStatus || "Pending");
       const payment = hasFee ? `<small class="finance-lines">Fee ${esc(money(row.consultationFee))} · Deposit paid ${esc(money(row.depositPaid))} / required ${esc(money(row.depositAmount))} · Balance ${esc(money(row.remainingBalance))}<br>CarePlus ${esc(Number(row.commissionRate || 0))}% = ${esc(money(row.commissionAmount))} · Collected ${esc(money(row.commissionCollected))} · To settle ${esc(money(row.commissionRemainingToSettle))}<br>Doctor net ${esc(money(row.doctorNetEarnings))}<br>Payment: ${esc(paymentStatus)}</small>` : `<small class="finance-lines">No payment details recorded</small>`;
       const appointmentTag = row.status === "Pending Deposit" && depositReady ? `<span class="status requested">Deposit paid · awaiting review</span>` : row.status === "Pending Deposit" ? `<span class="status requested">Pending deposit</span>` : statusTag(row.status);
-      return `<tr data-appointment-id="${esc(row.id)}"><td><b>${esc(row.patient || "Patient")}</b><small class="finance-lines">ID ${esc(row.id)}</small></td><td>${esc(dateText(row.date))}</td><td>${esc(timeText(row.time))}</td><td>${appointmentTag}</td><td>${payment}</td><td>${actions}</td></tr>`;
+      const cancelReason = row.status === "Cancelled" && row.cancelReason ? `<div class="cancel-reason"><span class="cancel-reason__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.5 21 20H3l9-16.5Z"/><path d="M12 9v4m0 3h.01"/></svg></span><span class="cancel-reason__copy"><strong>Patient’s cancellation reason</strong><span>${esc(row.cancelReason)}</span></span></div>` : "";
+      return `<tr data-appointment-id="${esc(row.id)}"><td><b>${esc(row.patient || "Patient")}</b><small class="finance-lines">ID ${esc(row.id)}</small></td><td>${esc(dateText(row.date))}</td><td>${esc(timeText(row.time))}</td><td>${appointmentTag}${cancelReason}</td><td>${payment}</td><td>${actions}</td></tr>`;
     }).join("");
     document.getElementById("appointmentEmpty").hidden = filtered.length > 0;
     document.getElementById("appointmentCount").textContent = `${filtered.length} appointment${filtered.length === 1 ? "" : "s"}`;
@@ -146,6 +149,62 @@
     document.getElementById("patientEmpty").hidden = list.length > 0;
   }
   const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  function holidayRangeText(start, end) {
+    if (start === end) return dateText(start);
+    const from = new Date(`${start}T12:00:00`);
+    const to = new Date(`${end}T12:00:00`);
+    const fromMonth = from.toLocaleDateString(undefined, { month: "short" });
+    const toMonth = to.toLocaleDateString(undefined, { month: "short" });
+    const fromYear = from.getFullYear();
+    const toYear = to.getFullYear();
+    if (fromYear === toYear && fromMonth === toMonth) return `${fromMonth} ${from.getDate()}–${to.getDate()}, ${fromYear}`;
+    if (fromYear === toYear) return `${fromMonth} ${from.getDate()}–${toMonth} ${to.getDate()}, ${fromYear}`;
+    return `${dateText(start)} – ${dateText(end)}`;
+  }
+  function groupedHolidays(items) {
+    const groups = [];
+    [...(items || [])].filter(item => item?.date).sort((a, b) => a.date.localeCompare(b.date)).forEach(item => {
+      const last = groups[groups.length - 1];
+      if (last && last.note === (item.note || "")) {
+        const nextDate = new Date(`${last.end}T12:00:00`);
+        nextDate.setDate(nextDate.getDate() + 1);
+        const next = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, "0")}-${String(nextDate.getDate()).padStart(2, "0")}`;
+        if (next === item.date) { last.end = item.date; return; }
+      }
+      groups.push({ start: item.date, end: item.date, note: item.note || "" });
+    });
+    return groups;
+  }
+  function updateBreakIndicator() {
+    const start = document.getElementById("breakStart").value;
+    const end = document.getElementById("breakEnd").value;
+    let indicator = document.getElementById("breakStatus");
+    if (!indicator) {
+      indicator = document.createElement("p");
+      indicator.id = "breakStatus";
+      indicator.className = "break-status";
+      document.querySelector(".break-fields")?.append(indicator);
+    }
+    if (!start && !end) {
+      const hasSavedBreak = savedBreak.start && savedBreak.end;
+      indicator.textContent = hasSavedBreak ? "Preview: no break time. Save schedule to remove the saved break." : "No break set. Enter both times to block a break.";
+      indicator.classList.toggle("is-saved", !hasSavedBreak);
+      return;
+    }
+    if (!start || !end) {
+      indicator.textContent = "Choose both start and end times to set the break.";
+      indicator.classList.remove("is-saved");
+      return;
+    }
+    if (start >= end) {
+      indicator.textContent = "The break end time must be later than the start time.";
+      indicator.classList.remove("is-saved");
+      return;
+    }
+    const isSaved = start === savedBreak.start && end === savedBreak.end;
+    indicator.textContent = `${isSaved ? "Break saved" : "Break preview"}: ${timeText(start)}–${timeText(end)}${isSaved ? ". Booking slots during this time are blocked." : ". Save schedule to apply."}`;
+    indicator.classList.toggle("is-saved", isSaved);
+  }
   function renderSchedule() {
     document.getElementById("weekdays").innerHTML = days.map((day, index) => { const enabled = schedule.days.includes(index); return `<label class="weekday ${enabled ? "" : "off"}"><input type="checkbox" data-day="${index}" ${enabled ? "checked" : ""}><span>${day}</span><input type="time" data-day-start="${index}" value="${esc(schedule.dayHours?.[index]?.start || schedule.start)}" ${enabled ? "" : "disabled"}><input type="time" data-day-end="${index}" value="${esc(schedule.dayHours?.[index]?.end || schedule.end)}" ${enabled ? "" : "disabled"}></label>`; }).join("");
     document.getElementById("startTime").value = schedule.start;
@@ -153,7 +212,8 @@
     document.getElementById("duration").value = String(schedule.duration || 30);
     document.getElementById("breakStart").value = schedule.breakStart || "";
     document.getElementById("breakEnd").value = schedule.breakEnd || "";
-    document.getElementById("holidayList").innerHTML = (schedule.holidays || []).map((item, index) => `<div class="holiday-row"><span>${esc(dateText(item.date))}<small>${esc(item.note || "Unavailable")}</small></span><button class="remove-holiday" data-holiday="${index}">Remove</button></div>`).join("") || `<div class="empty-state">No unavailable dates added.</div>`;
+    updateBreakIndicator();
+    document.getElementById("holidayList").innerHTML = groupedHolidays(schedule.holidays).map(group => `<div class="holiday-row"><span>${esc(holidayRangeText(group.start, group.end))}<small>${esc(group.note || "Unavailable")}</small></span><button class="remove-holiday" data-holiday-start="${esc(group.start)}" data-holiday-end="${esc(group.end)}">Remove</button></div>`).join("") || `<div class="empty-state">No unavailable dates added.</div>`;
   }
   function saveSchedule() {
     const selected = [...document.querySelectorAll("[data-day]:checked")].map(input => Number(input.dataset.day));
@@ -168,7 +228,7 @@
     if (!schedule.start || !schedule.end || schedule.start >= schedule.end) return showToast("Enter valid working hours.");
     if (selected.some(day => !schedule.dayHours[day].start || !schedule.dayHours[day].end || schedule.dayHours[day].start >= schedule.dayHours[day].end)) return showToast("Each working day needs valid start and end times.");
     if ((schedule.breakStart || schedule.breakEnd) && (!schedule.breakStart || !schedule.breakEnd || schedule.breakStart >= schedule.breakEnd || schedule.breakStart < schedule.start || schedule.breakEnd > schedule.end)) return showToast("Break must fit inside working hours.");
-    if (clinic?.saveSchedule(schedule, providerId) || (!clinic && (() => { try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify(schedule)); return true; } catch { return false; } })())) { renderSchedule(); showToast("Schedule saved. Booking availability has been updated."); } else showToast("Could not save your schedule in this browser.");
+    if (clinic?.saveSchedule(schedule, providerId) || (!clinic && (() => { try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify(schedule)); return true; } catch { return false; } })())) { savedBreak = { start: schedule.breakStart, end: schedule.breakEnd }; renderSchedule(); showToast("Schedule saved. Booking availability has been updated."); } else showToast("Could not save your schedule in this browser.");
   }
   function renderProfile() {
     const form = document.getElementById("profileForm");
@@ -218,25 +278,99 @@
     const button = event.target.closest("[data-action]"); if (!button) return;
     const row = ownedAppointments().find(item => String(item.id) === button.dataset.id); if (!row) return;
     const status = button.dataset.action;
+    if (status === "Rejected") {
+      pendingRejectionId = String(row.id);
+      document.getElementById("appointmentRejectionPatient").textContent = `For ${row.patient || "this patient"} · ${dateText(row.date)} at ${timeText(row.time)}`;
+      document.getElementById("appointmentRejectionReason").value = "";
+      document.getElementById("appointmentRejectionFeedback").textContent = "";
+      document.getElementById("appointmentRejectionDialog").showModal();
+      document.getElementById("appointmentRejectionReason").focus();
+      return;
+    }
+    updateAppointmentStatus(row, status);
+  });
+  function updateAppointmentStatus(row, status, rejectionReason = "") {
     const changes = { status, lastActionByRole: "Doctor", lastActionById: String(providerId) };
+    if (status === "Rejected") changes.rejectionReason = rejectionReason;
     if (status === "Completed") changes.commissionStatus = row.paymentStatus === "Paid" && row.balancePaymentStatus === "Paid" ? "Pending Review" : "Not payable — payment or balance unpaid";
-    if (status === "Confirmed" && button.dataset.reopen === "true") changes.commissionStatus = Number(row.commissionCollected || 0) > 0 ? "Review required — appointment reopened" : "Awaiting completion";
-    if (status === "Cancelled") {
+    if (["Cancelled", "Rejected"].includes(status)) {
       changes.commissionStatus = ["Pending Review", "Payable", "Settled", "Review required — appointment reopened"].includes(row.commissionStatus) ? "Reversed" : "Not earned";
         if (Number(row.commissionCollected) > 0) changes.commissionReversedAmount = Number(row.commissionCollected);
         changes.commissionCollected = 0;
         changes.commissionRemainingToSettle = 0;
       if (Number(row.depositPaid) > 0) changes.refundStatus = String(row.paymentStatus || "").startsWith("Demo") ? "No refund due" : "Refund review required";
     }
-    if (Object.keys(changes).length && clinic?.updateAppointment(row.id, changes)) renderAll();
+    const updated = Boolean(Object.keys(changes).length && clinic?.updateAppointment(row.id, changes));
+    if (updated) renderAll();
+    return updated;
+  }
+  document.querySelectorAll("[data-close-rejection]").forEach(button => button.addEventListener("click", () => document.getElementById("appointmentRejectionDialog").close()));
+  document.getElementById("appointmentRejectionForm").addEventListener("submit", event => {
+    event.preventDefault();
+    const reasonField = document.getElementById("appointmentRejectionReason");
+    const reason = reasonField.value.trim();
+    const feedback = document.getElementById("appointmentRejectionFeedback");
+    if (reason.length < 3) { feedback.textContent = "Please enter a reason with at least 3 characters."; reasonField.focus(); return; }
+    const row = ownedAppointments().find(item => String(item.id) === pendingRejectionId);
+    if (!row) { feedback.textContent = "This appointment could not be found. Refresh and try again."; return; }
+    if (!updateAppointmentStatus(row, "Rejected", reason)) { feedback.textContent = "Could not reject this appointment. Please try again."; return; }
+    document.getElementById("appointmentRejectionDialog").close();
+    pendingRejectionId = "";
   });
   document.getElementById("patientList").addEventListener("click", event => { const button = event.target.closest("[data-patient]"); if (!button) return; const details = document.getElementById(button.dataset.patient); details.hidden = !details.hidden; button.textContent = details.hidden ? "Details" : "Hide"; });
   document.getElementById("weekdays").addEventListener("change", event => { const day = event.target.dataset.day; if (day === undefined) return; const row = event.target.closest(".weekday"); row.classList.toggle("off", !event.target.checked); row.querySelectorAll("input[type=time]").forEach(input => input.disabled = !event.target.checked); });
   document.getElementById("saveSchedule").addEventListener("click", saveSchedule);
-  document.getElementById("holidayForm").addEventListener("submit", event => { event.preventDefault(); const date = document.getElementById("holidayDate").value; if (!date) return; if (schedule.holidays.some(item => item.date === date)) return showToast("That unavailable date is already listed."); schedule.holidays.push({ date, note: document.getElementById("holidayNote").value.trim() }); if (!(clinic?.saveSchedule(schedule, providerId) || (!clinic && (() => { try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify(schedule)); return true; } catch { return false; } })()))) return showToast("Could not save unavailable date."); event.currentTarget.reset(); renderSchedule(); showToast("Unavailable date added."); });
-  document.getElementById("holidayList").addEventListener("click", event => { const button = event.target.closest("[data-holiday]"); if (!button) return; schedule.holidays.splice(Number(button.dataset.holiday), 1); if (!(clinic?.saveSchedule(schedule, providerId) || (!clinic && (() => { try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify(schedule)); return true; } catch { return false; } })()))) return showToast("Could not update unavailable dates."); renderSchedule(); showToast("Unavailable date removed."); });
+  ["breakStart", "breakEnd"].forEach(id => document.getElementById(id).addEventListener("input", updateBreakIndicator));
+  document.getElementById("holidayDate").min = today;
+  document.getElementById("holidayEndDate").min = today;
+  document.getElementById("holidayDate").addEventListener("change", event => {
+    const endDate = document.getElementById("holidayEndDate");
+    endDate.min = event.target.value || today;
+    if (endDate.value && endDate.value < event.target.value) endDate.value = event.target.value;
+  });
+  document.getElementById("holidayForm").addEventListener("submit", event => {
+    event.preventDefault();
+    const startValue = document.getElementById("holidayDate").value;
+    const endValue = document.getElementById("holidayEndDate").value || startValue;
+    if (!startValue) return showToast("Choose a start date.");
+    if (endValue < startValue) return showToast("The end date must be the same as or later than the start date.");
+    schedule.holidays ||= [];
+    const existingDates = new Set((schedule.holidays || []).map(item => item.date));
+    const added = [];
+    const cursor = new Date(`${startValue}T12:00:00`);
+    const end = new Date(`${endValue}T12:00:00`);
+    while (cursor <= end) {
+      const date = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, "0")}-${String(cursor.getDate()).padStart(2, "0")}`;
+      if (!existingDates.has(date)) added.push({ date, note: document.getElementById("holidayNote").value.trim() });
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    if (!added.length) return showToast("Those unavailable dates are already listed.");
+    schedule.holidays.push(...added);
+    if (!(clinic?.saveSchedule(schedule, providerId) || (!clinic && (() => { try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify(schedule)); return true; } catch { return false; } })()))) {
+      schedule.holidays = schedule.holidays.filter(item => !added.includes(item));
+      return showToast("Could not save unavailable dates.");
+    }
+    event.currentTarget.reset();
+    document.getElementById("holidayDate").min = today;
+    document.getElementById("holidayEndDate").min = today;
+    renderSchedule();
+    showToast(added.length === 1 ? "Unavailable date added." : `${added.length} consecutive unavailable days added.`);
+  });
+  document.getElementById("holidayList").addEventListener("click", event => {
+    const button = event.target.closest("[data-holiday-start]");
+    if (!button) return;
+    const { holidayStart, holidayEnd } = button.dataset;
+    schedule.holidays ||= [];
+    const previousHolidays = schedule.holidays.slice();
+    schedule.holidays = schedule.holidays.filter(item => item.date < holidayStart || item.date > holidayEnd);
+    if (!(clinic?.saveSchedule(schedule, providerId) || (!clinic && (() => { try { localStorage.setItem(SCHEDULE_KEY, JSON.stringify(schedule)); return true; } catch { return false; } })()))) {
+      schedule.holidays = previousHolidays;
+      return showToast("Could not update unavailable dates.");
+    }
+    renderSchedule();
+    showToast(holidayStart === holidayEnd ? "Unavailable date removed." : "Unavailable date range removed.");
+  });
   document.getElementById("profileForm").addEventListener("submit", saveProfile);
   clinic?.subscribe(() => { profile = clinic.getProfile(providerId); schedule = clinic.getSchedule(providerId); renderAll(); if (document.querySelector("#page-schedule.active")) renderSchedule(); if (document.querySelector("#page-profile.active")) renderProfile(); });
-  document.getElementById("holidayDate").min = today;
   renderAll(); renderSchedule(); renderProfile();
 })();

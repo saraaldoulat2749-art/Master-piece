@@ -9,7 +9,7 @@
     users: [
       { key: "name", label: "Name", required: true }, { key: "email", label: "Email", type: "email", required: true },
       { key: "phone", label: "Phone", type: "tel" }, { key: "role", label: "Role", type: "select", options: ["Customer", "Doctor", "Nurse", "Administrator"] },
-      { key: "password", label: "Provider password", type: "password", autocomplete: "new-password", minLength: 8 },
+      { key: "password", label: "Provider password", type: "password", autocomplete: "new-password", minLength: 8, maxLength: 128 },
       { key: "commissionRate", label: "CarePlus commission (%)", type: "number", min: "0", max: "100", step: "0.01" },
       { key: "status", label: "Status", type: "select", options: ["Active", "Inactive"] }
     ],
@@ -28,7 +28,7 @@
       { key: "name", label: "Pharmacy name", required: true }, { key: "area", label: "Area", required: true },
       { key: "address", label: "Address", required: true }, { key: "phone", label: "Phone", type: "tel" },
       { key: "email", label: "Email", type: "email", autocomplete: "email", required: true },
-      { key: "password", label: "Password", type: "password", autocomplete: "new-password", minLength: 8, required: true },
+      { key: "password", label: "Password", type: "password", autocomplete: "new-password", minLength: 8, maxLength: 128, required: true },
       { key: "commissionRate", label: "CarePlus commission (%)", type: "number", min: "0", max: "100", step: "0.01", required: true },
       { key: "distance", label: "Distance", required: true }, { key: "hours", label: "Opening hours", required: true },
       { key: "medicines", label: "Available medicines (comma separated)", wide: true },
@@ -63,6 +63,7 @@
   let records = Object.fromEntries(Object.keys(labels).map(key => [key, dataStore.list(key)]));
   let editingId = null;
   let toastTimer;
+  let cachedAiActivity;
   const isArchived = record => record.archived === true || Boolean(record.archivedAt);
 
   const iconPaths = {
@@ -158,6 +159,46 @@
   });
 
   function refreshRecords() { records = Object.fromEntries(Object.keys(labels).map(key => [key, dataStore.list(key)])); }
+
+  function readLocalRows(key) {
+    try { const value = JSON.parse(localStorage.getItem(key) || "[]"); return Array.isArray(value) ? value : []; }
+    catch { return []; }
+  }
+
+  function getAiActivity() {
+    if (!cachedAiActivity) cachedAiActivity = [...readLocalRows("careplusAiUsageEventsV1"), ...readLocalRows("careplusAiTransactionsV1")];
+    return cachedAiActivity;
+  }
+
+  function userMatchesActivity(user, activity) {
+    const userId = String(user.id || "");
+    const ids = [activity.userId, activity.bookingUserId].filter(Boolean).map(String);
+    if (ids.length) return ids.includes(userId);
+    const identityKeys = [user.email, user.phone].map(value => String(value || "").trim().toLowerCase()).filter(Boolean);
+    const activityKeys = [activity.identity, activity.email, activity.patientEmail, activity.phone, activity.patientPhone,
+      activity.customer?.email, activity.customer?.phone, activity.customer, activity.customerName]
+      .map(value => String(value || "").trim().toLowerCase()).filter(Boolean);
+    if (identityKeys.some(value => activityKeys.includes(value))) return true;
+    const name = String(user.name || "").trim().toLowerCase();
+    const activityNames = [activity.patient, activity.client, activity.customerName, activity.customer?.fullName]
+      .map(value => String(value || "").trim().toLowerCase()).filter(Boolean);
+    return Boolean(name && activityNames.includes(name));
+  }
+
+  function servicesUsedBy(user) {
+    const used = [];
+    if (records.appointments.some(row => userMatchesActivity(user, row))) used.push("Appointments");
+    const careRows = records.careRequests.filter(row => userMatchesActivity(user, row));
+    careRows.forEach(row => {
+      const name = String(row.service || "Elderly Care").trim();
+      if (name && !used.includes(name)) used.push(name);
+    });
+    const orders = records.orders.filter(row => userMatchesActivity(user, row));
+    if (orders.some(row => row.source === "pharmacy-order")) used.push("Pharmacy");
+    if (orders.some(row => row.source === "store-checkout" || row.source === "demo-seed" && Array.isArray(row.items) && row.items.length)) used.push("Medical Store");
+    if (getAiActivity().some(row => userMatchesActivity(user, row))) used.push("AI Services");
+    return used;
+  }
 
   function cell(text, className) {
     const element = document.createElement("td");
@@ -266,7 +307,8 @@
   function renderTable() {
     if (moduleName === "appointments") { renderAppointmentFinance(); return; }
     const config = fields[moduleName];
-    const tableFields = moduleName === "careRequests" ? config.filter(field => ["client", "service", "date", "status"].includes(field.key)) : config;
+    const tableFields = moduleName === "careRequests" ? config.filter(field => ["client", "service", "date", "status"].includes(field.key))
+      : moduleName === "users" ? [...config, { key: "_servicesUsed", label: "Services Used" }] : config;
     const head = page.querySelector("[data-table-head]");
     const body = page.querySelector("[data-table-body]");
     const empty = page.querySelector("[data-table-empty]");
@@ -313,13 +355,36 @@
     }
     const shown = dataStore.newestFirst(records[moduleName]).filter(record =>
       (!["users", "products", "pharmacies", "careRequests"].includes(moduleName) || !isArchived(record)) &&
+      (moduleName !== "users" || !["doctor", "nurse", "pharmacy", "admin", "administrator"].includes(String(record.role || "").trim().toLowerCase())) &&
       (moduleName !== "products" || ((!categoryFilter?.value || categoryFilter.value === "all" || record.category === categoryFilter.value) && (!availabilityFilter?.value || availabilityFilter.value === "all" || productStockState(record) === availabilityFilter.value))) &&
       (!statusFilter?.value || (["users", "pharmacies"].includes(moduleName) ? record.status === statusFilter.value : careStatusGroup(record) === statusFilter.value || (statusFilter.value === "Paid" && carePaymentValue(record, "_payment") === "Website deposit paid"))) &&
-      config.some(field => String((moduleName === "careRequests" ? carePaymentValue(record, field.key) : record[field.key]) ?? "").toLocaleLowerCase().includes(query)));
+      (!query || config.some(field => String((moduleName === "careRequests" ? carePaymentValue(record, field.key) : record[field.key]) ?? "").toLocaleLowerCase().includes(query)) ||
+        moduleName === "users" && servicesUsedBy(record).join(" ").toLocaleLowerCase().includes(query)));
     body.replaceChildren();
     shown.forEach(record => {
       const row = document.createElement("tr");
       tableFields.forEach(field => {
+        if (field.key === "_servicesUsed") {
+          const serviceCell = document.createElement("td");
+          serviceCell.className = "user-services-cell";
+          const serviceList = document.createElement("div");
+          serviceList.className = "user-service-list";
+          const services = servicesUsedBy(record);
+          if (!services.length) {
+            const emptyLabel = document.createElement("span");
+            emptyLabel.className = "user-service-empty";
+            emptyLabel.textContent = "No services yet";
+            serviceList.append(emptyLabel);
+          } else services.forEach(service => {
+            const badge = document.createElement("span");
+            badge.className = "user-service-badge";
+            badge.textContent = service;
+            serviceList.append(badge);
+          });
+          serviceCell.append(serviceList);
+          row.append(serviceCell);
+          return;
+        }
         const derived = field.computed ? carePaymentValue(record, field.key) : field.key === "quantity" ? (record.quantity ?? record.stock ?? 0)
           : field.key === "status" ? (moduleName === "careRequests" ? careStatusGroup(record) : moduleName === "products" ? ({ "in-stock": "Available", "sold-out": "Out of stock", unavailable: "Unavailable" })[productStockState(record)] : record.status ?? (record.inStock ? "Available" : record.open ? "Active" : "Active"))
           : record[field.key];
@@ -397,6 +462,7 @@
       if (field.max !== undefined) input.max = field.max;
       if (field.step !== undefined) input.step = field.step;
       if (field.minLength !== undefined) input.minLength = field.minLength;
+      if (field.maxLength !== undefined) input.maxLength = field.maxLength;
       if (field.autocomplete) input.autocomplete = field.autocomplete;
     }
     input.name = field.key; input.value = value; input.required = Boolean(field.required);
@@ -594,7 +660,14 @@
       });
       select.value = currentStatus;
       select.addEventListener("change", () => {
-        const updated = dataStore.update("orders", order.id, { status: select.value, lastActionByRole: "Admin" });
+        const status = select.value;
+        const now = new Date().toISOString();
+        const paymentUpdate = status === "Delivered" ? {
+          paymentStatus: "Paid", paymentVerified: true,
+          paidAt: order.paidAt || now, paymentVerifiedAt: order.paymentVerifiedAt || now,
+          paymentVerificationMethod: "admin-delivery-confirmation"
+        } : {};
+        const updated = dataStore.update("orders", order.id, { status, ...paymentUpdate, lastActionByRole: "Admin" });
         if (!updated) {
           select.value = currentStatus;
           showToast("Could not update the order status.", true);
@@ -801,7 +874,8 @@
       const orderStatusCell = document.createElement("td");
       const orderStatus = order.status || "Pending";
       orderStatusCell.append(makeBadge(orderStatus, ["Delivered", "Completed"].includes(orderStatus) ? "good" : orderStatus === "Cancelled" ? "bad" : ""));
-      if (order.cancelReason) { const reason = document.createElement("small"); reason.className = "pharmacy-admin-demo"; reason.textContent = `Reason: ${order.cancelReason}`; orderStatusCell.append(reason); }
+      const decisionReason = order.status === "Rejected" ? order.rejectionReason || order.cancelReason : order.cancelReason;
+      if (decisionReason) { const reason = document.createElement("small"); reason.className = "pharmacy-admin-demo"; reason.textContent = `${order.status === "Rejected" ? "Pharmacy rejection reason" : "Cancellation reason"}: ${decisionReason}`; orderStatusCell.append(reason); }
       row.append(orderStatusCell);
 
       const commissionCell = document.createElement("td");
@@ -934,8 +1008,8 @@
       values.email = String(values.email || "").trim().toLowerCase();
       const duplicateEmail = dataStore.list("users").some(user => String(user.id) !== String(linkedPharmacyAccount?.id || "") && String(user.email || "").trim().toLowerCase() === values.email);
       if (duplicateEmail) { document.querySelector("[data-form-feedback]").textContent = "A user with this email address already exists."; return; }
-      if (pharmacyPassword && pharmacyPassword.length < 8) {
-        document.querySelector("[data-form-feedback]").textContent = "Password must be at least 8 characters."; return;
+      if (pharmacyPassword && (pharmacyPassword.length < 8 || pharmacyPassword.length > 128)) {
+        document.querySelector("[data-form-feedback]").textContent = "Password must be between 8 and 128 characters."; return;
       }
       delete values.password;
     }
@@ -953,8 +1027,8 @@
       values.commissionRate = ["doctor", "nurse"].includes(providerRole) ? Number(values.commissionRate) : null;
       if (["doctor", "nurse"].includes(providerRole)) {
         const previousRole = String(dataStore.get("users", editingId)?.role || "").toLowerCase();
-        if ((!editingId || previousRole !== providerRole) && userPassword.length < 8) {
-          document.querySelector("[data-form-feedback]").textContent = "A provider password of at least 8 characters is required.";
+        if ((!editingId || previousRole !== providerRole) && (userPassword.length < 8 || userPassword.length > 128)) {
+          document.querySelector("[data-form-feedback]").textContent = "A provider password between 8 and 128 characters is required.";
           return;
         }
         const providerKey = providerRole === "doctor" ? "doctorId" : "nurseId";
@@ -1037,6 +1111,9 @@
   });
 
   dataStore.subscribe(() => { refreshRecords(); renderTable(); renderDashboard(); renderStoreOrders(); renderPharmacyOrders(); });
+  if (moduleName === "users") window.addEventListener("storage", event => {
+    if (["careplusAiUsageEventsV1", "careplusAiTransactionsV1"].includes(event.key)) { cachedAiActivity = null; renderTable(); }
+  });
   renderTable();
   renderDashboard();
   renderStoreOrders();

@@ -3,8 +3,14 @@ const categories = [
   { id: "accessories", name: "Medical Accessories", photo: "medical,device,accessories" },
   { id: "clothing", name: "Medical Clothing", photo: "medical,scrubs,uniform" },
   { id: "consumables", name: "Medical Consumables", photo: "medical,gloves,supplies" },
-  { id: "professional", name: "Equipment for Professionals", photo: "stethoscope,medical,equipment" }
+  { id: "professional", name: "Diagnostic Equipment", photo: "stethoscope,medical,equipment" }
 ];
+
+const PRODUCTS_PER_PAGE = 8;
+const favoritesStorageKey = "careplusStoreFavorites";
+let currentProductPage = 1;
+let favoriteProducts = new Set();
+try { favoriteProducts = new Set(JSON.parse(localStorage.getItem(favoritesStorageKey) || "[]").map(String)); } catch {}
 
 let products = [
   ["Digital Blood Pressure Monitor", "devices", "Automatic upper-arm monitor with an easy-to-read digital display.", 34.90, "digital,blood,pressure,monitor", true],
@@ -137,7 +143,7 @@ function renderCategories() {
   $("#category-cards").innerHTML = categories.map((category, index) => `
     <button class="category-card" data-category-card="${category.id}" type="button">
       <img data-category="${category.id}" src="${categoryPhotos[category.id]}" alt="${category.name}" loading="lazy">
-      <span class="category-card-shade"></span><span class="category-card-title">${category.name}<b aria-hidden="true">&gt;</b></span>
+      <span class="category-card-shade"></span><span class="category-card-title">${category.name}<span class="category-card-arrow" aria-hidden="true"><svg viewBox="0 0 20 20"><path d="M4 10h11M10 5l5 5-5 5"/></svg></span></span>
     </button>`).join("");
 }
 
@@ -167,16 +173,32 @@ function ratingMarkup(product) {
 
 function renderProducts() {
   const visible = getVisibleProducts();
-  $("#product-count").textContent = `${visible.length} ${visible.length === 1 ? "product" : "products"}`;
-  $("#product-grid").innerHTML = visible.length ? visible.map(product => `
+  const totalPages = Math.max(1, Math.ceil(visible.length / PRODUCTS_PER_PAGE));
+  currentProductPage = Math.min(currentProductPage, totalPages);
+  const start = (currentProductPage - 1) * PRODUCTS_PER_PAGE;
+  const pageProducts = visible.slice(start, start + PRODUCTS_PER_PAGE);
+  $("#product-count").textContent = visible.length ? `Showing ${start + 1}–${Math.min(start + PRODUCTS_PER_PAGE, visible.length)} of ${visible.length} products` : "No products found";
+  $("#product-grid").innerHTML = pageProducts.length ? pageProducts.map(product => `
     <article class="product-card" data-product="${product.id}">
-      <div class="product-image-wrap"><img class="product-image" data-category="${product.category}" src="${product.image}" alt="${product.name}" loading="lazy"><span class="stock-badge ${product.inStock ? "in-stock" : "out-stock"}">${product.inStock ? "In Stock" : "Out of Stock"}</span></div>
+      <div class="product-image-wrap"><img class="product-image" data-category="${product.category}" src="${product.image}" alt="${product.name}" loading="lazy"><span class="stock-badge ${product.inStock ? "in-stock" : "out-stock"}">${product.inStock ? "In Stock" : "Out of Stock"}</span><button type="button" class="favorite-button ${favoriteProducts.has(String(product.id)) ? "is-favorite" : ""}" data-favorite="${product.id}" aria-pressed="${favoriteProducts.has(String(product.id))}" aria-label="${favoriteProducts.has(String(product.id)) ? "Remove from" : "Add to"} favorites">${favoriteProducts.has(String(product.id)) ? "♥" : "♡"}</button></div>
       <div class="product-info"><span class="product-category">${categoryName(product.category)}</span><h3>${product.name}</h3><p class="product-description">${product.description}</p>
         <div class="product-meta">${ratingMarkup(product)}<strong class="product-price">${money(product.price)}</strong></div>
         <div class="product-actions"><label class="quantity-picker" aria-label="Quantity for ${product.name}"><button type="button" data-qty="${product.id}" data-delta="-1" aria-label="Decrease quantity">-</button><input type="number" min="1" value="1" id="qty-${product.id}" aria-label="Quantity"><button type="button" data-qty="${product.id}" data-delta="1" aria-label="Increase quantity">+</button></label><button type="button" class="add-button" data-add="${product.id}" ${product.inStock ? "" : "disabled"}>Add to Cart</button></div>
         <button type="button" class="details-button" data-details="${product.id}">View Details</button>
       </div>
     </article>`).join("") : `<div class="empty-state"><strong>No products found</strong><span>Try changing your search or filters.</span></div>`;
+  renderPagination(totalPages, visible.length);
+}
+
+function renderPagination(totalPages, totalProducts) {
+  const pagination = $("#product-pagination");
+  if (!totalProducts || totalPages <= 1) { pagination.innerHTML = ""; return; }
+  const pageButtons = Array.from({ length: totalPages }, (_, index) => {
+    const page = index + 1;
+    const active = page === currentProductPage;
+    return `<button type="button" data-page="${page}" class="${active ? "active" : ""}" aria-current="${active ? "page" : "false"}">${page}</button>`;
+  }).join("");
+  pagination.innerHTML = `<button type="button" data-page="${currentProductPage - 1}" ${currentProductPage === 1 ? "disabled" : ""} aria-label="Previous page">&#8249; <span>Previous</span></button>${pageButtons}<button type="button" data-page="${currentProductPage + 1}" ${currentProductPage === totalPages ? "disabled" : ""}><span>Next</span> &#8250;</button>`;
 }
 
 function renderCart() {
@@ -216,14 +238,39 @@ function showDetails(id) {
 }
 
 $("#product-grid").addEventListener("click", event => {
+  const favorite = event.target.closest("[data-favorite]");
+  if (favorite) {
+    const id = String(favorite.dataset.favorite);
+    if (favoriteProducts.has(id)) favoriteProducts.delete(id); else favoriteProducts.add(id);
+    localStorage.setItem(favoritesStorageKey, JSON.stringify([...favoriteProducts]));
+    renderProducts();
+    return;
+  }
   const add = event.target.closest("[data-add]");
   if (add) { const id = add.dataset.add; const qty = Number($("#qty-" + id)?.value || 1); addToCart(id, Math.max(1, qty)); return; }
   const details = event.target.closest("[data-details]"); if (details) showDetails(details.dataset.details);
   const qty = event.target.closest("[data-qty]");
   if (qty) { const input = $("#qty-" + qty.dataset.qty); input.value = Math.max(1, Number(input.value || 1) + Number(qty.dataset.delta)); }
 });
+$("#product-pagination").addEventListener("click", event => {
+  const button = event.target.closest("[data-page]");
+  if (!button || button.disabled) return;
+  currentProductPage = Number(button.dataset.page);
+  renderProducts();
+  $("#products").scrollIntoView({ behavior: "smooth", block: "start" });
+});
+$(".view-toggle").addEventListener("click", event => {
+  const button = event.target.closest("[data-view]");
+  if (!button) return;
+  const listView = button.dataset.view === "list";
+  $("#product-grid").classList.toggle("product-grid--list", listView);
+  $(".view-toggle [data-view='grid']").classList.toggle("active", !listView);
+  $(".view-toggle [data-view='grid']").setAttribute("aria-pressed", String(!listView));
+  $(".view-toggle [data-view='list']").classList.toggle("active", listView);
+  $(".view-toggle [data-view='list']").setAttribute("aria-pressed", String(listView));
+});
 $("#details-content").addEventListener("click", event => { const button = event.target.closest("[data-add]"); if (button) addToCart(button.dataset.add); });
-$("#category-cards").addEventListener("click", event => { const card = event.target.closest("[data-category-card]"); if (!card) return; $("#category-filter").value = card.dataset.categoryCard; renderProducts(); $("#products").scrollIntoView({ behavior: "smooth" }); });
+$("#category-cards").addEventListener("click", event => { const card = event.target.closest("[data-category-card]"); if (!card) return; $("#category-filter").value = card.dataset.categoryCard; currentProductPage = 1; renderProducts(); $("#products").scrollIntoView({ behavior: "smooth" }); });
 $("#cart-items").addEventListener("click", async event => {
   const button = event.target.closest("[data-cart-qty]"); if (!button) return;
   const id = String(button.dataset.cartQty); const item = cart.get(id); if (!item) return;
@@ -236,15 +283,15 @@ $("#cart-items").addEventListener("click", async event => {
     window.CarePlusDelete.success({ kind: "cart item" });
   } else { item.quantity += change; renderCart(); }
 });
-["#product-search", "#min-price", "#max-price"].forEach(selector => $(selector).addEventListener("input", renderProducts));
-["#category-filter", "#stock-filter", "#sort-filter"].forEach(selector => $(selector).addEventListener("change", renderProducts));
+["#product-search", "#min-price", "#max-price"].forEach(selector => $(selector).addEventListener("input", () => { currentProductPage = 1; renderProducts(); }));
+["#category-filter", "#stock-filter", "#sort-filter"].forEach(selector => $(selector).addEventListener("change", () => { currentProductPage = 1; renderProducts(); }));
 document.addEventListener("error", event => {
   const image = event.target;
   if (image.tagName !== "IMG" || !image.dataset.category || image.dataset.fallback) return;
   image.dataset.fallback = "true";
   image.src = categoryPhotos[image.dataset.category];
 }, true);
-$("#clear-filters").addEventListener("click", () => { $("#product-search").value = ""; $("#category-filter").value = "all"; $("#min-price").value = ""; $("#max-price").value = ""; $("#stock-filter").value = "all"; $("#sort-filter").value = "newest"; renderProducts(); });
+$("#clear-filters").addEventListener("click", () => { $("#product-search").value = ""; $("#category-filter").value = "all"; $("#min-price").value = ""; $("#max-price").value = ""; $("#stock-filter").value = "all"; $("#sort-filter").value = "newest"; currentProductPage = 1; renderProducts(); });
 $("#cart-toggle").addEventListener("click", () => setCartOpen(true)); $("#cart-close").addEventListener("click", () => setCartOpen(false)); $("#cart-scrim").addEventListener("click", () => setCartOpen(false));
 $("#details-close").addEventListener("click", () => $("#details-dialog").close()); $("#details-dialog").addEventListener("click", event => { if (event.target === $("#details-dialog")) $("#details-dialog").close(); });
 document.addEventListener("keydown", event => { if (event.key === "Escape") setCartOpen(false); });
@@ -254,7 +301,7 @@ $("#checkout-button").addEventListener("click", () => {
 });
 
 fetch("../Nav/index.html").then(response => response.text()).then(html => { $("#nav-container").innerHTML = html; const link = [...document.querySelectorAll("#nav-container nav a")].find(item => item.textContent.trim() === "Medical Store"); if (link) { link.href = "../Store/index.html"; link.classList.add("active"); } }).catch(error => console.error("Could not load CarePlus navigation:", error));
-fetch("../Footer/index.html").then(response => response.text()).then(html => { $("#footer-container").innerHTML = html; const link = [...document.querySelectorAll("#footer-container a")].find(item => item.textContent.trim() === "Medical Store"); if (link) link.href = "../Store/index.html"; }).catch(error => console.error("Could not load CarePlus footer:", error));
+fetch("../Footer/index.html?v=footer-hearts-removed-1").then(response => response.text()).then(html => { $("#footer-container").innerHTML = html; const link = [...document.querySelectorAll("#footer-container a")].find(item => item.textContent.trim() === "Medical Store"); if (link) link.href = "../Store/index.html"; }).catch(error => console.error("Could not load CarePlus footer:", error));
 
 renderCategories(); renderProducts(); renderCart();
 if (new URLSearchParams(window.location.search).get("cart") === "open") setCartOpen(true);

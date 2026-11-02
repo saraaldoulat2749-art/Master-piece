@@ -13,14 +13,14 @@
     @media(max-width:800px){.payment-grid{grid-template-columns:1fr}}
   </style>
 <link rel="stylesheet" href="../../shared/global-button-theme.css"></head>
-<body data-protected="true"><script src="../../auth.js?v=archive-aware-1"></script>
+<body data-protected="true"><script src="../../auth.js?v=floating-customer-notifications-1"></script>
   <div id="nav-container"></div>
   <script>fetch("../../Nav/index.html").then(response=>response.text()).then(html=>{document.getElementById("nav-container").innerHTML=html;document.querySelectorAll('#nav-container a[href^="../"]').forEach(link=>link.href=`../${link.getAttribute("href")}`)}).catch(error=>console.error("Navbar could not be loaded",error));</script>
   <main class="page">
     <h1 class="page-title">Appointment <span>Deposit</span></h1>
     <p class="subtitle">Review the amount required to submit your appointment request.</p>
     <div class="container payment-grid">
-      <div class="steps checkout-steps" aria-label="Booking progress"><div class="step completed"><div class="circle">?</div><div class="step-label">Book Appointment</div></div><div class="step completed"><div class="circle">?</div><div class="step-label">Select Date &amp; Time</div></div><div class="step completed"><div class="circle">?</div><div class="step-label">Review Booking</div></div><div class="step active"><div class="circle">4</div><div class="step-label">Deposit Payment</div></div><div class="step"><div class="circle">5</div><div class="step-label">Request Received</div></div></div>
+      <div class="steps checkout-steps" aria-label="Booking progress"><div class="step completed"><div class="circle">&#10003;</div><div class="step-label">Book Appointment</div></div><div class="step completed"><div class="circle">&#10003;</div><div class="step-label">Select Date &amp; Time</div></div><div class="step completed"><div class="circle">&#10003;</div><div class="step-label">Review Booking</div></div><div class="step active"><div class="circle">4</div><div class="step-label">Deposit Payment</div></div><div class="step"><div class="circle">5</div><div class="step-label">Request Received</div></div></div>
       <section class="payment-card">
         <h2 style="margin-top:15px">Deposit summary</h2>
         <div class="money-row"><span>Full consultation fee</span><strong id="feeAmount">JOD 0.00</strong></div>
@@ -29,7 +29,7 @@
         <div class="money-row"><span>CarePlus commission (10% of full fee)</span><strong id="commissionAmount">JOD 0.00</strong></div>
         <div class="money-row"><span>Commission collected</span><strong id="commissionCollected">JOD 0.00</strong></div>
         <div class="money-row"><span>Commission remaining to settle</span><strong id="commissionRemaining">JOD 0.00</strong></div>
-        <p class="checkout-ref">Appointment ID: <strong id="appointmentId">—</strong></p>
+        <p class="checkout-ref">Appointment ID: <strong id="appointmentId">ï¿½</strong></p>
         <form class="card-form" id="cardForm" autocomplete="off">
           <h3>Card details</h3>
           <label for="cardholder">Name on card</label>
@@ -54,8 +54,8 @@
     </div>
   </main>
   <div id="footer-container"></div>
-  <script>fetch("../../Footer/index.html").then(response=>response.text()).then(html=>{document.getElementById("footer-container").innerHTML=html}).catch(error=>console.error("Footer could not be loaded",error));</script>
-  <script src="../../data/careplus-data.js?v=archive-aware-1"></script><script src="../../data/careplus-clinic.js?v=archive-aware-1"></script><script src="script.js"></script><script src="../../Footer/footer.js"></script>
+  <script>fetch("../../Footer/index.html?v=footer-hearts-removed-1").then(response=>response.text()).then(html=>{document.getElementById("footer-container").innerHTML=html}).catch(error=>console.error("Footer could not be loaded",error));</script>
+  <script src="../../data/careplus-data.js?v=archive-aware-1"></script><script src="../../data/careplus-clinic.js?v=payment-slot-v1"></script><script src="script.js?v=payment-slot-v1"></script><script src="../../Footer/footer.js?v=footer-hearts-removed-1"></script>
 </body>
 </html>
 

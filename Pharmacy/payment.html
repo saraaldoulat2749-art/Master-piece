@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#f3f8fb"><title>Payment | CarePlus</title>
-  <link rel="stylesheet" href="../Nav/style.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="workflow.css"><link rel="stylesheet" href="../Footer/style.css">
+  <link rel="stylesheet" href="../Nav/style.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="workflow.css?v=pharmacy-steps-1"><link rel="stylesheet" href="../Footer/style.css"><link rel="stylesheet" href="../shared/notifications.css?v=floating-customer-2">
   <style>
     .demo-payment-card{max-width:720px;margin:0 auto;padding:clamp(20px,4vw,34px);border:1px solid #e0ecee;border-radius:17px;background:#fff;box-shadow:0 9px 27px rgba(8,62,79,.06)}
     .demo-payment-warning{margin:0 0 20px;padding:13px 15px;border:1px solid #ead8ac;border-radius:10px;background:#fff9e9;color:#665831;font-size:12px;line-height:1.6}
@@ -14,27 +14,27 @@
     @media(max-width:520px){.demo-payment-form{grid-template-columns:1fr}.demo-payment-form .wide{grid-column:auto}}
   </style>
 <link rel="stylesheet" href="../shared/global-button-theme.css"></head>
-<body data-protected="true"><script src="../auth.js?v=archive-aware-1"></script><div id="nav-container"></div>
+<body data-protected="true"><script src="../auth.js?v=floating-customer-notifications-1"></script><div id="nav-container"></div>
   <main class="page order-page">
     <a href="orders.html" class="back-to-services"><span aria-hidden="true">←</span> My orders</a>
-    <section class="order-page-heading"><p class="order-eyebrow">STEP 3 · CHECKOUT</p><h1>Pay for your <span>medicine order</span></h1><p>Enter your card details to complete your order.</p></section>
-    <nav class="order-progress" aria-label="Five steps in the pharmacy order process"><span class="done"><b>1</b> Search</span><i></i><span class="done"><b>2</b> Pharmacy results</span><i></i><span class="active"><b>3</b> Place order</span><i></i><span><b>4</b> Delivery</span><i></i><span><b>5</b> CarePlus commission</span></nav>
+    <section class="order-page-heading"><p class="order-eyebrow">CHECKOUT</p><h1>Pay the <span>CarePlus commission</span></h1><p>Pay only the website commission now. Pay the pharmacy for medicines and delivery in cash when your order arrives.</p></section>
+    <nav class="order-progress" aria-label="Five steps in the pharmacy order process"><span class="done"><b><a class="order-step-number" href="index.html">✓</a></b> Search</span><i></i><span class="done"><b><a class="order-step-number" href="results.html">✓</a></b> Pharmacy results</span><i></i><span class="active" aria-current="step"><b><a class="order-step-number" href="order.html">3</a></b> Place order</span><i></i><span><b><a class="order-step-number" href="orders.html">4</a></b> Delivery</span><i></i><span><b><a class="order-step-number" href="payment.html">5</a></b> CarePlus commission</span></nav>
     <section class="demo-payment-card" id="paymentCard" hidden>
-      <div class="demo-payment-summary"><div><span>Order</span><b id="paymentOrderRef">—</b></div><div><span>Pharmacy</span><b id="paymentPharmacy">—</b></div><div><span>Medicine</span><b id="paymentItems">—</b></div><div><span>Medicine subtotal</span><b id="paymentSubtotal">JOD 0.00</b></div><div><span>CarePlus commission</span><b id="paymentCommission">JOD 0.00</b></div><div><span id="paymentDeliveryLabel">Delivery</span><b id="paymentDelivery">JOD 0.00</b></div><div class="due"><span>Total</span><b id="paymentTotal">JOD 0.00</b></div></div>
+      <div class="demo-payment-summary"><div><span>Order</span><b id="paymentOrderRef">—</b></div><div><span>Pharmacy</span><b id="paymentPharmacy">—</b></div><div><span>Medicine</span><b id="paymentItems">—</b></div><div><span>Medicine · cash on delivery</span><b id="paymentSubtotal">JOD 0.00</b></div><div><span>CarePlus commission</span><b id="paymentCommission">JOD 0.00</b></div><div><span id="paymentDeliveryLabel">Delivery</span><b id="paymentDelivery">JOD 0.00</b></div><div class="due"><span>Commission due now</span><b id="paymentTotal">JOD 0.00</b></div></div>
       <form class="demo-payment-form" id="demoPaymentForm" autocomplete="off" novalidate>
         <label class="wide">Name on card<input id="cardholder" type="text" maxlength="80" required placeholder="Cardholder name" autocomplete="off"></label>
         <label class="wide">Card number<input id="cardNumber" type="text" inputmode="numeric" maxlength="23" required placeholder="Card number" autocomplete="off"></label>
         <label>Expiry date<input id="cardExpiry" type="text" inputmode="numeric" maxlength="5" required placeholder="MM/YY" autocomplete="off"></label>
         <label>Security code<input id="cardCvv" type="password" inputmode="numeric" maxlength="4" required placeholder="123" autocomplete="new-password"></label>
         <p class="demo-payment-message" id="demoPaymentMessage" role="status" aria-live="polite"></p>
-        <button class="btn btn-primary" type="submit" id="simulatePaymentButton">Complete payment</button>
+        <button class="btn btn-primary" type="submit" id="simulatePaymentButton">Pay website commission</button>
         <a class="btn btn-outline after-payment" id="continueAfterPayment" href="#" hidden>Continue to order confirmation</a>
       </form>
     </section>
     <div class="empty order-error" id="paymentUnavailable" hidden><p id="paymentErrorText">This order is unavailable.</p><a class="btn btn-outline" href="orders.html">View my orders</a></div>
   </main>
   <div id="footer-container"></div>
-  <script>fetch("../Nav/index.html").then(r=>r.text()).then(html=>document.getElementById("nav-container").innerHTML=html);fetch("../Footer/index.html").then(r=>r.text()).then(html=>document.getElementById("footer-container").innerHTML=html);</script>
-  <script src="../data/careplus-data.js?v=archive-aware-1"></script><script src="../data/careplus-pharmacy.js?v=archive-aware-1"></script><script src="payment.js"></script><script src="../Footer/footer.js"></script>
+  <script>fetch("../Nav/index.html").then(r=>r.text()).then(html=>document.getElementById("nav-container").innerHTML=html);fetch("../Footer/index.html?v=footer-hearts-removed-1").then(r=>r.text()).then(html=>document.getElementById("footer-container").innerHTML=html);</script>
+  <script src="../data/careplus-data.js?v=archive-aware-1"></script><script src="../data/careplus-pharmacy.js?v=archive-aware-1"></script><script src="payment.js?v=pharmacy-steps-1"></script><script src="../shared/notifications.js?v=notifications-3"></script><script src="../Footer/footer.js?v=footer-hearts-removed-1"></script>
 </body>
 </html>

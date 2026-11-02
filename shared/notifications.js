@@ -5,7 +5,7 @@
   const appRoot = new URL("../", scriptUrl);
   const allNotificationsUrl = new URL("shared/notifications.html", appRoot).href;
   const categories = { appointment: "Appointments", pharmacy: "Pharmacy orders", care: "Elderly care", store: "Store orders" };
-  const icons = { appointment: "▦", pharmacy: "Rx", care: "♡", store: "▣" };
+  const icons = { appointment: "▦", pharmacy: "♡", care: "♡", store: "▣" };
   const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 
   function viewer() {
@@ -105,7 +105,13 @@
 
   function ensureCustomerWidget() {
     const actions = document.querySelector("#nav-container .careplus-navbar__actions, .careplus-navbar__actions");
-    if (!actions || document.getElementById("careplus-notification-widget")) return false;
+    if (!actions) return false;
+    const existing = document.getElementById("careplus-notification-widget");
+    if (existing) {
+      existing.hidden = false;
+      mountWidget(existing);
+      return true;
+    }
     const root = document.createElement("div");
     root.id = "careplus-notification-widget";
     root.className = "cpn-navbar-slot";

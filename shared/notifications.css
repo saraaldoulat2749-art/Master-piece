@@ -53,3 +53,11 @@
 .cpn-card-actions .cpn-delete { border-color: #f2d7da; color: #b34e5a; }
 .cpn-admin-note { margin-top: 16px; color: #708591; font-size: 11px; }
 @media (max-width: 620px) { .cpn-navbar-slot .cpn-trigger { flex-basis: 40px; width: 40px; height: 40px; } .cpn-page { padding: 24px 13px 42px; } .cpn-page-card { grid-template-columns: 36px minmax(0,1fr); } .cpn-card-actions { grid-column: 2; justify-content: flex-start; } .cpn-page-card .cpn-icon { width: 34px; height: 34px; } }
+.cpn-floating-slot { position: fixed; z-index: 1300; right: max(20px,env(safe-area-inset-right)); bottom: max(20px,env(safe-area-inset-bottom)); display: flex; align-items: center; }
+.cpn-floating-slot .cpn-trigger { width: 56px; height: 56px; border: 0; border-radius: 50%; background: #078f9c; color: #fff; box-shadow: 0 8px 22px #123b4d35; transition: transform .18s ease,background .18s ease,box-shadow .18s ease; }
+.cpn-floating-slot .cpn-trigger:hover,.cpn-floating-slot .cpn-trigger[aria-expanded="true"] { transform: translateY(-2px); background: #067b85; color: #fff; box-shadow: 0 11px 26px #123b4d42; }
+.cpn-floating-slot .cpn-trigger svg { width: 25px; height: 25px; }
+.cpn-floating-slot .cpn-trigger-label { display: none; }
+.cpn-floating-slot .cpn-badge { top: 0; right: 0; width: 12px; min-width: 12px; height: 12px; padding: 0; border: 2px solid #fff; border-radius: 50%; background: #f39a32; color: transparent; font-size: 0; box-shadow: 0 0 0 1px #e38420; }
+.cpn-floating-slot .cpn-popover { top: auto; right: 0; bottom: calc(100% + 12px); }
+@media (max-width: 520px) { .cpn-floating-slot { right: max(14px,env(safe-area-inset-right)); bottom: max(14px,env(safe-area-inset-bottom)); } .cpn-floating-slot .cpn-trigger { width: 52px; height: 52px; } }

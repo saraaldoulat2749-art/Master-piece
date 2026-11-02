@@ -7,11 +7,11 @@
   <title>Care Request Payment | CarePlus</title>
   <link rel="stylesheet" href="../Nav/style.css">
   <link rel="stylesheet" href="../Footer/style.css">
-  <link rel="stylesheet" href="profile.css">
-  <link rel="stylesheet" href="payment.css">
+  <link rel="stylesheet" href="profile.css?v=profile-user-icons-1">
+  <link rel="stylesheet" href="payment.css?v=profile-user-icons-1">
 <link rel="stylesheet" href="../shared/global-button-theme.css"></head>
 <body class="profile-page payment-page" data-protected="true">
-  <script src="../auth.js?v=archive-aware-1"></script>
+  <script src="../auth.js?v=floating-customer-notifications-1"></script>
   <div id="nav-container"></div>
   <main class="payment-main">
     <div class="payment-container">
@@ -19,7 +19,7 @@
           <header class="payment-heading"><p class="profile-kicker">CAREPLUS CHECKOUT</p><h1>Pay for your care request</h1><p>Enter card details to complete payment for your accepted request.</p></header>
       <div class="payment-layout" id="payment-content" hidden>
         <section class="payment-summary" aria-labelledby="payment-summary-title">
-          <span class="payment-summary__icon" aria-hidden="true">♡</span>
+          <span class="payment-summary__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.5 8.7c0 5.3-8.5 10.6-8.5 10.6S3.5 14 3.5 8.7A4.7 4.7 0 0 1 12 6.3a4.7 4.7 0 0 1 8.5 2.4Z"/><path d="M8 12h8m-4-4v8"/></svg></span>
           <p class="eyebrow">ACCEPTED REQUEST</p>
           <h2 id="payment-summary-title">Elderly care</h2>
           <dl><div><dt>Request number</dt><dd id="request-reference"></dd></div><div><dt>Care service</dt><dd id="request-service"></dd></div><div><dt>Care recipient</dt><dd id="request-recipient"></dd></div><div><dt>Requested date</dt><dd id="request-date"></dd></div></dl>
@@ -42,6 +42,6 @@
   <div id="footer-container" data-footer-autoload></div>
   <script src="../data/careplus-data.js?v=archive-aware-1"></script>
   <script src="payment.js"></script>
-  <script src="../Footer/footer.js"></script>
+  <script src="../Footer/footer.js?v=footer-hearts-removed-1"></script>
 </body>
 </html>

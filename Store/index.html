@@ -5,33 +5,42 @@
   <title>Medical Equipment &amp; Supplies | CarePlus</title>
   <link rel="stylesheet" href="../Nav/style.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="../Footer/style.css">
 <link rel="stylesheet" href="../shared/global-button-theme.css"></head>
-<body class="store-layout" data-protected="true"><script src="../auth.js?v=archive-aware-1"></script>
+<body class="store-layout" data-protected="true"><script src="../auth.js?v=floating-customer-notifications-1"></script>
   <div id="nav-container"></div>
   <main class="store-page">
-    <a class="back-to-services" href="../services/index.html">&#8592; Back to Services</a>
+    <div class="store-back-row"><a class="back-to-services" href="../services/index.html"><span aria-hidden="true">&#8592;</span> Back to Services</a></div>
     <section class="store-hero">
-      <div class="hero-copy"><span class="eyebrow"><span class="pulse"></span> CAREPLUS MEDICAL STORE</span>
+      <div class="hero-copy"><span class="eyebrow hero-label"><span class="pulse"></span> CarePlus Medical Store</span>
         <h1>Medical Equipment<br><span>&amp; Supplies</span></h1>
-        <p>Everything you need for better health and professional medical care.</p>
-        <a href="#products" class="hero-cta">Shop Now <span aria-hidden="true">&#8594;</span></a>
+        <p>Reliable medical tools and supplies for healthcare professionals and home care.</p>
+        <div class="hero-actions"><a href="#products" class="hero-cta">Shop Now <span aria-hidden="true">&#8594;</span></a><a href="#categories" class="hero-secondary">Explore Categories</a></div>
+        <div class="hero-benefits" aria-label="Store benefits">
+          <div><span class="benefit-icon" aria-hidden="true">&#10149;</span><span><strong>Fast Delivery</strong><small>Across Jordan</small></span></div>
+          <div><span class="benefit-icon" aria-hidden="true">&#10003;</span><span><strong>Verified Products</strong><small>High Quality</small></span></div>
+          <div><span class="benefit-icon" aria-hidden="true">&#9825;</span><span><strong>24/7 Support</strong><small>We’re here to help</small></span></div>
+        </div>
       </div>
       <img class="hero-photo" data-category="devices" src="https://taghareedstore.com/cdn/shop/collections/medical-devices.png?v=1776847208" alt="Medical equipment arranged for home health care" fetchpriority="high">
     </section>
 
-    <section class="category-section" aria-labelledby="category-title"><div class="section-heading"><div><span class="eyebrow">EXPLORE OUR RANGE</span><h2 id="category-title">Shop by category</h2></div></div><div class="category-cards" id="category-cards"></div></section>
+    <section class="category-section" id="categories" aria-labelledby="category-title"><div class="section-heading"><div><h2 id="category-title">Shop by Category</h2><p>Explore our medical product categories</p></div></div><div class="category-cards" id="category-cards"></div></section>
 
     <section class="shop-section" id="products">
-      <div class="shop-heading"><div><span class="eyebrow">CAREFULLY SELECTED ESSENTIALS</span><h2>Medical products</h2><p>Browse supplies for home care and medical professionals.</p></div><button class="cart-button" id="cart-toggle" type="button" aria-label="Open shopping cart">Cart <b id="cart-count">0</b></button></div>
+      <div class="shop-heading"><div><h2>Medical Products</h2><p>A wide range of high-quality medical equipment and supplies.</p></div><button class="cart-button" id="cart-toggle" type="button" aria-label="Open shopping cart">Cart <b id="cart-count">0</b></button></div>
       <div class="filter-bar">
         <label class="search-field"><span aria-hidden="true">&#128269;</span><input id="product-search" type="search" placeholder="Search medical products..." aria-label="Search medical products"></label>
-        <label class="filter-field">Category<select id="category-filter"><option value="all">All categories</option></select></label>
-        <label class="filter-field price-filter">Min JOD<input id="min-price" type="number" min="0" step="0.5" placeholder="0"></label>
-        <label class="filter-field price-filter">Max JOD<input id="max-price" type="number" min="0" step="0.5" placeholder="Any"></label>
+        <label class="filter-field">Category<select id="category-filter"><option value="all">All Categories</option></select></label>
+        <div class="price-range-field"><span>Price Range</span><div><label class="sr-only" for="min-price">Minimum price in JOD</label><input id="min-price" type="number" min="0" step="0.5" placeholder="Min"><span aria-hidden="true">–</span><label class="sr-only" for="max-price">Maximum price in JOD</label><input id="max-price" type="number" min="0" step="0.5" placeholder="Max"></div></div>
         <label class="filter-field">Availability<select id="stock-filter"><option value="all">All products</option><option value="in">In Stock</option><option value="out">Out of Stock</option></select></label>
         <label class="filter-field">Sort by<select id="sort-filter"><option value="newest" selected>Newest first</option><option value="featured">Featured</option><option value="price-asc">Price: Low to High</option><option value="price-desc">Price: High to Low</option><option value="name">Name: A to Z</option></select></label>
+        <div class="view-toggle" role="group" aria-label="Product display">
+          <button type="button" class="active" data-view="grid" aria-pressed="true" aria-label="Grid view"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 2h6v6H2zM12 2h6v6h-6zM2 12h6v6H2zM12 12h6v6h-6z"/></svg></button>
+          <button type="button" data-view="list" aria-pressed="false" aria-label="List view"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2 4h2M7 4h11M2 10h2M7 10h11M2 16h2M7 16h11"/></svg></button>
+        </div>
       </div>
       <div class="results-line"><span id="product-count" aria-live="polite"></span><button id="clear-filters" class="clear-filters" type="button">Clear filters</button></div>
       <div class="product-grid" id="product-grid" aria-live="polite"></div>
+      <nav class="product-pagination" id="product-pagination" aria-label="Product pages"></nav>
     </section>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <aside class="cart-drawer" id="cart-drawer" aria-label="Shopping cart" aria-hidden="true"><div class="cart-head"><div><span class="eyebrow">YOUR SELECTION</span><h2>Your cart</h2></div><button id="cart-close" class="icon-button" aria-label="Close cart">&#215;</button></div><div class="cart-items" id="cart-items"></div><div class="cart-bottom"><div class="cart-total"><span>Subtotal</span><strong id="cart-total">JOD 0.00</strong></div><button class="checkout-button" id="checkout-button">Checkout <span>&#8594;</span></button><small>Delivery fees are calculated at checkout.</small></div></aside>
@@ -39,6 +48,6 @@
     <dialog class="details-dialog" id="details-dialog"><button class="icon-button dialog-close" id="details-close" aria-label="Close details">&#215;</button><div id="details-content"></div></dialog>
   </main>
   <div id="footer-container"></div><script src="../data/careplus-data.js?v=archive-aware-1"></script><script src="../shared/delete-dialog.js"></script><script src="script.js?v=newest-first-1"></script>
-  <script src="../Footer/footer.js"></script>
+  <script src="../Footer/footer.js?v=footer-hearts-removed-1"></script>
 </body>
 </html>

@@ -1,6 +1,8 @@
 (() => {
   const dataStore = window.CarePlusData;
   const byId = id => document.getElementById(id);
+  let pendingCancellationId = "";
+  let pendingCareCancellationId = "";
   let identity = String(sessionStorage.getItem("careplusDemoIdentity") || "").trim();
   let identityLower = identity.toLowerCase();
   if (window.CarePlusAuth?.hasDemoAdminSession()) {
@@ -75,7 +77,7 @@
       });
     }
   }
-  const isAppointmentUpcoming = appointment => appointment.date >= today() && !["completed", "cancelled"].includes(String(appointment.status || "").toLowerCase());
+  const isAppointmentUpcoming = appointment => appointment.date >= today() && !["completed", "cancelled", "rejected"].includes(String(appointment.status || "").toLowerCase());
   const matchesUser = record => String(record.userId ?? "") === String(user.id)
     || String(record.bookingUserId ?? "") === String(user.id)
     || String(record.email || record.customer?.email || "").toLowerCase() === identityLower
@@ -99,12 +101,16 @@
   }
 
   function fillRow(parent, label, value) {
-    const row = makeElement("div", "detail-row");
+    const wide = ["Appointment ID", "Pickup address", "Destination", "Rejection reason", "Cancellation reason", "Notes"].includes(label);
+    const row = makeElement("div", `detail-row${wide ? " detail-row--wide" : ""}${label === "Appointment ID" ? " detail-row--id" : ""}`);
     row.append(makeElement("span", "", label), makeElement("strong", "", value || "Not provided"));
     parent.append(row);
   }
 
   function showDetails(title, rows, items = []) {
+    const dialog = byId("details-dialog");
+    dialog.classList.toggle("profile-dialog--appointment", title === "Appointment details");
+    dialog.classList.toggle("profile-dialog--care-request", title === "Care request details");
     byId("details-title").textContent = title;
     const content = byId("details-content");
     content.replaceChildren();
@@ -116,7 +122,16 @@
       });
       content.append(group);
     }
-    byId("details-dialog").showModal();
+    dialog.showModal();
+  }
+
+  function showAppointmentDetails(appointment) {
+    const status = String(appointment.status || "Pending").toLowerCase() === "requested" ? "Pending" : appointment.status || "Pending";
+    const details = [["Appointment ID", appointment.id], ["Doctor", appointment.doctor], ["Specialty", appointment.specialty], ["Date", dateFormat(appointment.date)], ["Time", appointment.time], ["Clinic", appointment.area], ["Appointment status", status]];
+    if (String(appointment.status || "").toLowerCase() === "rejected" && appointment.rejectionReason) details.push(["Rejection reason", appointment.rejectionReason]);
+    if (String(appointment.status || "").toLowerCase() === "cancelled" && appointment.cancelReason) details.push(["Cancellation reason", appointment.cancelReason]);
+    if (Number(appointment.consultationFee) > 0) details.push(["Consultation fee", `JOD ${Number(appointment.consultationFee).toFixed(2)}`], ["Deposit paid", `JOD ${Number(appointment.depositPaid || 0).toFixed(2)}`], ["Required deposit", `JOD ${Number(appointment.depositAmount || 0).toFixed(2)}`], ["Remaining balance", `JOD ${Number(appointment.remainingBalance || 0).toFixed(2)}`], ["CarePlus commission", `JOD ${Number(appointment.commissionAmount || 0).toFixed(2)}`], ["Payment status", appointment.paymentStatus || "Not recorded"]);
+    showDetails("Appointment details", details);
   }
 
   function setStatusBadge(status) {
@@ -191,8 +206,8 @@
     const query = byId("appointment-search").value.trim().toLowerCase();
     const visible = appointments.filter(item => {
       const status = String(item.status || "").toLowerCase();
-      const group = status === "cancelled" ? "cancelled" : isAppointmentUpcoming(item) ? "upcoming" : "past";
-      const searchText = [item.id, item.doctor, item.specialty, item.area, item.date, item.paymentStatus].join(" ").toLowerCase();
+      const group = ["cancelled", "rejected"].includes(status) ? "cancelled" : isAppointmentUpcoming(item) ? "upcoming" : "past";
+      const searchText = [item.id, item.doctor, item.specialty, item.area, item.date, item.paymentStatus, item.rejectionReason].join(" ").toLowerCase();
       return group === appointmentFilter && searchText.includes(query);
     });
     const sortedVisible = dataStore.newestFirst(visible);
@@ -231,11 +246,7 @@
       }
       const actions = makeElement("div", "record-actions");
       const details = makeElement("button", "button button--outline", "View details"); details.type = "button";
-      details.addEventListener("click", () => {
-        const details = [["Appointment ID", appointment.id], ["Doctor", appointment.doctor], ["Specialty", appointment.specialty], ["Date", dateFormat(appointment.date)], ["Time", appointment.time], ["Clinic", appointment.area], ["Appointment status", statusLabel]];
-        if (Number(appointment.consultationFee) > 0) details.push(["Consultation fee", `JOD ${Number(appointment.consultationFee).toFixed(2)}`], ["Deposit paid", `JOD ${Number(appointment.depositPaid || 0).toFixed(2)}`], ["Required deposit", `JOD ${Number(appointment.depositAmount || 0).toFixed(2)}`], ["Remaining balance", `JOD ${Number(appointment.remainingBalance || 0).toFixed(2)}`], ["CarePlus commission", `JOD ${Number(appointment.commissionAmount || 0).toFixed(2)}`], ["Payment status", appointment.paymentStatus || "Not recorded"]);
-        showDetails("Appointment details", details);
-      });
+      details.addEventListener("click", () => showAppointmentDetails(appointment));
       actions.append(details);
       if (isAppointmentUpcoming(appointment)) {
         const reschedule = makeElement("button", "button button--outline", "Reschedule"); reschedule.type = "button";
@@ -251,6 +262,11 @@
   function requestStatus(request) {
     const status = String(request.status || "New").toLowerCase();
     return ({ new: "Pending", reviewing: "Pending", accepted: "Accepted by CarePlus", approved: "Accepted by CarePlus", contacted: "In Progress", "in progress": "In Progress", closed: "Completed", completed: "Completed", cancelled: "Cancelled" })[status] || request.status || "Pending";
+  }
+
+  function canCancelCareRequest(request) {
+    return ["new", "pending", "requested", "reviewing", "pending payment", "accepted", "approved"]
+      .includes(String(request?.status || "New").trim().toLowerCase());
   }
 
   function renderCareRequests() {
@@ -300,7 +316,7 @@
       }
       const actions = makeElement("div", "record-actions");
       const details = makeElement("button", "button button--outline", "View details"); details.type = "button";
-      details.addEventListener("click", () => showDetails("Care request details", [["Care recipient", request.elderlyName || request.client], ["Service", request.service], ["Duration", request.duration ? `${request.duration} hours per visit` : "Not provided"], ["Schedule", request.schedule], ["Preferred time", request.time], ["Pickup address", [request.address || request.pickupAddress, request.area, request.city].filter(Boolean).join(", ")], ["Destination", request.destination], ["Emergency contact", [request.emergencyName, request.emergencyPhone].filter(Boolean).join(" · ")], ["Submitted", dateFormat(request.createdAt || request.date)], ["Status", status], ["Payment", depositPaid ? "Deposit paid" : request.paymentStatus || "Not due"], ["Total service price", request.totalPrice != null ? `JOD ${Number(request.totalPrice).toFixed(2)}` : "Not provided"], [depositPaid ? "Deposit paid (10%)" : "Required deposit (10%)", request.depositAmount != null ? `JOD ${Number(request.depositAmount).toFixed(2)}` : "Not provided"], ["Remaining balance", request.remainingBalance != null ? `JOD ${Number(request.remainingBalance).toFixed(2)}` : "Not provided"], ["Notes", request.notes]]));
+      details.addEventListener("click", () => showDetails("Care request details", [["Care recipient", request.elderlyName || request.client], ["Service", request.service], ["Duration", request.duration ? `${request.duration} hours per visit` : "Not provided"], ["Schedule", request.schedule], ["Preferred time", request.time], ["Pickup address", [request.address || request.pickupAddress, request.area, request.city].filter(Boolean).join(", ")], ["Destination", request.destination], ["Emergency contact", [request.emergencyName, request.emergencyPhone].filter(Boolean).join(" · ")], ["Submitted", dateFormat(request.createdAt || request.date)], ["Status", status], ...(request.rejectionReason ? [["Rejection reason", request.rejectionReason]] : []), ...(request.cancelReason ? [["Cancellation reason", request.cancelReason]] : []), ["Payment", depositPaid ? "Deposit paid" : request.paymentStatus || "Not due"], ["Total service price", request.totalPrice != null ? `JOD ${Number(request.totalPrice).toFixed(2)}` : "Not provided"], [depositPaid ? "Deposit paid (10%)" : "Required deposit (10%)", request.depositAmount != null ? `JOD ${Number(request.depositAmount).toFixed(2)}` : "Not provided"], ["Remaining balance", request.remainingBalance != null ? `JOD ${Number(request.remainingBalance).toFixed(2)}` : "Not provided"], ["Notes", request.notes]]));
       actions.append(details);
       const accepted = ["accepted", "approved"].includes(String(request.status || "").toLowerCase());
       if (accepted && !depositPaid && String(request.paymentStatus || "").toLowerCase() !== "paid") {
@@ -310,7 +326,7 @@
       } else if (accepted && String(request.paymentStatus || "").toLowerCase() === "paid") {
         actions.append(setStatusBadge("Paid"));
       }
-      if (!["Cancelled", "Completed"].includes(status)) {
+      if (canCancelCareRequest(request)) {
         const cancel = makeElement("button", "button button--danger", "Cancel request"); cancel.type = "button";
         cancel.addEventListener("click", () => cancelCareRequest(request)); actions.append(cancel);
       }
@@ -473,31 +489,61 @@
   }
 
   function cancelAppointment(appointment) {
-    if (!window.confirm(`Cancel your appointment with ${appointment.doctor || "this doctor"}?`)) return;
-    const changes = { status: "Cancelled", lastActionByRole: "Customer", lastActionById: String(user.id) };
-    if (Number(appointment.consultationFee) > 0) {
-      changes.commissionStatus = ["Pending Review", "Payable", "Settled"].includes(appointment.commissionStatus) ? "Reversed" : "Not earned";
-      if (Number(appointment.commissionCollected) > 0) changes.commissionReversedAmount = Number(appointment.commissionCollected);
-      changes.commissionCollected = 0;
-      changes.commissionRemainingToSettle = 0;
-      if (Number(appointment.depositPaid) > 0) changes.refundStatus = String(appointment.paymentStatus || "").startsWith("Demo") ? "No refund due" : "Refund review required";
-    }
-    if (window.CarePlusClinic?.updateAppointment(appointment.id, changes)) { refreshUser(); showToast("Appointment cancelled."); }
+    pendingCancellationId = String(appointment.id);
+    const form = byId("cancel-appointment-form");
+    form.reset();
+    form.elements.namedItem("appointmentId").value = appointment.id;
+    byId("cancel-appointment-patient").textContent = `For ${appointment.doctor || "your doctor"} · ${dateFormat(appointment.date)} at ${appointment.time || "time pending"}`;
+    byId("cancel-appointment-feedback").textContent = "";
+    byId("cancel-appointment-dialog").showModal();
+    byId("cancel-appointment-reason").focus();
   }
 
   function cancelCareRequest(request) {
-    if (!window.confirm("Cancel this elderly care request?")) return;
-    if (dataStore.update("careRequests", request.id, { status: "Cancelled", lastActionByRole: "Customer", lastActionById: String(user.id) })) { refreshUser(); showToast("Care request cancelled."); }
+    pendingCareCancellationId = String(request.id);
+    const form = byId("cancel-care-request-form");
+    form.reset();
+    form.elements.namedItem("requestId").value = request.id;
+    byId("cancel-care-request-label").textContent = `For ${request.elderlyName || request.client || "your care recipient"} · ${request.service || "Elderly care"}`;
+    byId("cancel-care-request-feedback").textContent = "";
+    byId("cancel-care-request-dialog").showModal();
+    byId("cancel-care-request-reason").focus();
   }
 
   function openReschedule(appointment) {
     const form = byId("reschedule-form");
     form.elements.namedItem("appointmentId").value = appointment.id;
     form.elements.namedItem("date").value = appointment.date || "";
-    form.elements.namedItem("time").value = appointment.time || "";
     form.elements.namedItem("date").min = today();
     byId("reschedule-feedback").textContent = "";
+    populateRescheduleTimes(appointment.id, appointment.time);
     byId("reschedule-dialog").showModal();
+  }
+
+  function normalizeAppointmentTime(value) {
+    const match = String(value || "").trim().match(/^(\d{1,2}):(\d{2})\s*(AM|PM)?$/i);
+    if (!match) return "";
+    let hour = Number(match[1]);
+    if (match[3]) { hour %= 12; if (match[3].toUpperCase() === "PM") hour += 12; }
+    return `${String(hour).padStart(2, "0")}:${match[2]}`;
+  }
+
+  function populateRescheduleTimes(appointmentId, preferredTime = "") {
+    const form = byId("reschedule-form");
+    const date = form.elements.namedItem("date").value;
+    const timeSelect = form.elements.namedItem("time");
+    const appointment = dataStore.get("appointments", appointmentId);
+    const slots = appointment && window.CarePlusClinic?.availableSlots({ doctor: appointment.doctor, doctorId: appointment.doctorId, date, ignoreId: appointment.id }) || [];
+    timeSelect.replaceChildren(new Option(slots.length ? "Select an available time" : "No available times", ""));
+    slots.forEach(slot => {
+      const [hourText, minute] = slot.split(":");
+      const hour = Number(hourText);
+      const label = `${String(hour % 12 || 12).padStart(2, "0")}:${minute} ${hour >= 12 ? "PM" : "AM"}`;
+      timeSelect.add(new Option(label, slot));
+    });
+    timeSelect.disabled = !slots.length;
+    const preferred = normalizeAppointmentTime(preferredTime);
+    timeSelect.value = slots.includes(preferred) ? preferred : "";
   }
 
   function refreshUser() {
@@ -529,6 +575,56 @@
     renderAppointments();
   }));
   byId("appointment-search").addEventListener("input", renderAppointments);
+  byId("cancel-appointment-form").addEventListener("submit", event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const reasonField = form.elements.namedItem("reason");
+    const reason = reasonField.value.trim();
+    const appointmentId = form.elements.namedItem("appointmentId").value;
+    const feedback = byId("cancel-appointment-feedback");
+    if (reason.length < 3) { feedback.textContent = "Please enter a reason with at least 3 characters."; reasonField.focus(); return; }
+    const appointment = dataStore.get("appointments", appointmentId);
+    if (!appointment || String(appointment.id) !== pendingCancellationId) { feedback.textContent = "This appointment could not be found. Refresh and try again."; return; }
+    const changes = { status: "Cancelled", cancelReason: reason, lastActionByRole: "Customer", lastActionById: String(user.id) };
+    if (Number(appointment.consultationFee) > 0) {
+      changes.commissionStatus = ["Pending Review", "Payable", "Settled"].includes(appointment.commissionStatus) ? "Reversed" : "Not earned";
+      if (Number(appointment.commissionCollected) > 0) changes.commissionReversedAmount = Number(appointment.commissionCollected);
+      changes.commissionCollected = 0;
+      changes.commissionRemainingToSettle = 0;
+      if (Number(appointment.depositPaid) > 0) changes.refundStatus = String(appointment.paymentStatus || "").startsWith("Demo") ? "No refund due" : "Refund review required";
+    }
+    if (!window.CarePlusClinic?.updateAppointment(appointment.id, changes)) { feedback.textContent = "Could not cancel this appointment. Please try again."; return; }
+    byId("cancel-appointment-dialog").close();
+    pendingCancellationId = "";
+    refreshUser(); showToast("Appointment cancelled.");
+  });
+  byId("cancel-care-request-form").addEventListener("submit", event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const reasonField = form.elements.namedItem("reason");
+    const reason = reasonField.value.trim();
+    const requestId = form.elements.namedItem("requestId").value;
+    const feedback = byId("cancel-care-request-feedback");
+    if (reason.length < 3) { feedback.textContent = "Please enter a reason with at least 3 characters."; reasonField.focus(); return; }
+    const request = dataStore.get("careRequests", requestId);
+    if (!request || String(request.id) !== pendingCareCancellationId || !ownedRecords("careRequests").some(item => String(item.id) === pendingCareCancellationId)) {
+      feedback.textContent = "This care request could not be found. Refresh and try again."; return;
+    }
+    if (!canCancelCareRequest(request)) {
+      feedback.textContent = "Only pending or accepted care requests can be cancelled."; return;
+    }
+    if (!dataStore.update("careRequests", request.id, { status: "Cancelled", cancelReason: reason, cancellationReason: reason, lastActionByRole: "Customer", lastActionById: String(user.id) })) {
+      feedback.textContent = "Could not cancel this request. Please try again."; return;
+    }
+    byId("cancel-care-request-dialog").close();
+    pendingCareCancellationId = "";
+    refreshUser(); showToast("Care request cancelled; the nurse and admin can see the reason.");
+  });
+  byId("reschedule-form").elements.namedItem("date").addEventListener("change", event => {
+    const id = byId("reschedule-form").elements.namedItem("appointmentId").value;
+    populateRescheduleTimes(id);
+    byId("reschedule-feedback").textContent = "";
+  });
 
   byId("profile-form").addEventListener("submit", async event => {
     event.preventDefault();
@@ -563,7 +659,7 @@
     const appointment = dataStore.get("appointments", id);
     const date = form.elements.namedItem("date").value;
     const time = form.elements.namedItem("time").value;
-    if (!appointment || !window.CarePlusClinic?.isAvailable({ doctor: appointment.doctor, date, time, ignoreId: id })) {
+    if (!appointment || !time || !window.CarePlusClinic?.isAvailable({ doctor: appointment.doctor, doctorId: appointment.doctorId, date, time, ignoreId: id })) {
       byId("reschedule-feedback").textContent = "That time is unavailable for this doctor. Choose another date and time."; return;
     }
     const updated = window.CarePlusClinic.updateAppointment(id, { date, time, status: "Requested", lastActionByRole: "Customer", lastActionById: String(user.id) });

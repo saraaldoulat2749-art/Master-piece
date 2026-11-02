@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="orders.css?v=pharmacy-workflow-1">
 <link rel="stylesheet" href="../dashboard-ui.css?v=admin-pages-5"><link rel="stylesheet" href="../../shared/global-button-theme.css"></head>
 <body class="orders-page admin-unified" data-protected="true" data-admin-protected="true">
-  <script src="../../auth.js?v=archive-aware-1"></script>
+  <script src="../../auth.js?v=floating-customer-notifications-1"></script>
   <div class="admin-layout">
     <aside class="sidebar" id="admin-sidebar">
       <a class="brand" href="../index.html"><span class="brand-mark">+</span><span>Care<span>Plus</span><small>ADMIN</small></span></a>
@@ -38,7 +38,7 @@
           <div class="orders-tabs" role="tablist" aria-label="Order type"><button id="store-tab" type="button" role="tab" aria-selected="true" aria-controls="orders-panel" data-order-tab="store">Store Orders <span data-tab-count="store">0</span></button><button id="pharmacy-tab" type="button" role="tab" aria-selected="false" aria-controls="orders-panel" tabindex="-1" data-order-tab="pharmacy">Pharmacy Orders <span data-tab-count="pharmacy">0</span></button></div>
           <div id="orders-panel" role="tabpanel" aria-labelledby="store-tab">
             <div class="orders-controls"><label class="orders-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg><input type="search" id="orders-search" placeholder="Search order ID or customer name" aria-label="Search order ID or customer name"><button type="button" data-clear-search aria-label="Clear search" hidden>&times;</button></label><label class="orders-status-filter"><span>Status</span><select id="orders-status" aria-label="Filter by order status"><option value="">All statuses</option></select></label></div>
-            <div class="orders-table-wrap"><table class="orders-table"><thead><tr><th scope="col">Order ID</th><th scope="col">Customer Name</th><th scope="col" data-pharmacy-column hidden>Pharmacy</th><th scope="col">Order Date</th><th scope="col">Total (JOD)</th><th scope="col" data-commission-column hidden>CarePlus commission</th><th scope="col">Current Status</th><th scope="col">Actions</th></tr></thead><tbody data-managed-orders></tbody></table><div class="orders-empty" data-orders-no-results hidden><span aria-hidden="true">⌕</span><h3>No matching orders</h3><p>Try another search or choose a different status.</p><button type="button" data-reset-orders>Clear filters</button></div></div>
+            <div class="orders-table-wrap"><table class="orders-table"><thead><tr><th scope="col">Customer Name</th><th scope="col">Current Status</th><th scope="col">Actions</th></tr></thead><tbody data-managed-orders></tbody></table><div class="orders-empty" data-orders-no-results hidden><span aria-hidden="true">⌕</span><h3>No matching orders</h3><p>Try another search or choose a different status.</p><button type="button" data-reset-orders>Clear filters</button></div></div>
             <footer class="orders-pagination"><span data-orders-range></span><div><button type="button" data-page-prev>Previous</button><span data-page-label aria-live="polite"></span><button type="button" data-page-next>Next</button></div></footer>
           </div>
         </section>
@@ -47,7 +47,7 @@
   </div>
   <div class="toast" data-toast role="status" aria-live="polite"></div>
   <script src="../../data/careplus-data.js?v=archive-aware-1"></script>
-  <script src="../../shared/delete-dialog.js"></script><script src="../admin.js?v=archive-tools-2"></script>
-<script src="orders.js?v=pharmacy-workflow-1"></script><script src="../dashboard-ui.js?v=admin-pages-3"></script><script src="../admin-nav.js?v=nav-3"></script></body>
+  <script src="../../shared/delete-dialog.js"></script><script src="../admin.js?v=archive-tools-3"></script>
+<script src="orders.js?v=pharmacy-workflow-3"></script><script src="../dashboard-ui.js?v=admin-pages-4"></script><script src="../admin-nav.js?v=nav-3"></script></body>
 </html>
 

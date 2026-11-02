@@ -3,7 +3,7 @@
   if (!loaderScript) return;
 
   const footerUrl = new URL("index.html", loaderScript.src);
-  const styleUrl = new URL("style.css?v=3", footerUrl);
+  const styleUrl = new URL("style.css?v=8", footerUrl);
   const stylesheetExists = [...document.querySelectorAll('link[rel="stylesheet"]')]
     .some(link => link.href === styleUrl.href);
 

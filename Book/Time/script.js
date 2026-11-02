@@ -54,6 +54,7 @@ dateInput.value = today;
 
 // اختيار الوقت
 let selectedTime = "";
+let renderedDate = "";
 
 const errorMessage = document.getElementById("errorMessage");
 const continueButton = document.getElementById("continueButton");
@@ -77,7 +78,8 @@ function renderAvailableSlots() {
         const breakEnd = schedule.breakEnd ? Number(schedule.breakEnd.slice(0,2))*60 + Number(schedule.breakEnd.slice(3,5)) : -1;
         while (cursor + duration <= finish) {
             const slot = `${String(Math.floor(cursor / 60)).padStart(2, "0")}:${String(cursor % 60).padStart(2, "0")}`;
-            const duringBreak = breakStart >= 0 && cursor < breakEnd && cursor + duration > breakStart;
+            const hasValidBreak = breakStart >= 0 && breakEnd > breakStart;
+            const duringBreak = hasValidBreak && cursor < breakEnd && cursor + duration > breakStart;
             const labelHour = Math.floor(cursor / 60) % 12 || 12;
             const labelSuffix = Math.floor(cursor / 60) >= 12 ? "PM" : "AM";
             const slotLabel = `${String(labelHour).padStart(2, "0")}:${String(cursor % 60).padStart(2, "0")} ${labelSuffix}`;
@@ -85,12 +87,24 @@ function renderAvailableSlots() {
             cursor += duration;
         }
     }
-    selectedTime = "";
+    let previousSlot = "";
+    if (date === renderedDate && selectedTime) {
+        const match = selectedTime.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+        if (match) {
+            let hour = Number(match[1]) % 12;
+            if (match[3].toUpperCase() === "PM") hour += 12;
+            previousSlot = `${String(hour).padStart(2, "0")}:${match[2]}`;
+        }
+    }
+    const previousSelection = selectedTime;
+    selectedTime = previousSlot && slots.includes(previousSlot) ? previousSelection : "";
+    renderedDate = date;
     grid.innerHTML = slots.length ? slots.map(slot => {
         const [hour, minute] = slot.split(":").map(Number);
         const labelHour = hour % 12 || 12;
         const suffix = hour >= 12 ? "PM" : "AM";
-        return `<button type="button" class="time-slot">${String(labelHour).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${suffix}</button>`;
+        const label = `${String(labelHour).padStart(2, "0")}:${String(minute).padStart(2, "0")} ${suffix}`;
+        return `<button type="button" class="time-slot ${label === selectedTime ? "selected" : ""}">${label}</button>`;
     }).join("") : `<p class="time-hint">No available times for this date. Choose another date.</p>`;
     grid.querySelectorAll(".time-slot").forEach(button => button.addEventListener("click", function () {
         grid.querySelectorAll(".time-slot").forEach(slot => slot.classList.remove("selected"));

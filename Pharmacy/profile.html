@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="dashboard.css?v=pharmacy-profile-finances-1">
+  <link rel="stylesheet" href="dashboard.css?v=pharmacy-icons-2">
   <link rel="stylesheet" href="../shared/account-dashboard-theme.css">
   <link rel="stylesheet" href="../Admin/theme.css">
   <link rel="stylesheet" href="../Admin/dashboard-ui.css?v=shared-careplus-admin-v2">
@@ -29,13 +29,13 @@
     </aside>
     <main class="main-area">
       <div class="page-content profile-page-content">
-        <div class="mobile-toolbar"><button class="menu-toggle" id="menuToggle" aria-label="Open navigation">☰</button><span>My Profile</span></div>
+        <div class="mobile-toolbar"><button class="menu-toggle" id="menuToggle" aria-label="Open navigation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button><span>My Profile</span></div>
         <section class="profile-page-view" aria-labelledby="profilePageTitle">
           <div class="section-heading"><div><p class="eyebrow">ACCOUNT &amp; PHARMACY DETAILS</p><h1 id="profilePageTitle">My Profile</h1><p>Edit the pharmacy information displayed to CarePlus customers.</p></div></div>
           <div class="profile-load-message" id="profileLoadMessage" role="status" aria-live="polite">Loading pharmacy profile…</div>
           <form class="panel profile-form" id="profileForm" novalidate hidden>
             <div class="profile-section-heading"><p class="eyebrow">CUSTOMER-FACING LISTING</p><h3>Pharmacy details</h3><p>Updates are saved to this pharmacy's shared CarePlus record.</p></div>
-            <div class="profile-head"><span class="profile-logo" aria-hidden="true">＋</span><div><strong id="profileHeadingName">My Pharmacy</strong><small>CarePlus pharmacy listing</small></div><label class="toggle-label"><input id="openToggle" type="checkbox"><span class="toggle"></span><b id="openLabel">Open</b></label></div>
+            <div class="profile-head"><span class="profile-logo" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg></span><div><strong id="profileHeadingName">My Pharmacy</strong><small>CarePlus pharmacy listing</small></div><label class="toggle-label"><input id="openToggle" type="checkbox"><span class="toggle"></span><b id="openLabel">Open</b></label></div>
             <div class="form-grid">
               <label>Pharmacy name<input id="profileName" required maxlength="90"></label>
               <label>Responsible pharmacist<input id="profileResponsible" maxlength="90" placeholder="Pharmacist name"></label>
@@ -66,7 +66,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <script src="../data/careplus-data.js?v=archive-aware-1"></script>
   <script src="../data/careplus-pharmacy.js?v=archive-aware-1"></script>
-  <script src="../auth.js?v=archive-aware-1"></script>
-  <script src="profile.js?v=pharmacy-profile-finances-6"></script>
+  <script src="../auth.js?v=floating-customer-notifications-1"></script>
+  <script src="profile.js?v=pharmacy-open-status-1"></script>
 </body>
 </html>

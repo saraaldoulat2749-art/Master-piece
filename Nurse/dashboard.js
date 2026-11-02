@@ -50,6 +50,7 @@
     return Number.isNaN(value.getTime()) ? 0 : value.getTime();
   };
   const statusName = item => String(item.status || "New");
+  const requestQueueStatus = request => ["new", "reviewing", "contacted"].includes(statusName(request).toLowerCase()) ? "Pending" : statusName(request);
   const statusClass = status => String(status).toLowerCase().replace(/[^a-z]+/g, "-");
   const isHomeCare = request => !request.service || /home\s*care|elderly\s*care|hospital\s*companion/i.test(String(request.service));
   const isHospitalCompanion = request => /hospital\s*companion/i.test(String(request.service || ""));
@@ -59,7 +60,7 @@
   // Only the deposit gates care delivery. The remaining balance is settled outside this flow.
   const depositReady = request => request.depositRate !== 0.1 || demoDepositPaid(request) || (request.paymentStatus === "Paid" && request.paymentVerified === true && Boolean(request.transactionReference));
   const isOpen = request => depositReady(request) && (["new", "pending", "requested", "reviewing", "contacted", "accepted", "confirmed"].includes(statusName(request).toLowerCase()) || (statusName(request).toLowerCase() === "pending payment" && demoDepositPaid(request)));
-  const canSeeRequest = request => isHomeCare(request) && (isMine(request) || (!request.assignedNurseId && !request.nurseId && (isOpen(request) || (request.status === "Pending Payment" && demoDepositPaid(request)))));
+  const canSeeRequest = request => isHomeCare(request) && (isMine(request) || (!request.assignedNurseId && !request.nurseId && (isOpen(request) || (request.status === "Pending Payment" && demoDepositPaid(request)) || statusName(request).toLowerCase() === "cancelled")));
   const requests = () => (store?.list("careRequests") || []).filter(canSeeRequest);
   const assignedVisits = () => requests().filter(request => isMine(request) && ["accepted", "in progress", "completed", "cancelled"].includes(statusName(request).toLowerCase()));
   const readProfile = () => {
@@ -77,6 +78,8 @@
   });
   let profile = readProfile();
   let selectedRequestId = "";
+  let pendingCompletionId = "";
+  let pendingRejectId = "";
   let toastTimer;
 
   function toast(message, error = false) {
@@ -123,12 +126,32 @@
       ["Total service price", request.totalPrice != null ? `JOD ${Number(request.totalPrice).toFixed(2)}` : "Not recorded"],
       ["Required deposit (10%)", request.depositAmount != null ? `JOD ${Number(request.depositAmount).toFixed(2)}` : "Not recorded"],
       ["Remaining balance", request.remainingBalance != null ? `JOD ${Number(request.remainingBalance).toFixed(2)}` : "Not recorded"],
-      ["Demo payment reference", request.demoTransactionReference || "None"]
+      ["Demo payment reference", request.demoTransactionReference || "None"],
+      ...(request.rejectionReason ? [["Rejection reason", request.rejectionReason]] : []),
+      ...(request.cancelReason ? [["Cancellation reason", request.cancelReason]] : [])
     ];
-    const wideFields = new Set(["Home address", "Pickup location", "Destination", "Requested support tasks", "Special care requirements", "Authorized care instructions", "Additional family information", "Demo payment reference"]);
+    const wideFields = new Set(["Pickup location", "Destination", "Requested support tasks", "Special care requirements", "Authorized care instructions", "Additional family information"]);
     $("dialogBody").innerHTML = `<div class="detail-grid">${fields.map(([label, value]) => `<div class="detail-item ${wideFields.has(label) ? "detail-wide" : ""}"><small>${esc(label)}</small><b>${esc(value)}</b></div>`).join("")}</div>`;
     const dialog = $("requestDialog");
     if (typeof dialog.showModal === "function") dialog.showModal(); else dialog.setAttribute("open", "");
+  }
+
+  function promptCompleteVisit(request) {
+    if (!request || !isMine(request) || statusName(request).toLowerCase() !== "in progress") return;
+    if (!request.actualStartAt && !request.startedAt) { toast("Record a valid visit start before completing this visit.", true); return; }
+    pendingCompletionId = String(request.id);
+    $("completionVisitName").textContent = visitLabel(request);
+    $("completionVisitService").textContent = request.service || "Home care";
+    $("requestDialog").close?.();
+    $("completeVisitDialog").showModal();
+  }
+
+  function openRejectRequest(request) {
+    pendingRejectId = String(request.id);
+    $("rejectRequestForm").reset();
+    $("rejectRequestFeedback").textContent = "";
+    $("rejectRequestDialog").showModal();
+    $("rejectRequestReason").focus();
   }
 
   function renderHeader() {
@@ -167,16 +190,15 @@
     $("requestSummaryTotal").textContent = String(availableRequests.length);
     $("requestSummaryNew").textContent = String(availableRequests.filter(request => !isMine(request) && isOpen(request)).length);
     $("requestSummaryAssigned").textContent = String(availableRequests.filter(isMine).length);
-    $("requestSummaryReviewing").textContent = String(availableRequests.filter(request => ["reviewing", "contacted"].includes(statusName(request).toLowerCase())).length);
+    $("requestSummaryReviewing").textContent = String(availableRequests.filter(request => statusName(request).toLowerCase() === "reviewing").length);
     const rows = store.newestFirst(availableRequests).filter(request => {
-      const query = [requestLabel(request), request.id, visitLabel(request), request.client, request.service, request.city, request.area, request.address].join(" ").toLowerCase();
-      return (!search || query.includes(search)) && (status === "all" || statusName(request).toLowerCase() === status);
+      const query = [requestLabel(request), request.id, visitLabel(request), request.client, request.service, request.city, request.area, request.address, request.cancelReason].join(" ").toLowerCase();
+      return (!search || query.includes(search)) && (status === "all" || requestQueueStatus(request).toLowerCase() === status);
     });
-    $("requestCount").textContent = `${rows.length} request${rows.length === 1 ? "" : "s"}`;
     $("requestRows").innerHTML = rows.map(request => {
       const available = isOpen(request) && (!request.assignedNurseId || isMine(request));
       const actions = `<div class="row-actions">${actionButton("details", "Details", request.id)}${available ? actionButton("accept", "Accept", request.id, "accept") : ""}${available ? actionButton("reject", "Reject", request.id, "reject") : ""}</div>`;
-      return `<tr data-request-id="${esc(request.id)}"><td><span class="request-main"><b>${esc(visitLabel(request))}</b><small>${esc(requestLabel(request))}${request.client ? ` · Family: ${esc(request.client)}` : ""}</small></span></td><td>${esc(request.service || "Home care")}</td><td>${statusBadge(statusName(request))}${demoDepositPaid(request) ? '<small class="demo-deposit-note">Deposit paid · DEMO</small>' : ""}</td><td>${actions}</td></tr>`;
+      return `<tr data-request-id="${esc(request.id)}"><td data-label="Request / elderly person"><span class="request-main"><b>${esc(visitLabel(request))}</b><small>${esc(requestLabel(request))}${request.client ? ` · Family: ${esc(request.client)}` : ""}</small></span></td><td data-label="Service">${esc(request.service || "Home care")}</td><td data-label="Status">${statusBadge(requestQueueStatus(request))}${request.cancelReason ? `<small class="demo-deposit-note">Cancellation reason: ${esc(request.cancelReason)}</small>` : ""}${demoDepositPaid(request) ? '<small class="demo-deposit-note">Deposit paid · DEMO</small>' : ""}</td><td data-label="Actions">${actions}</td></tr>`;
     }).join("");
     $("requestEmpty").hidden = rows.length > 0;
   }
@@ -215,7 +237,7 @@
       let actions = actionButton("details", "Details", request.id);
       if (state === "accepted") actions += actionButton("start", "Start visit", request.id, "accept");
       if (state === "in progress") actions += actionButton("complete", "Complete", request.id, "accept");
-      return `<tr data-request-id="${esc(request.id)}"><td><span class="visit-main"><b>${esc(visitLabel(request))}</b><small>${esc(requestLabel(request))} · ${esc(request.service || "Home care")}</small></span></td><td>${statusBadge(statusName(request))}</td><td><div class="row-actions">${actions}</div></td></tr>`;
+      return `<tr data-request-id="${esc(request.id)}"><td data-label="Elderly person"><span class="visit-main"><b>${esc(visitLabel(request))}</b><small>${esc(requestLabel(request))} · ${esc(request.service || "Home care")}</small></span></td><td data-label="Status">${statusBadge(statusName(request))}</td><td data-label="Actions"><div class="row-actions">${actions}</div></td></tr>`;
     }).join("");
     $("visitEmpty").hidden = rows.length > 0;
   }
@@ -335,7 +357,6 @@
 
   document.querySelectorAll(".nav-link[data-page]").forEach(button => button.addEventListener("click", () => navigate(button.dataset.page)));
   document.querySelectorAll("[data-open-page]").forEach(button => button.addEventListener("click", () => navigate(button.dataset.openPage)));
-  $("menuToggle").addEventListener("click", () => $("sidebar").classList.toggle("open"));
   ["requestSearch", "requestStatus"].forEach(id => $(id).addEventListener("input", renderRequests));
   $("requestStatus").addEventListener("change", renderRequests);
   ["visitSearch", "visitStatus", "visitRange"].forEach(id => $(id).addEventListener("input", renderVisits));
@@ -360,11 +381,21 @@
       }
     }
     if (button.dataset.action === "reject") {
-      const reason = window.prompt("Enter a short reason for rejecting this request:");
-      if (!reason || !reason.trim()) { if (reason !== null) toast("A rejection reason is required.", true); return; }
-      const updated = updateRequest(request.id, { status: "Rejected", assignedNurseId: nurseId, assignedNurseName: profile.name || nurse.name, rejectionReason: reason.trim(), rejectedAt: new Date().toISOString() });
-      if (updated) { toast("Request rejected and the reason was saved."); renderAll(); }
+      openRejectRequest(request);
     }
+  });
+  $("cancelRejectRequest").addEventListener("click", () => { pendingRejectId = ""; $("rejectRequestDialog").close(); });
+  $("rejectRequestForm").addEventListener("submit", event => {
+    event.preventDefault();
+    const reason = $("rejectRequestReason").value.trim();
+    const request = store.get("careRequests", pendingRejectId);
+    if (reason.length < 3) { $("rejectRequestFeedback").textContent = "Enter a reason with at least 3 characters."; $("rejectRequestReason").focus(); return; }
+    if (!request || !canSeeRequest(request) || (!isOpen(request) || (request.assignedNurseId && !isMine(request)))) {
+      $("rejectRequestFeedback").textContent = "This request is no longer available. Refresh and try again."; return;
+    }
+    const updated = updateRequest(request.id, { status: "Rejected", assignedNurseId: nurseId, assignedNurseName: profile.name || nurse.name, rejectionReason: reason, rejectedAt: new Date().toISOString() });
+    if (updated) { pendingRejectId = ""; $("rejectRequestDialog").close(); toast("Request rejected; the family and admin can see the reason."); renderAll(); }
+    else $("rejectRequestFeedback").textContent = "Could not save the rejection. Please try again.";
   });
   $("visitRows").addEventListener("click", event => {
     const button = event.target.closest("button[data-action]"); if (!button) return;
@@ -380,11 +411,7 @@
       if (updateRequest(request.id, { status: "In Progress", visitStatus: "In Progress", actualStartAt: now, startedAt: now })) { toast("Visit started."); renderAll(); navigate("patient-care"); selectedRequestId = String(request.id); renderPatientCare(); }
     }
     if (button.dataset.action === "complete") {
-      if (state !== "in progress") return;
-      if (!request.actualStartAt && !request.startedAt) { toast("Record a valid visit start before completing this visit.", true); return; }
-      if (!window.confirm("Confirm that this visit has finished and mark it Completed?")) return;
-      const end = new Date().toISOString();
-      if (updateRequest(request.id, { status: "Completed", visitStatus: "Completed", actualEndAt: end, completedAt: end, completedByNurseId: nurseId })) { toast("Visit marked completed with the actual end time."); renderAll(); }
+      promptCompleteVisit(request);
     }
   });
   $("patientCards").addEventListener("click", event => { const card = event.target.closest("[data-patient-id]"); if (card) renderCareDetail(card.dataset.patientId); });
@@ -397,6 +424,24 @@
   });
   document.querySelectorAll("[data-close-dialog]").forEach(button => button.addEventListener("click", () => { const dialog = $("requestDialog"); if (typeof dialog.close === "function") dialog.close(); else dialog.removeAttribute("open"); }));
   $("requestDialog").addEventListener("click", event => { if (event.target === $("requestDialog")) $("requestDialog").close?.(); });
+  $("cancelCompleteVisit").addEventListener("click", () => { pendingCompletionId = ""; $("completeVisitDialog").close(); });
+  $("completeVisitDialog").addEventListener("click", event => { if (event.target === $("completeVisitDialog")) { pendingCompletionId = ""; $("completeVisitDialog").close(); } });
+  $("confirmCompleteVisit").addEventListener("click", () => {
+    const request = store.get("careRequests", pendingCompletionId);
+    if (!request || !isMine(request) || statusName(request).toLowerCase() !== "in progress") {
+      pendingCompletionId = "";
+      $("completeVisitDialog").close();
+      toast("This visit can no longer be completed.", true);
+      return;
+    }
+    const end = new Date().toISOString();
+    if (updateRequest(request.id, { status: "Completed", visitStatus: "Completed", actualEndAt: end, completedAt: end, completedByNurseId: nurseId })) {
+      pendingCompletionId = "";
+      $("completeVisitDialog").close();
+      toast("Visit marked completed with the actual end time.");
+      renderAll();
+    }
+  });
   $("profileForm").addEventListener("submit", event => {
     event.preventDefault();
     const form = event.currentTarget; const message = $("profileMessage"); message.classList.remove("error"); message.textContent = "";

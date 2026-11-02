@@ -77,6 +77,25 @@ body{margin:0;background:#f5f8f9;color:var(--checkout-ink);font-family:Arial,san
 .place-order-button:hover,.continue-shopping:hover{background:#078f9f}
 .place-order-button:disabled{background:#bcc8cc;cursor:not-allowed}
 .place-order-button span,.continue-shopping span{color:#42d3db}
+.place-order-button{position:relative;isolation:isolate;overflow:hidden;gap:10px;border-radius:10px;background:linear-gradient(100deg,#087f86,#12999b);box-shadow:0 8px 18px #087f863b;font-size:13px;letter-spacing:.25px;transition:transform .2s,box-shadow .2s,filter .2s}
+.place-order-button:before{position:absolute;z-index:-1;inset:0;content:"";background:linear-gradient(110deg,transparent 25%,#ffffff3d 48%,transparent 67%);transform:translateX(-110%);transition:transform .55s ease}
+.place-order-button:hover:not(:disabled){transform:translateY(-2px);background:linear-gradient(100deg,#066b73,#087f86);box-shadow:0 11px 22px #087f8652;filter:saturate(1.08)}
+.place-order-button:hover:not(:disabled):before{transform:translateX(110%)}
+.place-order-button:focus-visible{outline:3px solid #17395f;outline-offset:3px}
+.place-order-button:disabled:not(.is-processing){background:#bcc8cc;box-shadow:none}
+.place-order-icon{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.place-order-button .place-order-label{color:#fff}
+.place-order-label{min-width:100px;text-align:center}
+.place-order-arrow{color:#e8fbff!important;transition:transform .2s}
+.place-order-button:hover:not(:disabled) .place-order-arrow{transform:translateX(3px)}
+.place-order-button.is-processing{cursor:wait;box-shadow:0 5px 14px #087f8640}
+.place-order-button.is-processing .place-order-icon{animation:order-cart-bob .55s ease-in-out infinite alternate}
+.place-order-button.is-processing .place-order-label{min-width:112px}
+.place-order-button.is-processing .place-order-label:after{content:"...";display:inline-block;width:0;overflow:hidden;white-space:nowrap;vertical-align:bottom;animation:order-dots 1.15s steps(4,end) infinite}
+.place-order-button.is-processing .place-order-arrow{display:none}
+@keyframes order-cart-bob{to{transform:translateY(-2px) rotate(-5deg)}}
+@keyframes order-dots{0%{width:0}100%{width:1.1em}}
+@media(prefers-reduced-motion:reduce){.place-order-button,.place-order-button:before,.place-order-arrow{transition:none}.place-order-button.is-processing .place-order-icon,.place-order-button.is-processing .place-order-label:after{animation:none}}
 .secure-note{margin:-8px 0 0;text-align:center;color:#8b9aa4;font-size:10px}
 .checkout-side-note{position:sticky;top:20px;padding:22px}
 .side-icon{width:36px;height:36px;display:grid;place-items:center;border-radius:11px;background:#e9f8f8;color:#078f9f;font-size:18px;font-weight:800}

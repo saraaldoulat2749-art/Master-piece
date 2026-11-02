@@ -22,6 +22,9 @@ table.cp-compact-table { width: 100%; min-width: 0 !important; table-layout: fix
 .cp-table-modal .row-actions, .cp-table-extra-actions { display: flex; flex-wrap: wrap; gap: 10px; }
 .cp-table-record-actions { margin: 0 22px 22px; padding: 20px 22px; border: 1px solid #d7e9ed; border-radius: 14px; background: #fff; }
 .cp-table-record-actions h3 { margin: 0 0 15px; color: #173c4e; font-size: 14px; }
+.cp-table-record-note { margin: 0 22px 22px; padding: 20px 22px; border: 1px solid #f0dfc4; border-radius: 14px; background: #fffdfa; }
+.cp-table-record-note h3 { margin: 0 0 14px; color: #85551b; font-size: 14px; }
+.cp-table-record-note-text { margin: 0; padding: 12px 14px; border-left: 3px solid #e0a04b; border-radius: 8px; background: #fff8ed; color: #465d68; font-size: 13px; line-height: 1.65; overflow-wrap: anywhere; }
 .cp-table-record-action-controls, .cp-table-record-action-group { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
 .cp-table-record-actions button, .cp-table-record-actions a { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; margin: 0; padding: 9px 15px; border: 1px solid #bedde3; border-radius: 9px; background: #eef8fa; color: #086e7a; font: 700 12px Arial, Helvetica, sans-serif; text-decoration: none; cursor: pointer; }
 .cp-table-record-actions button:hover, .cp-table-record-actions a:hover { background: #dff2f4; text-decoration: none; }
@@ -40,7 +43,7 @@ table.cp-compact-table { width: 100%; min-width: 0 !important; table-layout: fix
   .care-details-footer:has(.cp-table-extra-actions) { gap: 10px; }
   .care-details-footer:has(.cp-table-extra-actions) button { min-width: 72px; padding-inline: 13px; }
   .cp-table-detail-grid { grid-template-columns: 1fr; margin: 14px; padding: 18px; }
-  .cp-table-record-actions { margin: 0 14px 14px; padding: 18px; }
+  .cp-table-record-actions, .cp-table-record-note { margin: 0 14px 14px; padding: 18px; }
   .cp-table-modal-header { padding: 20px; }
   .cp-table-details-button { min-height: 40px; padding: 9px 10px; font-size: 11px; }
   .cp-compact-table > tbody > tr > td, .cp-compact-table > thead > tr > th { padding-inline: 10px; }

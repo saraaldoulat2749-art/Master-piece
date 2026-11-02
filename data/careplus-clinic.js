@@ -93,11 +93,36 @@
     const taken = listAppointments().some(item => {
       if (String(item.id) === String(ignoreId) || String(item.doctor || "").trim().toLowerCase() !== normalizedDoctor
         || item.date !== date || ["Cancelled", "Rejected"].includes(item.status)) return false;
+      const appointmentStatus = String(item.status || "").toLowerCase();
+      const depositStatus = String(item.depositPaymentStatus || "").toLowerCase();
+      const paymentStatus = String(item.paymentStatus || "").toLowerCase();
+      const depositPaid = ["paid", "demo simulated"].includes(depositStatus)
+        || paymentStatus === "paid" || paymentStatus.includes("demo simulated") || paymentStatus === "succeeded"
+        || Number(item.depositAmount) > 0 && Number(item.depositPaid) >= Number(item.depositAmount);
+      if (appointmentStatus === "pending deposit" && !depositPaid) return false;
       const existingStart = parseTime(item.time);
       const existingDuration = Math.max(15, Number(item.duration) || duration);
       return existingStart >= 0 && existingStart < selected + duration && existingStart + existingDuration > selected;
     });
     return !taken;
+  }
+  function availableSlots({ doctor, doctorId = "", date, ignoreId = "" }) {
+    if (!doctor || !date) return [];
+    const resolved = resolveDoctor(doctor, doctorId);
+    if (!resolved) return [];
+    const schedule = getSchedule(resolved.doctorId);
+    const weekday = new Date(`${date}T12:00:00`).getDay();
+    const dayHours = schedule.dayHours?.[weekday];
+    const start = parseTime(dayHours?.start || schedule.start);
+    const end = parseTime(dayHours?.end || schedule.end);
+    const duration = Math.max(15, Number(schedule.duration) || 30);
+    if (!(schedule.days || []).includes(weekday) || (schedule.holidays || []).some(item => item.date === date) || start < 0 || end <= start) return [];
+    const slots = [];
+    for (let cursor = start; cursor + duration <= end; cursor += duration) {
+      const slot = `${String(Math.floor(cursor / 60)).padStart(2, "0")}:${String(cursor % 60).padStart(2, "0")}`;
+      if (isAvailable({ doctor, doctorId: resolved.doctorId, date, time: slot, ignoreId })) slots.push(slot);
+    }
+    return slots;
   }
   function createBooking(booking) {
     const resolved = resolveDoctor(booking.doctor, booking.doctorId);
@@ -140,6 +165,7 @@
     if (!appointment || appointment.commissionAppointmentId !== appointment.id) return null;
     if (appointment.depositPaymentStatus === "Demo Simulated" || appointment.depositPaymentStatus === "Paid") return appointment;
     if (appointment.status !== "Pending Deposit") return null;
+    if (!isAvailable({ doctor: appointment.doctor, doctorId: appointment.doctorId, date: appointment.date, time: appointment.time, ignoreId: appointment.id })) return null;
     return updateAppointment(id, {
       depositPaymentStatus: "Demo Simulated",
       paymentStatus: "Demo Simulated (Not Charged)",
@@ -157,5 +183,5 @@
     window.addEventListener("careplus:clinic", callback);
     return () => { unsubscribeData(); window.removeEventListener("storage", handler); window.removeEventListener("careplus:clinic", callback); };
   }
-  window.CarePlusClinic = { getProfile, saveProfile, getSchedule, saveSchedule, listAppointments, listDoctors, resolveDoctor, isAvailable, createBooking, recordDemoDepositStep, updateAppointment, subscribe };
+  window.CarePlusClinic = { getProfile, saveProfile, getSchedule, saveSchedule, listAppointments, listDoctors, resolveDoctor, isAvailable, availableSlots, createBooking, recordDemoDepositStep, updateAppointment, subscribe };
 })();

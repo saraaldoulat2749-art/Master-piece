@@ -44,6 +44,12 @@
     if (!cardForm.reportValidity()) return;
     const record = appointment();
     if (!record) return render();
+    if (!window.CarePlusClinic?.isAvailable({ doctor: record.doctor, doctorId: record.doctorId, date: record.date, time: record.time, ignoreId: record.id })) {
+      const message = document.getElementById("paymentMessage");
+      message.textContent = "This appointment time is no longer available. Please return to booking and choose another time.";
+      message.hidden = false;
+      return;
+    }
     // Replace this simulated response with verified provider webhooks/API calls in the backend version.
     const updated = window.CarePlusClinic?.recordDemoDepositStep(record.id);
     cardForm.reset();

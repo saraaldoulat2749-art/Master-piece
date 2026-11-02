@@ -46,8 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
             identity.value.trim().toLowerCase();
 
         if (
-            !/^\S+@\S+\.\S+$/.test(email) ||
-            !password.value
+            !(window.CarePlusAuth?.isValidEmail?.(email) ?? /^\S+@\S+\.\S{2,}$/.test(email)) ||
+            !password.value || password.value.length > 128
         ) {
             showMessage(
                 "Please enter a valid email and password."

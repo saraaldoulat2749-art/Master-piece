@@ -4,8 +4,8 @@
   <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="theme-color" content="#172536">
   <title>Checkout | CarePlus</title>
   <link rel="stylesheet" href="../../Nav/style.css"><link rel="stylesheet" href="../../Footer/style.css"><link rel="stylesheet" href="checkout.css"><link rel="stylesheet" href="checkout-card.css">
-<link rel="stylesheet" href="../../shared/global-button-theme.css"></head>
-<body data-protected="true"><script src="../../auth.js?v=archive-aware-1"></script>
+<link rel="stylesheet" href="../../shared/global-button-theme.css"><link rel="stylesheet" href="../../shared/back-link-theme.css"></head>
+<body data-protected="true"><script src="../../auth.js?v=floating-customer-notifications-1"></script>
   <div id="nav-container"></div>
   <main class="checkout-page">
     <a class="back-link" href="../index.html?cart=open"> Back to cart</a>
@@ -55,7 +55,7 @@
           </div>
         </section>
         <div id="form-message" class="form-message" role="alert" hidden></div>
-        <button class="place-order-button" id="place-order" type="submit">Place Order</button>
+        <button class="place-order-button" id="place-order" type="submit"><svg class="place-order-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 4h2l2.1 10.1a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 1.9-1.4L22 8H6"/><circle cx="10" cy="20" r="1.4"/><circle cx="18" cy="20" r="1.4"/></svg><span class="place-order-label">Place Order</span><span class="place-order-arrow" aria-hidden="true">&#8594;</span></button>
         <p class="secure-note">Your order and delivery details are used to prepare this order.</p>
       </form>
       <aside class="checkout-side-note"><div class="side-icon" aria-hidden="true">CarePlus</div><h2>CarePlus delivery</h2><p>We'll use your contact and address details to coordinate delivery of your medical supplies.</p><a href="mailto:info@careplus.com">Questions? Contact our team</a></aside>
@@ -63,6 +63,6 @@
   </main>
   <div id="footer-container"></div>
   <script src="../../data/careplus-data.js?v=archive-aware-1"></script><script src="checkout.js"></script>
-  <script src="../../Footer/footer.js"></script>
+  <script src="../../Footer/footer.js?v=footer-hearts-removed-1"></script>
 </body>
 </html>

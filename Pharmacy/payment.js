@@ -1,6 +1,16 @@
 const api = window.CarePlusPharmacy;
 const orderId = new URLSearchParams(location.search).get("orderId");
 const order = window.CarePlusData.get("orders", orderId);
+if (order) {
+  const item = order.items?.[0] || {};
+  const pharmacy = window.CarePlusPharmacy.get(order.pharmacyId);
+  const query = `medicine=${encodeURIComponent(item.name || "")}&area=${encodeURIComponent(pharmacy?.area || pharmacy?.city || "")}`;
+  const links = [...document.querySelectorAll(".order-progress .order-step-number")];
+  if (links[0]) links[0].href = `index.html?${query}`;
+  if (links[1]) links[1].href = `results.html?${query}`;
+  if (links[2]) links[2].href = `order.html?pharmacyId=${encodeURIComponent(order.pharmacyId)}&medicineId=${encodeURIComponent(item.medicineId || "")}`;
+  if (links[4]) links[4].href = `payment.html?orderId=${encodeURIComponent(order.id)}`;
+}
 const customer = api.currentCustomer();
 const card = document.getElementById("paymentCard");
 const unavailable = document.getElementById("paymentUnavailable");
@@ -37,7 +47,7 @@ if (!order || order.source !== "pharmacy-order" || !customer || String(order.use
   document.getElementById("paymentCommission").textContent = money(order.customerCommissionAmount);
   document.getElementById("paymentDeliveryLabel").textContent = `Delivery · ${order.deliveryZoneLabel || api.deliveryZoneLabel(order.deliveryZone)}`;
   document.getElementById("paymentDelivery").textContent = money(order.deliveryFee);
-  document.getElementById("paymentTotal").textContent = money(order.total);
+  document.getElementById("paymentTotal").textContent = money(order.customerCommissionAmount);
   if (order.paymentDemoResult === "simulated-success") showSimulatedSuccess();
 }
 

@@ -28,7 +28,7 @@ fetch("../Nav/index.html")
   })
   .catch(error => console.error("Could not load CarePlus navigation:", error));
 
-fetch("../Footer/index.html")
+fetch("../Footer/index.html?v=footer-hearts-removed-1")
   .then(response => {
     if (!response.ok) throw new Error(`Footer request failed: ${response.status}`);
     return response.text();

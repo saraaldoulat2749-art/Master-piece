@@ -1,3 +1,4 @@
+@import url("../shared/back-link-theme.css");
 
 :root {
   --teal: #94D5D6;
@@ -240,6 +241,7 @@ input:focus, select:focus {
   border-radius: 12px;
 }
 .pharmacy-icon svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.map-search-chip>span svg{display:block;width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
 
 .pharmacy-title { flex: 1; min-width: 0; }
 
@@ -288,6 +290,7 @@ input:focus, select:focus {
 
 .ico { width: 20px; height: 20px; flex: 0 0 20px; display: inline-grid; place-items: center; color: var(--teal); }
 .ico svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.checkout-pharmacy-icon svg,.order-help-icon svg,.order-success-mark svg{display:block;width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 
 .available {
   color: var(--green);

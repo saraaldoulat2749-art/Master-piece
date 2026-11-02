@@ -4,7 +4,7 @@
 (() => {
   const css = document.createElement("link");
   css.rel = "stylesheet";
-  css.href = new URL("compact-tables.css", document.currentScript.src).href;
+  css.href = new URL("compact-tables.css?v=reason-panel-3", document.currentScript.src).href;
   document.head.append(css);
   const columns = new WeakMap();
   let sequence = 0;
@@ -105,6 +105,9 @@
       close.addEventListener("click", () => dialog.close());
       header.append(copy, close);
       const list = node("dl", "cp-table-detail-grid");
+      const cancellationReason = row.querySelector(".cancel-reason");
+      const cancellationReasonText = cancellationReason?.querySelector(".cancel-reason__copy > span")?.textContent.trim() || "";
+      cancellationReason?.remove();
       const actionSection = node("section", "cp-table-record-actions");
       actionSection.setAttribute("aria-label", "Record actions");
       actionSection.append(node("h3", "", "Actions"));
@@ -123,13 +126,19 @@
         if (!cell.textContent.trim() && !cell.querySelector("input,select,button,a,form")) value.textContent = "Not provided";
         else value.append(...cell.childNodes);
         field.append(value);
-        if (value.querySelector("button,form,select")) field.classList.add("cp-table-detail-field--wide");
+        if (value.querySelector("button,form,select,.cancel-reason")) field.classList.add("cp-table-detail-field--wide");
         list.append(field);
       });
       const footer = node("footer", "cp-table-modal-footer");
       const done = node("button", "cp-table-details-button", "Done"); done.type = "button";
       done.addEventListener("click", () => dialog.close()); footer.append(done);
       dialog.append(header, list);
+      if (cancellationReasonText) {
+        const reasonSection = node("section", "cp-table-record-note");
+        reasonSection.append(node("h3", "", "Patient’s cancellation reason"));
+        reasonSection.append(node("p", "cp-table-record-note-text", cancellationReasonText));
+        dialog.append(reasonSection);
+      }
       if (actionControls.children.length) dialog.append(actionSection);
       dialog.append(footer); detailCell.append(dialog);
       button.addEventListener("click", () => { if (!dialog.open) dialog.showModal(); close.focus(); });

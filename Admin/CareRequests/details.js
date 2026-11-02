@@ -31,7 +31,7 @@
     }
     return {
       state, verified, payment,
-      overview: [["Family Contact", record.client], ["Service", record.service], ["Preferred Date", dateOnly(record.date)], ["Preferred Time", record.time], ["Duration (hours)", record.duration], ["Assigned Nurse", record.assignedNurseName], ["City / Area", [record.city, record.area].filter(Boolean).join(" / ")], ["Schedule", record.schedule], ["Booking Status", state]],
+      overview: [["Family Contact", record.client], ["Service", record.service], ["Preferred Date", dateOnly(record.date)], ["Preferred Time", record.time], ["Duration (hours)", record.duration], ["Assigned Nurse", record.assignedNurseName], ["City / Area", [record.city, record.area].filter(Boolean).join(" / ")], ["Schedule", record.schedule], ["Booking Status", state], ...(record.cancelReason ? [["Cancellation Reason", record.cancelReason]] : []), ...(record.rejectionReason ? [["Rejection Reason", record.rejectionReason]] : [])],
       // Read stored financial values; never infer balance settlement from visit completion.
       finances: [["Estimated Total (JOD)", money(record.totalPrice ?? record.estimatedTotal)], ["Deposit Paid (JOD)", money(record.depositPaid ?? (recorded ? record.depositAmount : null))], ["Remaining Balance (JOD)", money(record.remainingBalance)]],
       sections: [

@@ -94,8 +94,6 @@
       tab.setAttribute("aria-selected", String(active)); tab.tabIndex = active ? 0 : -1;
     });
     $("#orders-panel").setAttribute("aria-labelledby", type + "-tab");
-    root.querySelector("[data-pharmacy-column]").hidden = type !== "pharmacy";
-    root.querySelector("[data-commission-column]").hidden = type !== "pharmacy";
     $("#orders-search").value = selected.query;
     $("[data-clear-search]").hidden = !selected.query;
       const statuses = [...new Set([...(type === "store" ? ["Pending", ...storeStatuses] : pharmacyStatuses), ...rows.filter(row => isPharmacy(row) === (type === "pharmacy")).map(row => currentStatus(row)).filter(Boolean)])];
@@ -106,7 +104,7 @@
     const body = $("[data-managed-orders]"); body.replaceChildren();
     result.rows.forEach(order => {
       const row = make("tr");
-      [reference(order), customer(order), ...(isPharmacy(order) ? [order.pharmacyName || data.get("pharmacies", order.pharmacyId)?.name || "Not provided"] : []), dateText(order.placedAt || order.createdAt), money(order.total), ...(isPharmacy(order) ? [`${money(order.commissionAmount)} · ${order.commissionStatus || "Not eligible"}`] : [])].forEach((value, i) => row.append(make("td", i === 0 ? "orders-ref" : "", value)));
+      row.append(make("td", "orders-customer", customer(order)));
       const statusCell = make("td");
       // Read exactly one status; never read select.textContent (all option labels).
       statusCell.append(badge(currentStatus(order))); row.append(statusCell);
@@ -172,8 +170,14 @@
         if (!latest || isPharmacy(latest) || !storeStatuses.includes(select.value) || latest.status === select.value) return;
         saving = true; save.disabled = true;
         const status = select.value;
+        const now = new Date().toISOString();
         const history = Array.isArray(latest.statusHistory) ? latest.statusHistory : [];
-        const updated = data.update("orders", id, { status, statusHistory: [...history, { status, at: new Date().toISOString() }] });
+        const paymentUpdate = status === "Delivered" ? {
+          paymentStatus: "Paid", paymentVerified: true,
+          paidAt: latest.paidAt || now, paymentVerifiedAt: latest.paymentVerifiedAt || now,
+          paymentVerificationMethod: "admin-delivery-confirmation"
+        } : {};
+        const updated = data.update("orders", id, { status, ...paymentUpdate, statusHistory: [...history, { status, at: now }] });
         if (!updated) { saving = false; save.disabled = false; feedback.textContent = "Could not save this status. Please try again."; return; }
         openDetails(id);
         dialog.querySelector(".order-save-feedback").textContent = "Order status updated successfully.";

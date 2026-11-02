@@ -1,3 +1,4 @@
+@import url("../shared/back-link-theme.css");
 :root {
   --chat-teal: #94D5D6;
   --chat-teal-dark: #078c9b;
@@ -160,3 +161,5 @@ body { margin: 0; background: #effbfb; color: var(--chat-navy); font-family: Ari
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+.suggestion-card>span>svg{display:block;width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}

@@ -7,10 +7,11 @@
     <link rel="stylesheet" href="../Nav/style.css">
 
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="workflow.css">
+    <link rel="stylesheet" href="workflow.css?v=pharmacy-steps-1">
        <link rel="stylesheet" href="../Footer/style.css">
-<link rel="stylesheet" href="../shared/global-button-theme.css"></head>
-<body data-protected="true"><script src="../auth.js?v=archive-aware-1"></script>
+    <link rel="stylesheet" href="../shared/notifications.css?v=floating-customer-2">
+<link rel="stylesheet" href="../shared/global-button-theme.css"><link rel="stylesheet" href="../shared/back-link-theme.css"></head>
+<body data-protected="true"><script src="../auth.js?v=floating-customer-notifications-1"></script>
        <div id="nav-container"></div>
 <script>
 fetch("../Nav/index.html")
@@ -39,7 +40,7 @@ fetch("../Nav/index.html")
         <span class="map-block block-one"></span><span class="map-block block-two"></span><span class="map-block block-three"></span>
         <span class="map-marker marker-one"><i></i></span><span class="map-marker marker-two"><i></i></span>
         <span class="location-pulse"></span><span class="location-pin main-pin"><i></i></span>
-        <div class="map-search-chip"><span aria-hidden="true">&#128269;</span><b>NEARBY SEARCH</b><i></i></div>
+        <div class="map-search-chip"><span aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="10.8" cy="10.8" r="6.5"/><path d="m16 16 4.2 4.2"/></svg></span><b>NEARBY SEARCH</b><i></i></div>
         <div class="pharmacy-store">
           <div class="store-sign"><b>+</b><span>PHARMACY</span></div>
           <div class="store-awning"><i></i><i></i><i></i><i></i><i></i></div>
@@ -53,7 +54,7 @@ fetch("../Nav/index.html")
     </div>
   </section>
 
-  <nav class="order-progress" aria-label="Five steps in the pharmacy order process"><span class="active"><b>1</b> Search</span><i></i><span><b>2</b> Pharmacy results</span><i></i><span><b>3</b> Place order</span><i></i><span><b>4</b> Delivery</span><i></i><span><b>5</b> CarePlus commission</span></nav>
+  <nav class="order-progress" aria-label="Five steps in the pharmacy order process"><span class="active" aria-current="step"><b><a class="order-step-number" href="index.html">1</a></b> Search</span><i></i><span><b><a class="order-step-number" href="results.html">2</a></b> Pharmacy results</span><i></i><span><b><a class="order-step-number" data-order-step="place-order" href="order.html">3</a></b> Place order</span><i></i><span><b><a class="order-step-number" href="orders.html">4</a></b> Delivery</span><i></i><span><b><a class="order-step-number" href="payment.html">5</a></b> CarePlus commission</span></nav>
 
   <section class="panel">
     <h2>Search for Medicine &amp; Pharmacy</h2>
@@ -87,7 +88,7 @@ fetch("../Nav/index.html")
     </form>
   </section>
   <section class="my-pharmacy-orders pharmacy-next-steps">
-    <div class="my-orders-heading"><div><span class="order-eyebrow">STEP 4 · TRACKING</span><h2>My medicine orders</h2></div></div>
+    <div class="my-orders-heading"><div><span class="order-eyebrow">ORDER TRACKING</span><h2>My medicine orders</h2></div></div>
     <p>Follow the pharmacy's confirmation and delivery status.</p>
     <div class="pharmacy-flow-links"><a class="btn btn-outline" href="orders.html">Open my orders</a></div>
   </section>
@@ -95,14 +96,14 @@ fetch("../Nav/index.html")
 <div id="footer-container"></div>
 
 <script>
-    fetch("../Footer/index.html")
+    fetch("../Footer/index.html?v=footer-hearts-removed-1")
         .then(response => response.text())
         .then(data => {
             document.getElementById("footer-container").innerHTML = data;
         })
         .catch(error => console.error("Error loading footer:", error));
 </script>
-<script src="../data/careplus-data.js?v=archive-aware-1"></script><script src="../data/careplus-pharmacy.js?v=archive-aware-1"></script><script src="script.js?v=latest-first-1"></script>
-    <script src="../Footer/footer.js"></script>
+<script src="../data/careplus-data.js?v=archive-aware-1"></script><script src="../data/careplus-pharmacy.js?v=archive-aware-1"></script><script src="script.js?v=latest-first-1"></script><script src="../shared/notifications.js?v=notifications-3"></script>
+    <script src="../Footer/footer.js?v=footer-hearts-removed-1"></script>
 </body>
 </html>

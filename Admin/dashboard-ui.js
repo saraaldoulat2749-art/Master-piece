@@ -21,7 +21,7 @@
       ["Doctors/index.html", "Doctors", "D"], ["Pharmacies/index.html", "Pharmacies", "P"],
       ["Nurses/index.html", "Nurses", "N"], ["Appointments/index.html", "Appointments", "A"],
       ["Orders/index.html", "Medicine Orders", "M"], ["CareRequests/index.html", "Elderly Care", "C"],
-      ["Products/index.html", "Medical Store", "S"], ["AIServices/index.html", "AI Services", "AI"],
+      ["Products/index.html", "Medical Store", "S"],
       ["Revenue/index.html", "Revenue & reports", "R"]
     ];
     const links = sections.map(([route, label, glyph]) => {

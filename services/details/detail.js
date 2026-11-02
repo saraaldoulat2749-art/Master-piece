@@ -24,7 +24,7 @@ if (data) {
   document.getElementById("detail-content").innerHTML = `<a class="crumb" href="../index.html">All services</a><section class="detail-hero"><span class="eyebrow">${safe(data.eyebrow)}</span><h1>${safe(data.title)}</h1><p>${safe(data.purpose)}</p><div class="actions"><a class="button primary" href="${loginUrl.href}">Log in to access this service</a><a class="button secondary" href="../index.html">Explore other services</a></div></section><section class="description-grid"><article class="info-card"><h2>Purpose</h2><p>${safe(data.purpose)}</p></article><article class="info-card"><h2>Features</h2><ul>${data.features.map(item => `<li>${safe(item)}</li>`).join("")}</ul></article><article class="info-card"><h2>How it works</h2><p>${safe(data.how)}</p></article></section><section class="how"><h2>Using CarePlus</h2><p>Service details are public. Opening the service requires the temporary demo session described on the login page.</p></section><p class="access-note"><strong>Availability:</strong> Some services show prototype information. A request, booking, product availability, or final price is not confirmed until the relevant CarePlus team completes follow-up.</p>`;
   const serviceAction = document.querySelector("#detail-content .button.primary");
   const breadcrumb = document.querySelector("#detail-content .crumb");
-  if (breadcrumb) breadcrumb.textContent = "\u2190 All services";
+  if (breadcrumb) breadcrumb.textContent = "\u2190 Back to Services";
   if (serviceAction && window.CarePlusAuth?.hasDemoSession()) {
     serviceAction.href = serviceUrl.href;
     serviceAction.textContent = "Open service";

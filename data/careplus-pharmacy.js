@@ -116,6 +116,16 @@
       if (!pharmacy.description) changes.description = "Your neighborhood pharmacy, here to help.";
       if (Object.keys(changes).length) window.CarePlusData.update("pharmacies", pharmacy.id, syncMedicineNames({ ...pharmacy, ...changes }));
     });
+    // Restore the requested demo medicine once; later stock changes stay intact.
+    const restoreMarker = "careplusAlShifaPanadolRestoreV1";
+    if (localStorage.getItem(restoreMarker) !== "1") {
+      const pharmacy = get();
+      const panadol = pharmacy?.inventory?.find(item => item.id === "med-panadol" && item.source === "demo-seed");
+      if (panadol && Number(panadol.quantity) === 0 && !isExpired(panadol)) {
+        const inventory = pharmacy.inventory.map(item => item === panadol ? { ...item, quantity: 18, available: true, listed: true } : item);
+        if (window.CarePlusData.update("pharmacies", pharmacy.id, syncMedicineNames({ ...pharmacy, inventory }))) localStorage.setItem(restoreMarker, "1");
+      } else if (pharmacy) localStorage.setItem(restoreMarker, "1");
+    }
     const record = get();
     if (!record) return null;
     migrateOrders();
@@ -126,6 +136,12 @@
     listOrders().forEach(order => {
       const changes = {};
       if (!order.paymentStatus) changes.paymentStatus = "Pending";
+      if (order.paymentMethod === "online-gateway" && order.paymentStatus === "Pending") {
+        changes.paymentMethod = "cash-on-delivery";
+        changes.onlineAmount = Number(order.customerCommissionAmount || 0);
+        changes.cashOnDeliveryAmount = roundMoney(Number(order.subtotal ?? order.total) + Number(order.deliveryFee || 0));
+        changes.commissionPaymentStatus = order.paymentDemoResult === "simulated-success" ? "Demo Simulated" : "Pending";
+      }
       if (!order.paymentMethod || order.paymentMethod === "cash-at-pickup") changes.paymentMethod = "cash-on-delivery";
       if (order.paymentVerified === undefined) changes.paymentVerified = false;
       if (order.commissionRate === undefined) changes.commissionRate = effectiveRate(order.pharmacyId);
@@ -220,7 +236,8 @@
       deliveryAddress: address, deliveryPhone: phone, deliveryZone, deliveryZoneLabel: deliveryZoneLabel(deliveryZone),
       customerName: customer.name, items: [{ medicineId: medicine.id, name: medicine.name, image: medicine.image || "", price: unitPrice, quantity: count }],
       subtotal, customerCommissionAmount, deliveryFee, total: roundMoney(subtotal + customerCommissionAmount + deliveryFee), currency: "JOD", placedAt: new Date().toISOString(), status: "Pending",
-      paymentMethod: "online-gateway", paymentStatus: "Pending", paymentVerified: false,
+      paymentMethod: "cash-on-delivery", paymentStatus: "Pending", paymentVerified: false,
+      commissionPaymentStatus: "Pending", onlineAmount: customerCommissionAmount, cashOnDeliveryAmount: roundMoney(subtotal + deliveryFee),
       commissionRate, commissionAmount: 0, commissionStatus: "Not Eligible", cancelReason: "",
       idempotencyKey: idempotencyKey || "", inventoryReserved: true,
       statusHistory: [{ status: "Pending", at: new Date().toISOString(), actor: "Customer", note: "Order received" }]
@@ -262,6 +279,7 @@
     if (!pharmacyId || String(pharmacyId) !== String(order.pharmacyId) || String(options.pharmacyId || pharmacyId) !== String(order.pharmacyId)) return { ok: false, error: "You can update orders for your pharmacy only." };
     status = canonicalOrderStatus(status);
     const currentStatus = canonicalOrderStatus(order.status);
+    if (currentStatus === "Cancelled") return { ok: false, error: "This order was cancelled and its status cannot be changed." };
     if (!["Pending", "Accepted", "Rejected", "Preparing", "Ready for Pickup", "Completed", "Cancelled"].includes(status) || status === currentStatus) return { ok: false, error: "Choose a different valid order status." };
     if (["Rejected", "Cancelled"].includes(status) && !String(options.reason || "").trim()) return { ok: false, error: "Enter a rejection reason." };
     if (status === "Completed" && options.saleVerified !== true) return { ok: false, error: "Verify the sale before completing this order." };
@@ -332,15 +350,17 @@
     audit(order.id, `order-${status.toLowerCase().replace(/\s+/g, "-")}`, { reason: changes.cancelReason || "", paymentStatus: changes.paymentStatus || order.paymentStatus }, `Pharmacy ${pharmacyId}`);
     return { ok: true, order: updated };
   }
-  function cancelCustomerOrder(orderId, userId, reason = "Cancelled by customer") {
+  function cancelCustomerOrder(orderId, userId, reason = "") {
     const order = window.CarePlusData.get("orders", orderId);
     const customer = currentCustomer();
     if (!customer || String(customer.userId) !== String(userId) || !order || String(order.userId) !== String(userId) || !["Pending", "Accepted", "Preparing"].includes(canonicalOrderStatus(order.status))) return { ok: false, error: "This order cannot be cancelled." };
+    reason = String(reason || "").trim();
+    if (!reason) return { ok: false, error: "Enter a cancellation reason." };
     if (order.inventoryReserved) { const restored = reserveInventory(order, 1); if (!restored.ok) return restored; }
     const at = new Date().toISOString(), history = [...orderHistory(order), { status: "Cancelled", at, actor: "Customer", reason: String(reason || "Cancelled by customer") }];
     const updated = window.CarePlusData.update("orders", orderId, { status: "Cancelled", statusUpdatedAt: at, cancelledAt: at, customerCancelledAt: at, cancelReason: String(reason || "Cancelled by customer"), inventoryReserved: false, commissionStatus: "Not Eligible", commissionAmount: 0, statusHistory: history });
     if (!updated) { if (order.inventoryReserved) reserveInventory(order, -1); return { ok: false, error: "Could not save the cancellation." }; }
-    audit(orderId, "customer-cancelled-order", {}, order.customerReference || "Customer");
+    audit(orderId, "customer-cancelled-order", { reason }, order.customerReference || "Customer");
     return { ok: true, order: updated };
   }
   function confirmCustomerReceipt(orderId, userId) {
@@ -361,12 +381,12 @@
   function simulateDemoPayment(orderId, userId) {
     const order = window.CarePlusData.get("orders", orderId);
     const customer = currentCustomer();
-    if (!customer || String(customer.userId) !== String(userId) || !order || order.source !== "pharmacy-order" || String(order.userId) !== String(userId) || order.paymentMethod !== "online-gateway") return { ok: false, error: "This order is unavailable for demo checkout." };
+    if (!customer || String(customer.userId) !== String(userId) || !order || order.source !== "pharmacy-order" || String(order.userId) !== String(userId) || !["online-gateway", "cash-on-delivery"].includes(order.paymentMethod)) return { ok: false, error: "This order is unavailable for demo checkout." };
     if (order.status === "Cancelled" || order.paymentStatus !== "Pending") return { ok: false, error: "This order is not awaiting payment." };
     if (order.paymentDemoResult === "simulated-success") return { ok: true, order, duplicate: true };
-    const updated = window.CarePlusData.update("orders", orderId, { paymentDemoResult: "simulated-success", paymentDemoAt: new Date().toISOString() });
+    const updated = window.CarePlusData.update("orders", orderId, { paymentMethod: "cash-on-delivery", onlineAmount: Number(order.customerCommissionAmount || 0), cashOnDeliveryAmount: roundMoney(Number(order.subtotal ?? order.total) + Number(order.deliveryFee || 0)), commissionPaymentStatus: "Demo Simulated", paymentDemoResult: "simulated-success", paymentDemoAt: new Date().toISOString() });
     if (!updated) return { ok: false, error: "The demo payment result could not be saved." };
-    audit(orderId, "demo-payment-simulated", { total: order.total, realCharge: false, paymentStatus: "Pending" }, order.customerReference || "Customer");
+    audit(orderId, "demo-payment-simulated", { total: Number(order.customerCommissionAmount || 0), purpose: "website-commission", realCharge: false, paymentStatus: "Pending" }, order.customerReference || "Customer");
     return { ok: true, order: updated };
   }
 

@@ -22,7 +22,7 @@ function loadSharedPage() {
     const storeLink = [...document.querySelectorAll("#nav-container nav a")].find(link => link.textContent.trim() === "Medical Store");
     if (storeLink) { storeLink.href = "../index.html"; storeLink.classList.add("active"); }
   }).catch(error => console.error("Could not load CarePlus navigation:", error));
-  fetch("../../Footer/index.html").then(response => response.text()).then(html => {
+  fetch("../../Footer/index.html?v=footer-hearts-removed-1").then(response => response.text()).then(html => {
     byId("footer-container").innerHTML = html;
     document.querySelectorAll("#footer-container a[href^='../']").forEach(link => link.href = `../${link.getAttribute("href")}`);
     const storeLink = [...document.querySelectorAll("#footer-container a")].find(link => link.textContent.trim() === "Medical Store");
@@ -134,6 +134,11 @@ function submitOrder(event) {
     return;
   }
   if (!validateForm()) return;
+  const placeOrderButton = byId("place-order");
+  placeOrderButton.disabled = true;
+  placeOrderButton.classList.add("is-processing");
+  placeOrderButton.setAttribute("aria-busy", "true");
+  placeOrderButton.querySelector(".place-order-label").textContent = "Processing";
   const formData = new FormData(byId("checkout-form"));
   const paymentMethod = "Card payment";
   const deliveryMethod = formData.get("delivery") || "standard";
@@ -161,6 +166,10 @@ function submitOrder(event) {
   if (!sharedOrder) {
     formMessage.textContent = "Your order could not be saved in this browser. Please try again.";
     formMessage.hidden = false;
+    placeOrderButton.disabled = false;
+    placeOrderButton.classList.remove("is-processing");
+    placeOrderButton.removeAttribute("aria-busy");
+    placeOrderButton.querySelector(".place-order-label").textContent = "Place Order";
     return;
   }
   order.id = sharedOrder.id;
@@ -169,7 +178,7 @@ function submitOrder(event) {
   localStorage.removeItem(CART_KEY);
   // Keep demo card data only in the current form interaction; never store it with an order.
   document.querySelectorAll("[data-card-number], [data-card-name], [data-card-expiry], [data-card-cvv]").forEach(field => { field.value = ""; });
-  window.location.href = "confirmation.html";
+  window.setTimeout(() => { window.location.href = "confirmation.html"; }, 850);
 }
 
 function renderConfirmation() {

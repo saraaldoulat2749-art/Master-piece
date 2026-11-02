@@ -7,10 +7,10 @@
   <link rel="stylesheet" href="../Nav/style.css">
   <link rel="stylesheet" href="../Footer/style.css">
   <link rel="stylesheet" href="style.css">
-<link rel="stylesheet" href="../shared/global-button-theme.css"></head>
+<link rel="stylesheet" href="../shared/global-button-theme.css"><link rel="stylesheet" href="../shared/back-link-theme.css"></head>
 <body data-protected="true">
   <script src="../data/careplus-data.js?v=archive-aware-1"></script>
-  <script src="../auth.js?v=archive-aware-1"></script>
+  <script src="../auth.js?v=floating-customer-notifications-1"></script>
   <div id="nav-container"></div>
   <script>
     fetch("../Nav/index.html")
@@ -39,7 +39,7 @@
         <div class="card-method" aria-label="Credit or debit card">
           <span class="card-method-icon" aria-hidden="true">?</span>
           <span><strong>Credit or debit card</strong><small>Card payment</small></span>
-          <span class="card-brands" aria-label="Visa and Mastercard">VISA&nbsp; · &nbsp;MC</span>
+          <span class="card-brands" aria-label="Visa and Mastercard">VISA&nbsp; ï¿½ &nbsp;MC</span>
         </div>
 
         <form id="checkout-form" novalidate>
@@ -77,12 +77,12 @@
 
   <div id="footer-container"></div>
   <script>
-    fetch("../Footer/index.html")
+    fetch("../Footer/index.html?v=footer-hearts-removed-1")
       .then(response => response.text())
       .then(html => { document.getElementById("footer-container").innerHTML = html; })
       .catch(error => console.error("Error loading footer:", error));
   </script>
-  <script src="../Footer/footer.js"></script>
+  <script src="../Footer/footer.js?v=footer-hearts-removed-1"></script>
   <script src="payment.js?v=ai-history-1"></script>
 </body>
 </html>

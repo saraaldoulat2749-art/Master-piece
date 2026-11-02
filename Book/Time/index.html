@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="style.css">
        <link rel="stylesheet" href="../../Footer/style.css">
 <link rel="stylesheet" href="../../shared/global-button-theme.css"></head>
-<body data-protected="true"><script src="../../auth.js?v=archive-aware-1"></script>
+<body data-protected="true"><script src="../../auth.js?v=floating-customer-notifications-1"></script>
      <div id="nav-container"></div>
 <script>
 fetch("../../Nav/index.html")
@@ -31,7 +31,7 @@ fetch("../../Nav/index.html")
         <!-- Booking progress steps -->
         <div class="steps">
             <div class="step completed">
-                <div class="step-circle">1</div>
+                <div class="step-circle">&#10003;</div>
                 <div class="step-label">Book Appointment</div>
             </div>
             <div class="step active">
@@ -154,15 +154,15 @@ fetch("../../Nav/index.html")
 </main>
 <div id="footer-container"></div>
 <script>
-    fetch("../../Footer/index.html")
+    fetch("../../Footer/index.html?v=footer-hearts-removed-1")
         .then(response => response.text())
         .then(data => {
             document.getElementById("footer-container").innerHTML = data;
         })
         .catch(error => console.error("Error loading footer:", error));
 </script>
-<script src="../../data/careplus-data.js?v=archive-aware-1"></script><script src="../../data/careplus-clinic.js?v=archive-aware-1"></script><script src="script.js"></script>
-    <script src="../../Footer/footer.js"></script>
+<script src="../../data/careplus-data.js?v=archive-aware-1"></script><script src="../../data/careplus-clinic.js?v=payment-slot-v1"></script><script src="script.js?v=phone-slot-v1"></script>
+    <script src="../../Footer/footer.js?v=footer-hearts-removed-1"></script>
 </body>
 </html>
 

@@ -1,0 +1,52 @@
+/* Consistent back-link treatment across service flows. */
+.back-to-services,
+.back-link,
+.payment-back,
+.crumb,
+.service-back-link {
+  display: inline-flex !important;
+  width: max-content;
+  max-width: 100%;
+  min-height: 36px;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 14px !important;
+  padding: 9px 13px !important;
+  border: 1px solid #dce9e5 !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  color: #45695f !important;
+  font: 700 12px/1.2 Arial, Helvetica, sans-serif !important;
+  text-decoration: none !important;
+  box-shadow: none !important;
+  transition: color .18s, border-color .18s, transform .18s !important;
+}
+
+.back-to-services:hover,
+.back-link:hover,
+.payment-back:hover,
+.crumb:hover,
+.service-back-link:hover {
+  transform: translateX(-2px);
+  border-color: #9dcfc2 !important;
+  color: #087f86 !important;
+}
+
+.back-to-services:focus-visible,
+.back-link:focus-visible,
+.payment-back:focus-visible,
+.crumb:focus-visible,
+.service-back-link:focus-visible {
+  outline: 3px solid #087f86;
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .back-to-services,
+  .back-link,
+  .payment-back,
+  .crumb,
+  .service-back-link {
+    transition: none !important;
+  }
+}

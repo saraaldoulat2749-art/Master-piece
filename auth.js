@@ -1,4 +1,4 @@
-
+﻿
 (function () {
   // Browser-only demo auth adapter. Replace account lookup, password checks, and
   // session creation with server-validated ASP.NET Core endpoints before production.
@@ -11,6 +11,41 @@
   const home = new URL("Home/Master.html", root).href;
   const login = new URL("log%20in/login.html", root).href;
   const profile = new URL("Profile/index.html", root).href;
+  function isValidEmail(value) {
+    const email = String(value || "").trim();
+    return email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
+  }
+  function isValidPassword(value) { return typeof value === "string" && value.length >= 8 && value.length <= 128; }
+  function isValidJordanianPhone(value) { return /^07\d{8}$/.test(String(value || "").trim()); }
+  function configurePhoneInputs() {
+    document.querySelectorAll('input[type="tel"]').forEach(input => {
+      input.inputMode = "numeric";
+      input.maxLength = 10;
+      input.pattern = "07[0-9]{8}";
+      input.title = "Enter exactly 10 digits starting with 07, for example 0790000000.";
+      const digits = input.value.replace(/\D/g, "");
+      if (digits.length === 12 && digits.startsWith("9627")) input.value = `0${digits.slice(-9)}`;
+    });
+  }
+  document.addEventListener("submit", event => {
+    const form = event.target;
+    if (!(form instanceof HTMLFormElement)) return;
+    const invalid = [...form.querySelectorAll('input[type="tel"]')].find(input => {
+      const value = input.value.trim();
+      const valid = !value && !input.required || isValidJordanianPhone(value);
+      input.setCustomValidity(valid ? "" : "Phone number must be exactly 10 digits and start with 07, for example 0790000000.");
+      return !valid;
+    });
+    if (invalid) {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      invalid.reportValidity();
+      invalid.focus();
+    }
+  }, true);
+  document.addEventListener("input", event => {
+    if (event.target instanceof HTMLInputElement && event.target.type === "tel") event.target.setCustomValidity("");
+  }, true);
   function loginUrl(returnTo = window.location.href) {
     const destination = new URL(login);
     const target = new URL(returnTo, window.location.href);
@@ -146,6 +181,9 @@
 
   async function registerCustomer({ name, email, phone, password }) {
     const normalizedEmail = String(email || "").trim().toLowerCase();
+    if (!isValidEmail(normalizedEmail)) return { ok: false, error: "Enter a valid email address." };
+    if (!isValidPassword(password)) return { ok: false, error: "Password must be between 8 and 128 characters." };
+    if (String(phone || "").trim() && !isValidJordanianPhone(phone)) return { ok: false, error: "Phone number must be exactly 10 digits and start with 07." };
     if (!window.CarePlusData) return { ok: false, error: "Account storage is unavailable in this browser." };
     if (window.CarePlusData.list("users").some(user => user.email?.toLowerCase() === normalizedEmail)) {
       return { ok: false, error: "An account with this email already exists. Please log in." };
@@ -173,6 +211,9 @@
 
   async function loginCustomer(email, password) {
     const normalizedEmail = String(email || "").trim().toLowerCase();
+    if (!isValidEmail(normalizedEmail) || typeof password !== "string" || !password.length || password.length > 128) {
+      return { ok: false, error: "Enter a valid email and password." };
+    }
     const user = findAccount(normalizedEmail);
     const credential = readCredentials()[normalizedEmail];
     if (!user || !credential) return { ok: false, error: "Email or password is incorrect." };
@@ -183,6 +224,9 @@
       for (let index = 0; index < Math.min(candidate.length, expected.length); index += 1) mismatch |= candidate[index] ^ expected[index];
       if (mismatch) return { ok: false, error: "Email or password is incorrect." };
       const role = accountRole(user);
+      if (role === "doctor" && String(user.verificationStatus || "").toLowerCase() === "rejected") {
+        return { ok: false, error: "Your doctor application was rejected. Contact CarePlus administration for assistance." };
+      }
       const targetRole = ["admin", "administrator"].includes(role) ? "admin" : role === "doctor" ? "doctor" : role === "pharmacy" ? "pharmacy" : role === "nurse" ? "nurse" : "user";
       if (accountState(user) !== "active") return { ok: false, error: "This account is pending approval or inactive. Contact CarePlus administration." };
       if (targetRole === "doctor" && !user.doctorId) return { ok: false, error: "This doctor account is not linked to a doctor profile yet." };
@@ -192,6 +236,7 @@
   }
 
   function paintNavigation() {
+    configurePhoneInputs();
     document.querySelectorAll("[data-profile-link]").forEach(link => { link.href = profile; });
     const customer = hasDemoCustomerSession();
     const admin = hasDemoAdminSession();
@@ -199,11 +244,18 @@
     const doctor = hasDemoDoctorSession();
     const nurse = hasDemoNurseSession();
     const loggedIn = customer || admin || pharmacy || doctor || nurse;
-    const notificationWidget = document.getElementById("careplus-notification-widget");
-    if (notificationWidget) notificationWidget.hidden = !customer;
-    if (customer && notificationWidget) {
-      const notificationCss = new URL("shared/notifications.css?v=notifications-5", root).href;
-      const notificationJs = new URL("shared/notifications.js?v=notifications-5", root).href;
+    let notificationWidget = document.querySelector("#careplus-notification-widget.cpn-floating-slot") || document.getElementById("careplus-notification-widget");
+    if (customer) {
+      document.querySelectorAll("#careplus-notification-widget").forEach(node => { if (node !== notificationWidget) node.remove(); });
+      if (!notificationWidget) {
+        notificationWidget = document.createElement("div");
+        notificationWidget.id = "careplus-notification-widget";
+      }
+      notificationWidget.className = "cpn-floating-slot cpn-widget";
+      notificationWidget.hidden = false;
+      if (notificationWidget.parentElement !== document.body) document.body.appendChild(notificationWidget);
+      const notificationCss = new URL("shared/notifications.css?v=floating-customer-2", root).href;
+      const notificationJs = new URL("shared/notifications.js?v=floating-customer-2", root).href;
       if (![...document.querySelectorAll('link[rel="stylesheet"]')].some(link => new URL(link.href).pathname.endsWith("/shared/notifications.css"))) {
         const link = document.createElement("link"); link.rel = "stylesheet"; link.href = notificationCss; document.head.appendChild(link);
       }
@@ -282,6 +334,7 @@
 
   async function setDemoPassword(email, password) {
     const normalized = String(email || "").trim().toLowerCase();
+    if (!isValidEmail(normalized) || !isValidPassword(password)) return false;
     try {
       const salt = crypto.getRandomValues(new Uint8Array(16));
       const hash = await passwordHash(String(password), salt);
@@ -293,7 +346,7 @@
     const account = currentAccount();
     const nextPassword = String(password || "");
     if (!account || !account.mustChangePassword) return { ok: false, error: "No password change is required for this account." };
-    if (nextPassword.length < 8) return { ok: false, error: "Your new password must be at least 8 characters." };
+    if (!isValidPassword(nextPassword)) return { ok: false, error: "Your new password must be between 8 and 128 characters." };
     try {
       const email = String(account.email || "").trim().toLowerCase();
       const current = readCredentials()[email];
@@ -385,7 +438,7 @@
       try { localStorage.setItem(demo.marker, "1"); } catch {}
     }
   }
-  window.CarePlusAuth = { hasDemoSession, hasDemoAdminSession, hasDemoPharmacySession, demoPharmacyId, demoPharmacyAccount, updatePharmacyLoginEmail, hasDemoDoctorSession, demoDoctorAccount, hasDemoNurseSession, demoNurseAccount, hasDemoCustomerSession, endDemoSession, registerCustomer, loginCustomer, setDemoPassword, changeOwnPassword, removeDemoPassword, moveDemoPassword, ensureDemoAdmin, ensureDemoRoleAccounts, paintNavigation, guardProtectedPage };
+  window.CarePlusAuth = { isValidEmail, isValidPassword, isValidJordanianPhone, hasDemoSession, hasDemoAdminSession, hasDemoPharmacySession, demoPharmacyId, demoPharmacyAccount, updatePharmacyLoginEmail, hasDemoDoctorSession, demoDoctorAccount, hasDemoNurseSession, demoNurseAccount, hasDemoCustomerSession, endDemoSession, registerCustomer, loginCustomer, setDemoPassword, changeOwnPassword, removeDemoPassword, moveDemoPassword, ensureDemoAdmin, ensureDemoRoleAccounts, paintNavigation, guardProtectedPage };
   guardProtectedPage();
   new MutationObserver(paintNavigation).observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener("DOMContentLoaded", () => { guardProtectedPage(); paintNavigation(); });

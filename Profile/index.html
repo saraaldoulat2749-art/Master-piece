@@ -7,11 +7,11 @@
   <title>My Profile | CarePlus Healthcare</title>
   <link rel="stylesheet" href="../Nav/style.css">
   <link rel="stylesheet" href="../Footer/style.css">
-  <link rel="stylesheet" href="profile.css?v=profile-appointments-redesign-1">
-  <link rel="stylesheet" href="../shared/notifications.css?v=notifications-6">
+  <link rel="stylesheet" href="profile.css?v=request-details-design-3">
+  <link rel="stylesheet" href="../shared/notifications.css?v=floating-customer-2">
 <link rel="stylesheet" href="../shared/global-button-theme.css"></head>
 <body class="profile-page" data-protected="true">
-  <script src="../auth.js?v=archive-aware-1"></script>
+  <script src="../auth.js?v=floating-customer-notifications-1"></script>
   <div id="nav-container"></div>
 
   <main class="profile-main">
@@ -23,10 +23,10 @@
           <p class="profile-kicker">YOUR CAREPLUS ACCOUNT</p>
           <h1 id="profile-name">Welcome to CarePlus</h1>
           <p class="profile-welcome" id="profile-welcome">Your health services, all in one place.</p>
-          <div class="profile-contact"><span id="profile-email"></span><span class="contact-divider" aria-hidden="true">·</span><span id="profile-phone"></span></div>
-          <div class="profile-membership"><span class="membership-dot" aria-hidden="true"></span><span id="profile-membership">CarePlus Member</span><span class="membership-separator" aria-hidden="true">·</span><span id="profile-created">Member since today</span></div>
+          <div class="profile-contact"><span id="profile-email"></span><span class="contact-divider" aria-hidden="true">&bull;</span><span id="profile-phone"></span></div>
+          <div class="profile-membership"><span class="membership-dot" aria-hidden="true"></span><span id="profile-membership">CarePlus Member</span><span class="membership-separator" aria-hidden="true">&bull;</span><span id="profile-created">Member since today</span></div>
         </div>
-        <button class="button button--light" type="button" data-edit-profile><span aria-hidden="true">?</span> Edit Profile</button>
+        <button class="button button--light" type="button" data-edit-profile><svg class="profile-action-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 5 5 5M4 20l4.2-.9L19 8.3a2.1 2.1 0 0 0-3-3L5.2 16.1 4 20Z"/></svg> Edit Profile</button>
       </section>
 
       <section class="summary-grid" aria-label="Your CarePlus summary">
@@ -45,7 +45,7 @@
             <button id="tab-care" class="profile-tab" type="button" role="tab" aria-selected="false" aria-controls="panel-care" data-tab="care"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.5 8.7c0 5.3-8.5 10.6-8.5 10.6S3.5 14 3.5 8.7A4.7 4.7 0 0 1 12 6.3a4.7 4.7 0 0 1 8.5 2.4Z"/><path d="M8 12h8m-4-4v8"/></svg> Elderly Care Requests</button>
             <button id="tab-orders" class="profile-tab" type="button" role="tab" aria-selected="false" aria-controls="panel-orders" data-tab="orders"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16l1 12H3L4 8Z"/><path d="M8 8a4 4 0 0 1 8 0"/></svg> My Orders</button>
           </nav>
-          <div class="sidebar-help"><span class="help-icon" aria-hidden="true">?</span><strong>Here for your health</strong><p>Explore CarePlus services whenever you need them.</p><a href="../Home/Master.html#services">Explore services <span aria-hidden="true">?</span></a></div>
+          <div class="sidebar-help"><span class="help-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M20.5 8.7c0 5.3-8.5 10.6-8.5 10.6S3.5 14 3.5 8.7A4.7 4.7 0 0 1 12 6.3a4.7 4.7 0 0 1 8.5 2.4Z"/><path d="M8 12h8m-4-4v8"/></svg></span><strong>Here for your health</strong><p>Explore CarePlus services whenever you need them.</p><a href="../Home/Master.html#services">Explore services <span aria-hidden="true" class="button-arrow">&#8594;</span></a></div>
           <button class="profile-tab profile-logout" type="button" data-profile-logout><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 4H4v16h6m5-12 4 4-4 4m-7-4h11"/></svg> Log Out</button>
         </aside>
 
@@ -53,17 +53,17 @@
           <section class="profile-panel is-active" id="panel-personal" role="tabpanel" aria-labelledby="tab-personal" data-panel="personal">
             <div class="section-heading"><div><p class="eyebrow">YOUR ACCOUNT</p><h2>Personal Information</h2><p>Keep your contact details up to date.</p></div></div>
             <div class="info-grid" id="personal-info"></div>
-            <div class="membership-card"><span class="membership-card__icon" aria-hidden="true">?</span><div><strong>CarePlus member</strong><p>Your profile helps keep your appointments and care requests together.</p></div><span class="membership-pill">ACTIVE</span></div>
+            <div class="membership-card"><span class="membership-card__icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20v-1a6.5 6.5 0 0 1 10-5.5M16 17l2 2 4-4"/></svg></span><div><strong>CarePlus member</strong><p>Your profile helps keep your appointments and care requests together.</p></div><span class="membership-pill">ACTIVE</span></div>
           </section>
 
           <section class="profile-panel" id="panel-appointments" role="tabpanel" aria-labelledby="tab-appointments" data-panel="appointments" hidden>
-            <div class="section-heading"><div><p class="eyebrow">YOUR HEALTH JOURNEY</p><h2>My Appointments</h2><p>View and manage your doctor visits.</p></div><a class="button button--primary" href="../Book/index.html">Book appointment <span aria-hidden="true">?</span></a></div>
-            <div class="list-toolbar"><div class="filter-tabs" role="group" aria-label="Filter appointments"><button class="filter-chip is-active" type="button" data-appointment-filter="upcoming">Upcoming</button><button class="filter-chip" type="button" data-appointment-filter="past">Past</button><button class="filter-chip" type="button" data-appointment-filter="cancelled">Cancelled</button></div><label class="search-box"><span aria-hidden="true">?</span><input id="appointment-search" type="search" placeholder="Search appointments" aria-label="Search appointments"></label></div>
+            <div class="section-heading"><div><p class="eyebrow">YOUR HEALTH JOURNEY</p><h2>My Appointments</h2><p>View and manage your doctor visits.</p></div><a class="button button--primary" href="../Book/index.html">Book appointment <span aria-hidden="true" class="button-arrow">&#8594;</span></a></div>
+            <div class="list-toolbar"><div class="filter-tabs" role="group" aria-label="Filter appointments"><button class="filter-chip is-active" type="button" data-appointment-filter="upcoming">Upcoming</button><button class="filter-chip" type="button" data-appointment-filter="past">Past</button><button class="filter-chip" type="button" data-appointment-filter="cancelled">Cancelled</button></div><label class="search-box"><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="10.8" cy="10.8" r="6.5"></circle><path d="m16 16 4.2 4.2"></path></svg><input id="appointment-search" type="search" placeholder="Search appointments" aria-label="Search appointments"></label></div>
             <div class="record-list" id="appointment-list" aria-live="polite"></div>
           </section>
 
           <section class="profile-panel" id="panel-care" role="tabpanel" aria-labelledby="tab-care" data-panel="care" hidden>
-            <div class="section-heading"><div><p class="eyebrow">PERSONALIZED SUPPORT</p><h2>Elderly Care Requests</h2><p>Follow the progress of your care requests.</p></div><a class="button button--primary" href="../elederly/index.html">Request elderly care <span aria-hidden="true">?</span></a></div>
+            <div class="section-heading"><div><p class="eyebrow">PERSONALIZED SUPPORT</p><h2>Elderly Care Requests</h2><p>Follow the progress of your care requests.</p></div><a class="button button--primary" href="../elederly/index.html">Request elderly care <span aria-hidden="true" class="button-arrow">&#8594;</span></a></div>
             <div class="record-list" id="care-list" aria-live="polite"></div>
           </section>
 
@@ -80,7 +80,7 @@
   <div id="profile-toast" class="profile-toast" role="status" aria-live="polite"></div>
   <dialog class="profile-dialog" id="edit-dialog" aria-labelledby="edit-title">
     <form id="profile-form">
-      <div class="dialog-heading"><div><p class="eyebrow">YOUR ACCOUNT</p><h2 id="edit-title">Edit personal information</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">×</button></div>
+      <div class="dialog-heading"><div><p class="eyebrow">YOUR ACCOUNT</p><h2 id="edit-title">Edit personal information</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">&times;</button></div>
       <div class="edit-fields">
         <label>Full name<input name="name" required autocomplete="name"></label>
         <label>Email address<input name="email" type="email" required autocomplete="email"></label>
@@ -96,13 +96,14 @@
       <div class="dialog-actions"><button class="button button--outline" type="button" data-close-dialog>Cancel</button><button class="button button--primary" type="submit">Save changes</button></div>
     </form>
   </dialog>
-  <dialog class="profile-dialog profile-dialog--details" id="details-dialog" aria-labelledby="details-title"><div class="dialog-heading"><div><p class="eyebrow">CAREPLUS DETAILS</p><h2 id="details-title">Details</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">×</button></div><div class="detail-content" id="details-content"></div><div class="dialog-actions"><button class="button button--primary" type="button" data-close-dialog>Done</button></div></dialog>
-  <dialog class="profile-dialog" id="reschedule-dialog" aria-labelledby="reschedule-title"><form id="reschedule-form"><div class="dialog-heading"><div><p class="eyebrow">APPOINTMENT UPDATE</p><h2 id="reschedule-title">Reschedule appointment</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">×</button></div><input type="hidden" name="appointmentId"><div class="edit-fields edit-fields--compact"><label>New date<input name="date" type="date" required></label><label>New time<input name="time" type="time" required></label></div><p class="dialog-feedback" id="reschedule-feedback" role="status"></p><div class="dialog-actions"><button class="button button--outline" type="button" data-close-dialog>Cancel</button><button class="button button--primary" type="submit">Save new time</button></div></form></dialog>
+  <dialog class="profile-dialog profile-dialog--details" id="details-dialog" aria-labelledby="details-title"><div class="dialog-heading"><div><p class="eyebrow">CAREPLUS DETAILS</p><h2 id="details-title">Details</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">&times;</button></div><div class="detail-content" id="details-content"></div><div class="dialog-actions"><button class="button button--primary" type="button" data-close-dialog>Done</button></div></dialog>
+  <dialog class="profile-dialog cancel-appointment-dialog" id="cancel-appointment-dialog" aria-labelledby="cancel-appointment-title"><form id="cancel-appointment-form"><div class="dialog-heading"><div><p class="eyebrow">APPOINTMENT UPDATE</p><h2 id="cancel-appointment-title">Cancel appointment</h2><p id="cancel-appointment-patient" class="cancel-appointment-patient"></p></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">&times;</button></div><input type="hidden" name="appointmentId"><label class="cancel-appointment-label" for="cancel-appointment-reason">Reason for cancellation</label><textarea id="cancel-appointment-reason" name="reason" required minlength="3" maxlength="500" rows="4" placeholder="Tell the doctor why you need to cancel"></textarea><p class="dialog-feedback" id="cancel-appointment-feedback" role="status" aria-live="polite"></p><div class="dialog-actions"><button class="button button--outline" type="button" data-close-dialog>Keep appointment</button><button class="button button--danger" type="submit">Cancel appointment</button></div></form></dialog><dialog class="profile-dialog cancel-appointment-dialog" id="cancel-care-request-dialog" aria-labelledby="cancel-care-request-title"><form id="cancel-care-request-form"><div class="dialog-heading"><div><p class="eyebrow">CARE REQUEST UPDATE</p><h2 id="cancel-care-request-title">Cancel care request</h2><p id="cancel-care-request-label" class="cancel-appointment-patient"></p></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">&times;</button></div><input type="hidden" name="requestId"><label class="cancel-appointment-label" for="cancel-care-request-reason">Reason for cancellation</label><textarea id="cancel-care-request-reason" name="reason" required minlength="3" maxlength="500" rows="4" placeholder="Tell the care team why you need to cancel"></textarea><p class="dialog-feedback" id="cancel-care-request-feedback" role="status" aria-live="polite"></p><div class="dialog-actions"><button class="button button--outline" type="button" data-close-dialog>Keep request</button><button class="button button--danger" type="submit">Cancel request</button></div></form></dialog>
+  <dialog class="profile-dialog" id="reschedule-dialog" aria-labelledby="reschedule-title"><form id="reschedule-form"><div class="dialog-heading"><div><p class="eyebrow">APPOINTMENT UPDATE</p><h2 id="reschedule-title">Reschedule appointment</h2></div><button type="button" class="dialog-close" data-close-dialog aria-label="Close">&times;</button></div><input type="hidden" name="appointmentId"><div class="edit-fields edit-fields--compact"><label>New date<input name="date" type="date" required></label><label>New time<select name="time" required><option value="">Choose a date first</option></select></label></div><p class="dialog-feedback" id="reschedule-feedback" role="status"></p><div class="dialog-actions"><button class="button button--outline" type="button" data-close-dialog>Cancel</button><button class="button button--primary" type="submit">Save new time</button></div></form></dialog>
 
   <div id="footer-container" data-footer-autoload></div>
-  <script src="../data/careplus-data.js?v=archive-aware-1"></script><script src="../data/careplus-clinic.js?v=archive-aware-1"></script>
-  <script src="profile.js?v=notifications-1"></script><script src="../shared/notifications.js?v=notifications-2"></script>
-  <script src="../Footer/footer.js"></script>
+  <script src="../data/careplus-data.js?v=request-update-notifications-3"></script><script src="../data/careplus-clinic.js?v=reschedule-slots-1"></script>
+  <script src="profile.js?v=request-details-design-3"></script><script src="../shared/notifications.js?v=notifications-3"></script>
+  <script src="../Footer/footer.js?v=footer-hearts-removed-1"></script>
 </body>
 </html>
 

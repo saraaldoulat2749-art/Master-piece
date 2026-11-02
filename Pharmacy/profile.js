@@ -74,7 +74,15 @@
   }
 
   $("openToggle").addEventListener("change", () => {
-    $("openLabel").textContent = $("openToggle").checked ? "Open" : "Closed";
+    const open = $("openToggle").checked;
+    $("openLabel").textContent = open ? "Open" : "Closed";
+    if (!pharmacyApi.updatePharmacy(pharmacyId, { open })) {
+      $("openToggle").checked = !open;
+      $("openLabel").textContent = open ? "Closed" : "Open";
+      showToast("Could not update the pharmacy status.");
+      return;
+    }
+    showToast(open ? "Pharmacy is now open to customers." : "Pharmacy is now closed to customers.");
   });
 
   form.addEventListener("submit", event => {

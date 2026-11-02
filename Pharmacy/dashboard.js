@@ -157,6 +157,7 @@ function showMedicineDetails(id) {
   ];
   byId("medicineDetailsBody").innerHTML = `${image}<dl class="medicine-details-grid">${fields.map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${escapeHtml(value || "Not provided")}</dd></div>`).join("")}</dl>`;
   byId("medicineDetailsDelete").dataset.deleteMedicine = item.id;
+  byId("medicineDetailsEdit").dataset.editMedicine = item.id;
   const dialog = byId("medicineDetailsDialog");
   dialog.hidden = false;
   document.body.classList.add("medicine-details-open");
@@ -229,12 +230,30 @@ function showPharmacyOrderDetails(id) {
   const item = order.items?.[0] || {};
   const history = Array.isArray(order.statusHistory) && order.statusHistory.length ? order.statusHistory : [{ status: "Pending", at: order.placedAt, actor: "Customer", note: "Order received" }];
   byId("pharmacyOrderTitle").textContent = order.reference || order.id;
-  byId("pharmacyOrderContent").innerHTML = `<div class="order-detail-grid"><div><small>Customer</small><b>${escapeHtml(order.customerName || order.customerReference || "Customer")}</b></div><div><small>Date</small><b>${fmtDateTime(order.placedAt || order.createdAt)}</b></div><div><small>Customer phone</small><b>${escapeHtml(order.deliveryPhone || "Not provided")}</b></div><div><small>Delivery address</small><b>${escapeHtml(order.deliveryAddress || "Not provided")}</b></div><div><small>Medicine</small><b>${escapeHtml(item.name || "Medicine")}</b></div><div><small>Quantity · unit price</small><b>${Number(item.quantity) || 0} · ${money(item.unitPrice ?? item.price)}</b></div><div><small>Total price</small><b>${money(order.total)}</b></div><div><small>Payment status</small><b>${escapeHtml(order.paymentStatus || "Pending")}</b></div><div><small>Order status</small><b>${escapeHtml(normalize(order.status))}</b></div>${order.rejectionReason || order.cancelReason ? `<div class="wide-field"><small>Rejection reason</small><b>${escapeHtml(order.rejectionReason || order.cancelReason)}</b></div>` : ""}</div><h3 class="order-history-title">Status history</h3><ol class="order-history">${history.map(entry => `<li><i></i><div><b>${escapeHtml(normalize(entry.status))}</b><small>${fmtDateTime(entry.at || entry.timestamp)} · ${escapeHtml(entry.actor || "CarePlus")}${entry.reason ? ` · ${escapeHtml(entry.reason)}` : ""}</small></div></li>`).join("")}</ol>`;
+  byId("pharmacyOrderDialog").dataset.orderId = String(order.id);
+  byId("pharmacyOrderContent").innerHTML = `<div class="order-detail-grid"><div><small>Customer</small><b>${escapeHtml(order.customerName || order.customerReference || "Customer")}</b></div><div><small>Date</small><b>${fmtDateTime(order.placedAt || order.createdAt)}</b></div><div><small>Customer phone</small><b>${escapeHtml(order.deliveryPhone || "Not provided")}</b></div><div><small>Delivery address</small><b>${escapeHtml(order.deliveryAddress || "Not provided")}</b></div><div><small>Medicine</small><b>${escapeHtml(item.name || "Medicine")}</b></div><div><small>Quantity · unit price</small><b>${Number(item.quantity) || 0} · ${money(item.unitPrice ?? item.price)}</b></div><div><small>Total price</small><b>${money(order.total)}</b></div><div><small>Payment status</small><b>${escapeHtml(order.paymentStatus || "Pending")}</b></div><div><small>Order status</small><b>${escapeHtml(normalize(order.status))}</b></div>${order.rejectionReason || order.cancelReason ? `<div class="wide-field"><small>${normalize(order.status) === "Cancelled" ? "Cancellation reason" : "Rejection reason"}</small><b>${escapeHtml(order.rejectionReason || order.cancelReason)}</b></div>` : ""}</div><h3 class="order-history-title">Status history</h3><ol class="order-history">${history.map(entry => `<li><i></i><div><b>${escapeHtml(normalize(entry.status))}</b><small>${fmtDateTime(entry.at || entry.timestamp)} · ${escapeHtml(entry.actor || "CarePlus")}${entry.reason ? ` · ${escapeHtml(entry.reason)}` : ""}</small></div></li>`).join("")}</ol>`;
   const currentStatus = normalize(order.status);
+  if (currentStatus === "Cancelled") {
+    const cancellation = history.slice().reverse().find(entry => normalize(entry.status) === "Cancelled" && entry.actor === "Customer" && entry.reason);
+    const reason = order.cancelReason || cancellation?.reason;
+    const notice = document.createElement("section");
+    notice.className = "order-cancellation-detail";
+    const title = document.createElement("h3");
+    title.textContent = "Customer cancellation reason";
+    const text = document.createElement("p");
+    text.textContent = reason || "No cancellation reason was recorded for this order.";
+    notice.append(title, text);
+    byId("pharmacyOrderContent").prepend(notice);
+  }
   const allStatuses = ["Pending", "Accepted", "Rejected", "Preparing", "Ready for Pickup", "Completed"];
   const actions = byId("pharmacyOrderActions");
+  if (currentStatus === "Cancelled") {
+    actions.innerHTML = `<p class="order-terminal-note">This order was cancelled. Status updates are unavailable.</p>`;
+    if (!byId("pharmacyOrderDialog").open) byId("pharmacyOrderDialog").showModal();
+    return;
+  }
   actions.innerHTML = `<label class="order-status-control"><span>Update status</span><select class="order-status-choice" aria-label="New status for ${escapeHtml(order.reference || order.id)}"><option value="">Choose status</option>${allStatuses.map(next => `<option value="${escapeHtml(next)}" ${next === currentStatus ? "disabled" : ""}>${escapeHtml(next)}</option>`).join("")}</select><button type="button" class="action-button accept" data-order-update="${escapeHtml(order.id)}" disabled>Update</button></label>`;
-  byId("pharmacyOrderDialog").showModal();
+  if (!byId("pharmacyOrderDialog").open) byId("pharmacyOrderDialog").showModal();
 }
 
 function renderProfile() {
@@ -282,6 +301,8 @@ function renderAll() {
   renderInventory();
   renderOrders();
   renderProfile();
+  const orderDialog = byId("pharmacyOrderDialog");
+  if (orderDialog.open && orderDialog.dataset.orderId) showPharmacyOrderDetails(orderDialog.dataset.orderId);
 }
 
 function openMedicineDialog(medicine = null) {
@@ -340,7 +361,23 @@ byId("orderRows").addEventListener("click", event => {
   const detail = event.target.closest("[data-order-details]");
   if (detail) { showPharmacyOrderDetails(detail.dataset.orderDetails); return; }
 });
-byId("pharmacyOrderActions").addEventListener("click", event => {
+function confirmCompletedSale() {
+  return new Promise(resolve => {
+    const dialog = document.createElement("dialog");
+    dialog.className = "pharmacy-order-dialog rejection-dialog sale-confirm-dialog";
+    dialog.setAttribute("aria-labelledby", "saleConfirmTitle");
+    dialog.setAttribute("aria-describedby", "saleConfirmMessage");
+    dialog.innerHTML = `<form method="dialog"><div class="order-dialog-heading"><h2 id="saleConfirmTitle">Complete order</h2><button type="submit" value="cancel" class="dialog-close" aria-label="Close">×</button></div><p id="saleConfirmMessage">Confirm that the medicine was handed to the customer and the sale was completed?</p><div class="dialog-actions"><button type="submit" value="cancel" class="btn btn-outline" autofocus>Cancel</button><button type="submit" value="confirm" class="btn btn-primary">Confirm completion</button></div></form>`;
+    dialog.addEventListener("close", () => {
+      const confirmed = dialog.returnValue === "confirm";
+      dialog.remove();
+      resolve(confirmed);
+    }, { once: true });
+    document.body.append(dialog);
+    dialog.showModal();
+  });
+}
+byId("pharmacyOrderActions").addEventListener("click", async event => {
   const button = event.target.closest("[data-order-update]");
   if (!button) return;
   const nextStatus = button.closest(".order-status-control")?.querySelector(".order-status-choice")?.value;
@@ -354,7 +391,11 @@ byId("pharmacyOrderActions").addEventListener("click", event => {
   }
   const options = { pharmacyId };
   if (nextStatus === "Completed") {
-    if (!window.confirm("Confirm that the medicine was handed to the customer and the sale was completed?")) return;
+    button.disabled = true;
+    let confirmed;
+    try { confirmed = await confirmCompletedSale(); }
+    finally { button.disabled = false; }
+    if (!confirmed) return;
     options.saleVerified = true;
     const order = pharmacyOrders().find(row => String(row.id) === String(button.dataset.orderUpdate));
     options.paymentCollected = order?.paymentMethod === "cash-on-delivery";
@@ -381,6 +422,12 @@ byId("orderRejectDialog").addEventListener("click", event => { if (event.target 
 document.querySelectorAll("[data-close-dialog]").forEach(button => button.addEventListener("click", closeMedicineDialog));
 byId("closeMedicineDetails").addEventListener("click", closeMedicineDetails);
 byId("closeMedicineDetailsButton").addEventListener("click", closeMedicineDetails);
+byId("medicineDetailsEdit").addEventListener("click", () => {
+  const item = inventory().find(medicine => String(medicine.id) === byId("medicineDetailsEdit").dataset.editMedicine);
+  if (!item) { toast("This medicine could not be found. Refresh the page and try again.", true); return; }
+  closeMedicineDetails();
+  openMedicineDialog(item);
+});
 byId("medicineDetailsDelete").addEventListener("click", handleMedicineAction);
 byId("medicineDetailsDialog").addEventListener("click", event => { if (event.target === byId("medicineDetailsDialog")) closeMedicineDetails(); });
 byId("medicineDialog").addEventListener("click", event => { if (event.target === byId("medicineDialog")) closeMedicineDialog(); });
@@ -518,7 +565,17 @@ byId("profileForm").addEventListener("submit", event => {
   renderHeader();
   renderProfile();
 });
-byId("openToggle").addEventListener("change", () => { byId("openLabel").textContent = byId("openToggle").checked ? "Open" : "Closed"; });
+byId("openToggle").addEventListener("change", () => {
+  const open = byId("openToggle").checked;
+  byId("openLabel").textContent = open ? "Open" : "Closed";
+  if (!pharmacyApi.updatePharmacy(pharmacyId, { open })) {
+    byId("openToggle").checked = !open;
+    byId("openLabel").textContent = open ? "Closed" : "Open";
+    toast("Could not update the pharmacy status.", true);
+    return;
+  }
+  toast(open ? "Pharmacy is now open to customers." : "Pharmacy is now closed to customers.");
+});
 // Refresh all dashboard views when another same-origin page changes the shared browser data.
 api.subscribe(renderAll);
 renderAll();

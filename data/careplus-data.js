@@ -50,7 +50,8 @@
     return url.href;
   }
   function customerAccount(record) {
-    return data.users.find(user => String(user.id) === String(record.userId || record.bookingUserId || ""))
+    const relatedUserIds = [record.bookingUserId, record.userId].filter(Boolean).map(String);
+    return data.users.find(user => relatedUserIds.includes(String(user.id)))
       || data.users.find(user => record.email && String(user.email || "").toLowerCase() === String(record.email).toLowerCase())
       || data.users.find(user => record.phone && String(user.phone || "") === String(record.phone))
       || null;
@@ -114,7 +115,7 @@
     if (!eventKind) return;
     const baseKey = `${collection}:${after.id}:${eventKind}:${at}`;
     const customer = customerAccount(after);
-    const customerId = customer?.id || after.userId;
+    const customerId = customer?.id || after.bookingUserId || after.userId;
     if (collection === "appointments") {
       const customerName = safeName(after.patient || customer?.name);
       const appointmentText = `${after.id} · ${after.specialty || "Appointment"} · ${after.date || "Date pending"} ${after.time || ""}`;
@@ -124,14 +125,20 @@
         || Number(after.depositAmount) > 0 && Number(after.depositPaid) >= Number(after.depositAmount);
       const depositJustPaid = statusChanged && String(after.status).toLowerCase() === "requested" && depositReady;
       if ((statusChanged || scheduleChanged) && customerId) {
-        addNotification("customer", customerId, "appointment", baseKey, "Appointment updated",
-          `Your appointment with ${after.doctor || "your doctor"} is now ${after.status || "updated"}. ${appointmentText}`,
+        const rejected = String(after.status).toLowerCase() === "rejected";
+        const rejectionReason = rejected && after.rejectionReason ? ` Rejection reason: ${after.rejectionReason}` : "";
+        const cancelled = String(after.status).toLowerCase() === "cancelled";
+        const cancellationReason = cancelled && after.cancelReason ? ` Cancellation reason: ${after.cancelReason}` : "";
+        addNotification("customer", customerId, "appointment", baseKey, rejected ? "Appointment request rejected" : cancelled ? "Appointment cancelled" : "Appointment updated",
+          `Your appointment with ${after.doctor || "your doctor"} is now ${after.status || "updated"}. ${appointmentText}${rejectionReason}${cancellationReason}`,
           "appointment", after.id, portalUrl("Profile/index.html", { tab: "appointments", recordId: after.id }));
       }
-      if ((String(after.status).toLowerCase() === "cancelled" || scheduleChanged || depositJustPaid) && actor !== "doctor") {
-        const title = depositJustPaid ? "Deposit received · booking ready" : String(after.status).toLowerCase() === "cancelled" ? "Appointment cancelled" : "Appointment changed";
+      if ((statusChanged || scheduleChanged) && actor !== "doctor") {
+        const title = depositJustPaid ? "Deposit received · booking ready" : String(after.status).toLowerCase() === "cancelled" ? "Appointment cancelled" : statusChanged ? `Appointment status: ${after.status || "updated"}` : "Appointment changed";
+        const cancellationReason = String(after.status).toLowerCase() === "cancelled" && after.cancelReason ? ` · Patient reason: ${after.cancelReason}` : "";
+        const statusText = statusChanged && !depositJustPaid ? ` · Status: ${after.status || "updated"}` : "";
         addNotification("doctor", after.doctorId, "appointment", baseKey, title,
-          `${customerName} · ${appointmentText}`,
+          `${customerName} · ${appointmentText}${statusText}${cancellationReason}`,
           "appointment", after.id, portalUrl("Doctor/index.html", { page: "appointments", appointmentId: after.id }));
       }
       return;
@@ -224,6 +231,25 @@
       localStorage.setItem(carePointRestoreMarker, "1");
     }
   } catch (error) { console.error("CarePoint Pharmacy restoration could not be saved", error); }
+  const alShifaRestoreMarker = "careplusLinkedPharmacyRestoreV1";
+  try {
+    if (localStorage.getItem(alShifaRestoreMarker) !== "1") {
+      const pharmacyAccount = data.users.find(user => String(user.role || "").toLowerCase() === "pharmacy" && user.pharmacyId && user.email);
+      const linkedPharmacyId = String(pharmacyAccount?.pharmacyId || "pharmacy-1");
+      const alShifa = data.pharmacies.find(pharmacy => String(pharmacy.id) === linkedPharmacyId);
+      if (alShifa) {
+        alShifa.status = "Active";
+        delete alShifa.deleted;
+        delete alShifa.archived;
+        delete alShifa.archivedAt;
+        if (pharmacyAccount?.email) alShifa.email = pharmacyAccount.email;
+      } else {
+        data.pharmacies.push({ id: linkedPharmacyId, name: pharmacyAccount?.name || "Al Shifa Pharmacy", email: pharmacyAccount?.email || "pharmacy@careplus.test", area: "Amman", distance: "0.8 km away", address: "King Abdullah St., Amman", phone: "+962 6 590 1122", hours: "Open until 11:00 PM", open: true, medicines: ["panadol", "paracetamol", "ibuprofen"], status: "Active" });
+      }
+      if (!write()) throw new Error("Could not save pharmacy restoration");
+      localStorage.setItem(alShifaRestoreMarker, "1");
+    }
+  } catch (error) { console.error("Al Shifa Pharmacy restoration could not be saved", error); }
   seedDemoCollection("careRequests", [
     { id: "demo-care-request-001", userId: "demo-user-001", client: "Maya Haddad", elderlyName: "Nadia Haddad", email: "maya.haddad@example.test", phone: "+962 7 9000 1001", service: "Home care", date: "2026-10-14", createdAt: "2026-10-01T09:00:00.000Z", time: "09:00", duration: 3, schedule: "Recurring daily", city: "Amman", area: "Al Rabieh", address: "Al Rabieh, Amman", emergencyName: "Rana Haddad", emergencyPhone: "+962 7 9000 1006", status: "Accepted", notes: "Companionship and assistance with daily activities." },
     { id: "demo-care-request-002", userId: "demo-user-002", client: "Omar Khalil", elderlyName: "Salma Khalil", email: "omar.khalil@example.test", phone: "+962 7 9000 1002", service: "Hospital companion", date: "2026-10-16", createdAt: "2026-10-03T09:00:00.000Z", time: "10:00", duration: 4, schedule: "One-time visit", city: "Amman", area: "Shmeisani", address: "Shmeisani, Amman", emergencyName: "Rana Khalil", emergencyPhone: "+962 7 9000 1012", status: "Reviewing", notes: "Companion for a scheduled hospital visit." },

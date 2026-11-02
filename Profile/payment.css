@@ -7,7 +7,8 @@
 .payment-heading > p:last-child { margin: 8px 0 0; color: var(--profile-muted); font-size: 13px; }
 .payment-layout { display: grid; grid-template-columns: minmax(260px, .82fr) minmax(360px, 1.18fr); gap: 20px; align-items: start; }
 .payment-summary, .payment-form, .payment-result { padding: 25px; border: 1px solid var(--profile-line); border-radius: 18px; background: #fff; box-shadow: 0 10px 30px rgba(27,61,78,.055); }
-.payment-summary__icon { display: grid; width: 45px; height: 45px; margin-bottom: 20px; place-items: center; border-radius: 14px; background: #e5f8f7; color: #159eaa; font-size: 26px; }
+.payment-summary__icon { display: grid; width: 45px; height: 45px; margin-bottom: 20px; place-items: center; border-radius: 14px; background: #e5f8f7; color: #159eaa; }
+.payment-summary__icon svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .payment-summary h2 { margin: 0 0 19px; color: var(--profile-ink); font-size: 22px; }
 .payment-summary dl { display: grid; gap: 0; margin: 0; }
 .payment-summary dl > div { display: flex; justify-content: space-between; gap: 14px; padding: 12px 0; border-top: 1px solid #edf2f4; font-size: 12px; }

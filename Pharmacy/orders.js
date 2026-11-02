@@ -16,7 +16,7 @@ function renderOrders() {
     const state = normalize(order.status), history = Array.isArray(order.statusHistory) && order.statusHistory.length ? order.statusHistory : [{ status: "Pending", at: order.placedAt || order.createdAt, actor: "Customer" }];
     const canCancel = ["Pending", "Accepted", "Preparing"].includes(state);
     const chargeBreakdown = `Medicine JOD ${Number(order.subtotal ?? order.total).toFixed(2)} + CarePlus JOD ${Number(order.customerCommissionAmount || 0).toFixed(2)} + ${order.deliveryZoneLabel || pharmacyApi.deliveryZoneLabel(order.deliveryZone)} delivery JOD ${Number(order.deliveryFee || 0).toFixed(2)}`;
-    const paymentLink = order.paymentMethod === "online-gateway" && order.paymentStatus === "Pending" && !["Rejected", "Cancelled"].includes(state) ? `<a href="payment.html?orderId=${encodeURIComponent(order.id)}">Complete payment</a>` : "";
+    const paymentLink = `<span class="delivery-payment-note">Medicine and delivery: cash on delivery · CarePlus commission: ${escapeHtml(order.commissionPaymentStatus || (order.paymentDemoResult === "simulated-success" ? "Demo Simulated" : "Pending"))}</span>`;
     const timeline = state === "Rejected" || state === "Cancelled" ? [...stages.slice(0, Math.max(1, stages.indexOf(state))), state] : stages;
     const currentIndex = stages.indexOf(state);
     const progress = (state === "Rejected" || state === "Cancelled") ? "" : `style="--progress:${currentIndex < 0 ? 0 : currentIndex / (stages.length - 1) * 100}%"`;
@@ -33,14 +33,41 @@ function renderOrders() {
 }
 
 filter.addEventListener("change", renderOrders);
-rows.addEventListener("click", event => {
+rows.addEventListener("click", async event => {
   const button = event.target.closest("[data-cancel-order]");
   if (!button) return;
   const customer = pharmacyApi.currentCustomer();
   if (!customer) return;
-  const result = pharmacyApi.cancelCustomerOrder(button.dataset.cancelOrder, customer.userId);
+  const reason = await requestCancellationReason();
+  if (!reason) return;
+  const result = pharmacyApi.cancelCustomerOrder(button.dataset.cancelOrder, customer.userId, reason);
   if (!result.ok) { window.alert(result.error); return; }
   renderOrders();
 });
 pharmacyApi.subscribe(renderOrders);
 renderOrders();
+
+function requestCancellationReason() {
+  return new Promise(resolve => {
+    const dialog = document.createElement("dialog");
+    dialog.className = "customer-cancel-dialog";
+    dialog.setAttribute("aria-labelledby", "cancelOrderTitle");
+    dialog.innerHTML = `<form method="dialog"><div class="cancel-dialog-heading"><h2 id="cancelOrderTitle">Cancel your order?</h2><button type="submit" value="back" formnovalidate aria-label="Close">×</button></div><p>Please tell us why you are cancelling. Your reason will be shared with the pharmacy and CarePlus admin.</p><label for="customerCancelReason">Cancellation reason</label><textarea id="customerCancelReason" required maxlength="1000" rows="4" placeholder="Write your reason here…"></textarea><p class="cancel-error" role="alert"></p><div class="cancel-dialog-actions"><button type="submit" value="back" formnovalidate>Keep order</button><button type="submit" value="cancel" class="confirm-cancel">Cancel order</button></div></form>`;
+    dialog.querySelector("form").addEventListener("submit", event => {
+      if (event.submitter?.value !== "cancel") return;
+      if (!dialog.querySelector("textarea").value.trim()) {
+        event.preventDefault();
+        dialog.querySelector(".cancel-error").textContent = "Enter a cancellation reason.";
+        dialog.querySelector("textarea").focus();
+      }
+    });
+    dialog.addEventListener("close", () => {
+      const reason = dialog.returnValue === "cancel" ? dialog.querySelector("textarea").value.trim() : "";
+      dialog.remove();
+      resolve(reason);
+    }, { once: true });
+    document.body.append(dialog);
+    dialog.showModal();
+    dialog.querySelector("textarea").focus();
+  });
+}

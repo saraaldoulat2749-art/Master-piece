@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         if (
             name.length < 2 ||
-            !/^\S+@\S+\.\S+$/.test(email)
+            !(window.CarePlusAuth?.isValidEmail?.(email) ?? /^\S+@\S+\.\S{2,}$/.test(email))
         ) {
             showMessage(
                 "Enter your full name and a valid email."
@@ -48,9 +48,9 @@ document.addEventListener("DOMContentLoaded", () => {
             return;
         }
 
-        if (password.length < 8) {
+        if (password.length < 8 || password.length > 128) {
             showMessage(
-                "Password must be at least 8 characters."
+                "Password must be between 8 and 128 characters."
             );
             return;
         }

@@ -34,6 +34,22 @@
   function careRequests(user) {
     return store.list("careRequests").filter(row => String(row.assignedNurseId || row.nurseId || "") === providerId(user));
   }
+  function unavailableSummary(user) {
+    const holidays = window.CarePlusClinic?.getSchedule?.(providerId(user))?.holidays || [];
+    const groups = [];
+    holidays.filter(item => item?.date).slice().sort((a, b) => a.date.localeCompare(b.date)).forEach(item => {
+      const last = groups[groups.length - 1];
+      if (last && last.note === (item.note || "")) {
+        const nextDate = new Date(`${last.end}T12:00:00`);
+        nextDate.setDate(nextDate.getDate() + 1);
+        const next = `${nextDate.getFullYear()}-${String(nextDate.getMonth() + 1).padStart(2, "0")}-${String(nextDate.getDate()).padStart(2, "0")}`;
+        if (next === item.date) { last.end = item.date; return; }
+      }
+      groups.push({ start: item.date, end: item.date, note: item.note || "" });
+    });
+    const displayDate = value => new Date(`${value}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
+    return groups.map(group => `${displayDate(group.start)}${group.start === group.end ? "" : ` – ${displayDate(group.end)}`}${group.note ? ` (${group.note})` : ""}`).join("; ") || "None scheduled";
+  }
   function badge(value, kind) {
     const text = String(value || "Pending");
     let cls = "provider-badge";
@@ -46,6 +62,13 @@
     const list = Array.isArray(user.adminActivity) ? user.adminActivity.slice(-39) : [];
     list.push({ action, at: new Date().toISOString(), by: localStorage.getItem("careplusDemoIdentity") || "Admin" });
     return list;
+  }
+  function requestRejectionReason() {
+    const reason = window.prompt("Enter a reason for rejecting this doctor's registration:");
+    if (reason === null) return "";
+    const trimmed = reason.trim();
+    if (!trimmed) window.alert("A rejection reason is required.");
+    return trimmed;
   }
   function render() {
     const query = $("[data-provider-search]").value.trim().toLowerCase();
@@ -92,7 +115,7 @@
   function details(user) {
     const requests = careRequests(user);
     const fields = type === "doctor" ? [
-      ["Provider ID", providerId(user)], ["Name", user.name], ["Email", user.email], ["Phone", user.phone], ["Specialty", user.specialty], ["Experience", user.experience ? user.experience + " years" : "Not recorded"], ["Appointments", appointmentCount(user)], ["Rating", user.rating ?? "Not recorded"], ["Account", archived(user) ? "Archived" : accountStatus(user)], ["CarePlus commission", moneyRate(user) + "%"]
+      ["Provider ID", providerId(user)], ["Name", user.name], ["Email", user.email], ["Phone", user.phone], ["Specialty", user.specialty], ["Experience", user.experience ? user.experience + " years" : "Not recorded"], ["Appointments", appointmentCount(user)], ["Rating", user.rating ?? "Not recorded"], ["Account", archived(user) ? "Archived" : accountStatus(user)], ["Time away", unavailableSummary(user)], ...(user.rejectionReason ? [["Rejection reason", user.rejectionReason]] : []), ["CarePlus commission", moneyRate(user) + "%"]
     ] : [
       ["Provider ID", providerId(user)], ["Name", user.name], ["Email", user.email], ["Phone", user.phone], ["Qualifications", user.qualifications], ["Experience", user.experience ? user.experience + " years" : "Not recorded"], ["Assigned requests", requests.length], ["Completed requests", requests.filter(row => String(row.status).toLowerCase() === "completed").length], ["Account", archived(user) ? "Archived" : accountStatus(user)], ["CarePlus commission", moneyRate(user) + "%"]
     ];
@@ -130,7 +153,7 @@
     values.commissionRate = Number(values.commissionRate);
     values.experience = values.experience === "" ? "" : Number(values.experience);
     values.status = values.accountStatus = String(values.status || "Active");
-    if (password && password.length < 8) { form.querySelector("[data-form-feedback]").textContent = "Password must be at least 8 characters."; return; }
+    if (password && (password.length < 8 || password.length > 128)) { form.querySelector("[data-form-feedback]").textContent = "Password must be between 8 and 128 characters."; return; }
     const duplicate = store.list(collection).some(user => String(user.id) !== editingId && String(user.email || "").trim().toLowerCase() === values.email);
     if (duplicate) { form.querySelector("[data-form-feedback]").textContent = "A provider with this email already exists."; return; }
     const previous = editingId ? store.get(collection, editingId) : null;
@@ -164,13 +187,15 @@
     const action = button.dataset.action;
     if (action === "details") { details(user); return; }
     if (action === "edit") { openForm(user); return; }
+    const rejectionReason = action === "reject" && type === "doctor" ? requestRejectionReason() : "";
+    if (action === "reject" && type === "doctor" && !rejectionReason) return;
     if (action === "archive" && !window.confirm("Archive this " + role.toLowerCase() + "? You can restore the record later.")) return;
     const now = new Date().toISOString();
     let changes = {};
     if (action === "archive") changes = { archived: true, archivedAt: now, adminActivity: activity(user, "Provider archived") };
     if (action === "restore") changes = { archived: false, archivedAt: "", adminActivity: activity(user, "Provider restored") };
     if (action === "verify") changes = { verificationStatus: "Verified", verifiedAt: now, adminActivity: activity(user, "Provider verified") };
-    if (action === "reject") changes = { verificationStatus: "Rejected", rejectedAt: now, adminActivity: activity(user, "Provider registration rejected") };
+    if (action === "reject" && type === "doctor") changes = { verificationStatus: "Rejected", rejectedAt: now, rejectionReason, adminActivity: activity(user, "Provider registration rejected: " + rejectionReason) };
     if (action === "status") { const status = accountStatus(user) === "Active" ? "Inactive" : "Active"; changes = { status, accountStatus: status, adminActivity: activity(user, "Account " + status.toLowerCase()) }; }
     if (store.update(collection, user.id, changes)) { render(); toast("Provider record updated."); }
     else toast("Could not update provider.", true);
@@ -186,13 +211,15 @@
       openForm(user);
       return;
     }
+    const rejectionReason = action === "reject" && type === "doctor" ? requestRejectionReason() : "";
+    if (action === "reject" && type === "doctor" && !rejectionReason) return;
     if (action === "archive" && !window.confirm("Archive this " + role.toLowerCase() + "? You can restore it later.")) return;
     const now = new Date().toISOString();
     let changes = {};
     if (action === "archive") changes = { archived: true, archivedAt: now, adminActivity: activity(user, "Provider archived") };
     if (action === "restore") changes = { archived: false, archivedAt: "", adminActivity: activity(user, "Provider restored") };
     if (action === "verify") changes = { verificationStatus: "Verified", verifiedAt: now, adminActivity: activity(user, "Provider verified") };
-    if (action === "reject") changes = { verificationStatus: "Rejected", rejectedAt: now, adminActivity: activity(user, "Provider registration rejected") };
+    if (action === "reject" && type === "doctor") changes = { verificationStatus: "Rejected", rejectedAt: now, rejectionReason, adminActivity: activity(user, "Provider registration rejected: " + rejectionReason) };
     if (action === "status") {
       const status = accountStatus(user) === "Active" ? "Inactive" : "Active";
       changes = { status, accountStatus: status, adminActivity: activity(user, "Account " + status.toLowerCase()) };

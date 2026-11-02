@@ -38,7 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const patientPhone = document.getElementById("patientPhone").value.trim();
     const patientEmail = document.getElementById("patientEmail").value.trim();
     if (!values.doctor || !values.specialty || !values.area || !values.date || !values.time) return showError("Appointment details are missing. Please return and complete your booking.");
-    if (!patientName || !patientPhone) return showError("Please enter your full name and phone number.");
+    if (!patientName) return showError("Please enter your full name.");
+    if (!/^07\d{8}$/.test(patientPhone)) return showError("Enter a valid 10-digit phone number starting with 07.");
     if (!validFee) return showError("This doctor has not set a consultation fee. Please choose another doctor or try later.");
     if (!window.CarePlusClinic?.isAvailable({ doctor: values.doctor, doctorId: values.doctorId, date: values.date, time: values.time })) return showError("This time is no longer available. Please return to the schedule and select another time.");
 

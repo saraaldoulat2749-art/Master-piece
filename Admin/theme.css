@@ -318,3 +318,8 @@
 @media (max-width: 760px) {
   [data-admin-page="careRequests"] .row-actions .text-button { min-height: 42px; }
 }
+
+.user-service-list { display: flex; flex-wrap: wrap; gap: 5px; }
+.user-service-badge { display: inline-flex; align-items: center; padding: 5px 8px; border: 1px solid #d8ecea; border-radius: 999px; background: #eff8f7; color: #28736f; font-size: 10px; font-weight: 700; line-height: 1.2; }
+.user-service-empty { color: #8998a0; font-size: 11px; }
+.user-services-cell { min-width: 220px; white-space: normal; }

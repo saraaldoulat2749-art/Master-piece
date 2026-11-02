@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="style.css">
        <link rel="stylesheet" href="../../Footer/style.css">
 <link rel="stylesheet" href="../../shared/global-button-theme.css"></head>
-<body data-protected="true"><script src="../../auth.js?v=archive-aware-1"></script>
+<body data-protected="true"><script src="../../auth.js?v=floating-customer-notifications-1"></script>
        <div id="nav-container"></div>
 <script>
 fetch("../../Nav/index.html")
@@ -96,7 +96,7 @@ fetch("../../Nav/index.html")
                 <div class="detail-row"><div class="detail-label">Full consultation fee</div><div class="detail-value" id="consultationFee">Not available</div></div>
                 <div class="detail-row"><div class="detail-label">Required deposit (10%)</div><div class="detail-value" id="requiredDeposit">Not available</div></div>
                 <div class="detail-row"><div class="detail-label">Remaining balance</div><div class="detail-value" id="remainingBalance">Not available</div></div>
-                <div class="detail-row"><div class="detail-label">CarePlus commission</div><div class="detail-value"><span id="commissionAmount">Not available</span> · 10% of the full consultation fee</div></div>
+                <div class="detail-row"><div class="detail-label">CarePlus commission</div><div class="detail-value"><span id="commissionAmount">Not available</span> - 10% of the full consultation fee</div></div>
             </section>
             <!-- Patient information -->
             <section>
@@ -115,8 +115,8 @@ fetch("../../Nav/index.html")
                         <label for="patientPhone">Phone Number *</label>
                         <input
                             type="tel"
-                            id="patientPhone"
-                            placeholder="+962 7X XXX XXXX"
+                            id="patientPhone" inputmode="numeric" maxlength="10" pattern="07[0-9]{8}"
+                            placeholder="079 000 0000"
                             required
                         >
                     </div>
@@ -153,15 +153,15 @@ fetch("../../Nav/index.html")
 </main>
 <div id="footer-container"></div>
 <script>
-    fetch("../../Footer/index.html")
+    fetch("../../Footer/index.html?v=footer-hearts-removed-1")
         .then(response => response.text())
         .then(data => {
             document.getElementById("footer-container").innerHTML = data;
         })
         .catch(error => console.error("Error loading footer:", error));
 </script>
-<script src="../../data/careplus-data.js?v=archive-aware-1"></script><script src="../../data/careplus-clinic.js?v=archive-aware-1"></script><script src="script.js"></script>
-    <script src="../../Footer/footer.js"></script>
+<script src="../../data/careplus-data.js?v=archive-aware-1"></script><script src="../../data/careplus-clinic.js?v=payment-slot-v1"></script><script src="script.js?v=phone-slot-v1"></script>
+    <script src="../../Footer/footer.js?v=footer-hearts-removed-1"></script>
 </body>
 </html>
 

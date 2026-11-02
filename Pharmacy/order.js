@@ -4,6 +4,13 @@ const pharmacy = api.get(params.get("pharmacyId"));
 const medicineId = params.get("medicineId");
 const available = (pharmacy?.inventory || []).filter(item => item.available !== false && Number(item.quantity) > 0 && !api.isExpired(item));
 const initialMedicine = available.find(item => String(item.id) === String(medicineId));
+if (initialMedicine && pharmacy) {
+  const query = `medicine=${encodeURIComponent(initialMedicine.name)}&area=${encodeURIComponent(pharmacy.area || pharmacy.city || "")}`;
+  const links = [...document.querySelectorAll(".order-progress .order-step-number")];
+  if (links[0]) links[0].href = `index.html?${query}`;
+  if (links[1]) links[1].href = `results.html?${query}`;
+  if (links[2]) links[2].href = `order.html?pharmacyId=${encodeURIComponent(pharmacy.id)}&medicineId=${encodeURIComponent(initialMedicine.id)}`;
+}
 const orderReview = document.getElementById("orderReview");
 const orderUnavailable = document.getElementById("orderUnavailable");
 const form = document.getElementById("medicineOrderForm");
@@ -35,14 +42,14 @@ function updateSummary() {
   document.getElementById("orderCommission").textContent = `JOD ${commission.toFixed(2)}`;
   document.getElementById("orderDeliveryLabel").textContent = `Delivery · ${api.deliveryZoneLabel(deliveryZone)}`;
   document.getElementById("orderDelivery").textContent = `JOD ${delivery.toFixed(2)}`;
-  document.getElementById("orderTotal").textContent = `JOD ${total.toFixed(2)}`;
+  document.getElementById("orderTotal").textContent = `JOD ${commission.toFixed(2)}`;
   const submitButton = document.querySelector(".order-submit");
   const hasAddress = document.getElementById("deliveryAddress").value.trim().length >= 8;
   const hasValidPhone = document.getElementById("deliveryPhone").value.replace(/\D/g, "").length >= 7;
   submitButton.disabled = !hasAddress || !hasValidPhone;
   feedback.classList.remove("error");
   feedback.textContent = hasAddress && hasValidPhone
-    ? "Your delivery details are ready. Continue to online payment."
+    ? "Pay only the CarePlus commission now. Medicine and delivery are paid in cash on delivery."
     : `To enable the button, ${[
         !hasAddress ? "enter a delivery address with at least 8 characters" : "",
         !hasValidPhone ? "enter a contact phone with at least 7 digits" : ""
