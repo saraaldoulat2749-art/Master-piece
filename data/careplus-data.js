@@ -5,7 +5,7 @@
 (() => {
   // LocalStorage event adapter; replace notifyCreated/notifyUpdated with API writes and a SignalR subscription when the ASP.NET Core backend is added.
   const KEY = "careplusMockDataV1";
-  const collections = ["users", "appointments", "products", "pharmacies", "careRequests", "orders", "notifications"];
+  const collections = ["users", "appointments", "products", "pharmacies", "careRequests", "orders", "notifications", "professionalApplications"];
   const appRoot = new URL("../", document.currentScript.src);
   const id = () => globalThis.crypto?.randomUUID?.() || `cp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   function read() {
@@ -64,7 +64,8 @@
       id: id(), eventKey, recipientRole, recipientId: String(recipientId), category, title, message,
       createdAt: new Date().toISOString(), readAt: "", deletedAt: "", recordType, recordId: String(recordId), link,
       actionLabel: recordType === "appointment" ? recipientRole === "doctor" ? "View Booking" : "View Appointment"
-        : recordType === "order" || recordType === "storeOrder" ? "View Order" : "View Request"
+        : recordType === "order" || recordType === "storeOrder" ? "View Order"
+          : recordType === "professionalApplication" ? recipientRole === "admin" ? "Review application" : "View status" : "View Request"
     });
   }
   function nurseRecipients(request) {
@@ -76,6 +77,14 @@
   function notifyCreated(collection, record) {
     const eventTime = record.createdAt || new Date().toISOString();
     const baseKey = `${collection}:${record.id}:created:${eventTime}`;
+    if (collection === "professionalApplications" && ["doctor", "nurse", "pharmacy"].includes(record.role) && record.status === "Pending Verification") {
+      const roleName = record.role;
+      const reviewPage = record.role === "nurse" ? "Admin/Nurses/index.html" : record.role === "pharmacy" ? "Admin/Pharmacies/index.html" : "Admin/Doctors/index.html";
+      addNotification("admin", "*", "professional", `professionalApplications:${record.id}:submitted:${eventTime}`, `New ${roleName} application`,
+        `${safeName(record.pharmacyName || record.name)} submitted a ${roleName} verification request.`, "professionalApplication", record.id,
+        portalUrl(reviewPage, { applicationId: record.id }));
+      return;
+    }
     if (collection === "appointments" && record.source === "user-booking") {
       const doctor = String(record.doctor || "your practice");
       const customer = safeName(record.patient || customerAccount(record)?.name);
@@ -107,6 +116,34 @@
   function notifyUpdated(collection, before, after) {
     if (!before || !after) return;
     const at = after.updatedAt || new Date().toISOString();
+    if (collection === "professionalApplications" && ["doctor", "nurse", "pharmacy"].includes(after.role) && after.status === "Pending Verification"
+      && (before.status !== "Pending Verification" || before.submittedAt !== after.submittedAt)) {
+      const roleName = after.role;
+      const reviewPage = after.role === "nurse" ? "Admin/Nurses/index.html" : after.role === "pharmacy" ? "Admin/Pharmacies/index.html" : "Admin/Doctors/index.html";
+      addNotification("admin", "*", "professional", `professionalApplications:${after.id}:submitted:${at}`, `New ${roleName} application`,
+        `${safeName(after.pharmacyName || after.name)} submitted a ${roleName} verification request.`, "professionalApplication", after.id,
+        portalUrl(reviewPage, { applicationId: after.id }));
+      return;
+    }
+    if (collection === "professionalApplications" && ["doctor", "nurse", "pharmacy"].includes(after.role)
+      && ["Approved", "Rejected", "Additional Documents Required"].includes(after.status)
+      && String(before.status || "") !== String(after.status || "")) {
+      const applicant = data.users.find(user => String(user.id) === String(after.userId));
+      const approved = after.status === "Approved";
+      const requestedDocuments = after.status === "Additional Documents Required";
+      const roleName = after.role;
+      const recipientRole = approved ? roleName : "customer";
+      const recipientId = approved ? String(applicant?.[roleName + "Id"] || applicant?.id || after.userId) : String(after.userId || "");
+      const title = approved ? `${roleName[0].toUpperCase() + roleName.slice(1)} application approved` : requestedDocuments ? "Additional documents required" : `${roleName[0].toUpperCase() + roleName.slice(1)} application rejected`;
+      const message = approved ? "Your professional account is approved. You can now access the " + roleName + " dashboard."
+        : `${requestedDocuments ? "Please provide the requested documents" : "Your application was rejected"}.${after.reviewReason ? ` Reason: ${after.reviewReason}` : ""}`;
+      const destination = roleName === "doctor" ? "Doctor/index.html" : roleName === "nurse" ? "Nurse/index.html" : "Pharmacy/dashboard.html";
+      const statusLink = approved ? destination : roleName === "doctor" ? "DoctorVerification/index.html" : roleName === "nurse" ? "NurseVerification/index.html" : "PharmacyVerification/index.html";
+      addNotification(recipientRole, recipientId, "professional", `professionalApplications:${after.id}:status:${String(after.status).toLowerCase()}:${at}`,
+        title, message, "professionalApplication", after.id,
+        portalUrl(statusLink));
+      return;
+    }
     const actor = roleName(after.lastActionByRole || after.statusHistory?.at?.(-1)?.actor || "");
     const statusChanged = String(before.status || "") !== String(after.status || "");
     const scheduleChanged = ["date", "time", "service", "schedule"].some(key => before[key] !== after[key]);
@@ -325,5 +362,29 @@
     },
     subscribe(callback) { const handler = event => { data = event.detail?.data || read(); callback(); }; const storage = event => { if (event.key === KEY) { data = read(); callback(); } }; window.addEventListener("careplus:data", handler); window.addEventListener("storage", storage); return () => { window.removeEventListener("careplus:data", handler); window.removeEventListener("storage", storage); }; }
   };
+  let applicationNotificationsAdded = false;
+  let notificationLinksMigrated = false;
+  data.notifications.forEach(notification => {
+    if (notification.recordType !== "professionalApplication" || !String(notification.link || "").includes("Admin/Doctors/applications.html")) return;
+    const application = data.professionalApplications.find(item => String(item.id) === String(notification.recordId));
+    if (!application) return;
+    const reviewPage = application.role === "nurse" ? "Admin/Nurses/index.html" : application.role === "pharmacy" ? "Admin/Pharmacies/index.html" : "Admin/Doctors/index.html";
+    notification.link = portalUrl(reviewPage, { applicationId: application.id });
+    notificationLinksMigrated = true;
+  });
+  data.professionalApplications.filter(application => ["doctor", "nurse", "pharmacy"].includes(application.role) && ["Pending Verification", "Additional Documents Required"].includes(application.status)).forEach(application => {
+    const alreadyNotified = data.notifications.some(item => item.recipientRole === "admin" && item.category === "professional"
+      && item.recordType === "professionalApplication" && String(item.recordId) === String(application.id));
+    if (alreadyNotified) return;
+    const user = data.users.find(item => String(item.id) === String(application.userId));
+    const roleName = application.role;
+    const reviewPage = application.role === "nurse" ? "Admin/Nurses/index.html" : application.role === "pharmacy" ? "Admin/Pharmacies/index.html" : "Admin/Doctors/index.html";
+    const at = application.submittedAt || application.updatedAt || application.createdAt || new Date().toISOString();
+    addNotification("admin", "*", "professional", `professionalApplications:${application.id}:submitted:backfill:${at}`, `New ${roleName} application`,
+      `${safeName(application.pharmacyName || user?.name || application.name)} submitted a ${roleName} verification request.`, "professionalApplication", application.id,
+      portalUrl(reviewPage, { applicationId: application.id }));
+    applicationNotificationsAdded = true;
+  });
+  if (applicationNotificationsAdded || notificationLinksMigrated) write();
   window.CarePlusData = api;
 })();

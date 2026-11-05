@@ -343,7 +343,8 @@
     const statusFilter = page.querySelector("[data-care-status-filter], [data-user-status-filter], [data-pharmacy-status-filter]");
     if (["users", "pharmacies"].includes(moduleName) && statusFilter) {
       const selected = statusFilter.value;
-      const statuses = [...new Set(["Active", "Inactive", ...records[moduleName].map(record => record.status).filter(Boolean)])];
+      const applicationStatuses = moduleName === "pharmacies" ? ["Pending Verification", "Additional Documents Required", "Rejected"] : [];
+      const statuses = [...new Set(["Active", "Inactive", ...applicationStatuses, ...records[moduleName].map(record => record.status).filter(Boolean)])];
       statusFilter.replaceChildren(new Option("All statuses", ""), ...statuses.map(status => new Option(status, status)));
       statusFilter.value = selected;
     }

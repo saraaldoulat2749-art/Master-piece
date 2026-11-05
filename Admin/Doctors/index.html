@@ -4,20 +4,23 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Doctors | CarePlus Admin</title>
   <link rel="stylesheet" href="../admin.css"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../dashboard-ui.css?v=admin-pages-5">
-  <link rel="stylesheet" href="../../shared/notifications.css?v=floating-customer-2"><link rel="stylesheet" href="providers.css?v=providers-2">
+  <link rel="stylesheet" href="../../shared/notifications.css?v=admin-sidebar-notifications-1"><link rel="stylesheet" href="providers.css?v=providers-2">
   <link rel="stylesheet" href="provider-toolbar.css">
+  <link rel="stylesheet" href="application-preview.css?v=professional-details-modal-2">
   <link rel="stylesheet" href="../../shared/global-button-theme.css">
+  <link rel="stylesheet" href="../review-reason-dialog.css?v=admin-review-reason-2"><link rel="stylesheet" href="../../shared/site-headings.css?v=dancing-script-1">
 </head>
 <body class="admin-dashboard admin-unified" data-protected="true" data-admin-protected="true" data-provider-type="doctor">
-  <script src="../../auth.js?v=floating-customer-notifications-1"></script>
+  <script src="../../auth.js?v=professional-role-access-1"></script>
   <div class="admin-layout">
     <aside class="sidebar" id="admin-sidebar">
       <a class="brand" href="../index.html"><span class="brand-mark">+</span><span>Care<span>Plus</span><small>ADMIN</small></span></a>
       <nav class="side-nav" aria-label="Admin sections"><a href="../index.html"><span>D</span>Dashboard</a><a href="../Users/index.html"><span>U</span>Users</a><a class="active" href="index.html"><span>D</span>Doctors</a></nav>
+      <div id="careplus-notification-widget" class="cpn-side-slot" aria-label="Admin notifications"></div>
       <div class="sidebar-bottom"><p>Admin workspace</p><a href="../../Home/Master.html">View CarePlus site</a><a class="sidebar-logout" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></div>
     </aside>
     <main class="main-area">
-      <header class="topbar"><button class="menu-toggle" type="button" aria-label="Open admin navigation" aria-controls="admin-sidebar" aria-expanded="false">☰</button><div class="topbar-copy"><span class="eyebrow">CAREPLUS MANAGEMENT</span><h1>Doctors</h1></div><div id="careplus-notification-widget" class="cpn-admin-slot"></div><a class="logout-link" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></header>
+      <header class="topbar"><button class="menu-toggle" type="button" aria-label="Open admin navigation" aria-controls="admin-sidebar" aria-expanded="false">☰</button><div class="topbar-copy"><span class="eyebrow">CAREPLUS MANAGEMENT</span><h1>Doctors</h1></div><a class="logout-link" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></header>
       <section class="page-content provider-page doctor-page" data-admin-page="doctors">
         <div class="welcome-row"><div><p class="eyebrow">DOCTOR DIRECTORY</p><h2>Doctors</h2><p>Manage doctor accounts, profiles, and verification.</p></div><button class="primary-button" type="button" data-add-provider>Add doctor</button></div>
         <div class="admin-ui-summary doctor-summary">
@@ -28,7 +31,7 @@
         </div>
         <section class="panel records-panel">
           <div class="records-toolbar"><label class="search-control"><span aria-hidden="true">⌕</span><input type="search" data-provider-search placeholder="Search doctors" aria-label="Search doctors"></label>
-            <label><span>Status</span><select data-account-filter><option value="">All statuses</option><option>Active</option><option>Inactive</option></select></label>
+            <label><span>Status</span><select data-account-filter><option value="">All statuses</option><option>Active</option><option>Inactive</option><option>Pending Verification</option><option>Additional Documents Required</option><option>Rejected</option></select></label>
           </div>
           <div class="table-wrap provider-table-wrap"><table><thead><tr><th>Name</th><th>Status</th><th>Details</th></tr></thead><tbody data-provider-rows></tbody></table><div class="table-empty" data-provider-empty>No doctors found.</div></div>
         </section>
@@ -48,7 +51,8 @@
     <p class="form-feedback" data-form-feedback role="status"></p><div class="dialog-actions"><button type="button" class="secondary-button" data-dialog-close>Cancel</button><button class="primary-button" type="submit">Save Doctor</button></div>
   </form></dialog>
   <dialog class="provider-dialog provider-details-dialog" data-details-dialog><div class="dialog-heading"><div><p class="eyebrow">PROVIDER DETAILS</p><h2 data-details-title>Doctor</h2></div><button type="button" class="icon-button" data-details-close aria-label="Close">×</button></div><div class="provider-details-grid" data-details-grid></div><div class="provider-activity"><strong>Activity history</strong><div data-provider-activity></div></div><div class="provider-actions" data-details-actions></div><div class="dialog-actions"><a class="secondary-button" href="../Appointments/index.html">View appointments</a></div></dialog>
+  <dialog class="provider-dialog provider-details-dialog application-detail-dialog" data-application-dialog><div class="dialog-heading"><div><p class="eyebrow">DOCTOR VERIFICATION REQUEST</p><h2 data-application-title>Doctor application</h2></div><button type="button" class="icon-button" data-application-close aria-label="Close">×</button></div><div class="provider-details-grid" data-application-details-grid></div><div class="provider-activity"><strong>Submitted documents</strong><div class="provider-actions" data-application-documents></div></div><div class="provider-actions" data-application-review-actions></div><div class="dialog-actions"><button class="secondary-button" type="button" data-application-close>Close</button></div></dialog>
   <div class="toast" data-provider-toast role="status" aria-live="polite"></div>
-  <script src="../../data/careplus-data.js?v=order-notification-profile-1"></script><script src="../../data/careplus-clinic.js?v=break-block-1"></script><script src="../../data/careplus-pharmacy.js?v=acceptance-payment-1"></script>
-  <script src="../dashboard-ui.js?v=admin-pages-4"></script><script src="../admin-nav.js?v=nav-3"></script><script src="../../shared/notifications.js?v=order-profile-target-1"></script><script src="../../shared/search-toggle.js"></script><script src="../../shared/filter-toggle.js"></script><script src="providers.js?v=time-away-admin-1"></script>
+  <script src="../../data/careplus-data.js?v=professional-application-notifications-3"></script><script src="../../shared/doctor-documents.js?v=doctor-table-details-1"></script><script src="../../data/careplus-clinic.js?v=break-block-1"></script><script src="../../data/careplus-pharmacy.js?v=acceptance-payment-1"></script>
+  <script src="../dashboard-ui.js?v=admin-pages-4"></script><script src="../admin-nav.js?v=nav-3"></script><script src="../../shared/notifications.js?v=admin-sidebar-notifications-1"></script><script src="../../shared/search-toggle.js"></script><script src="../../shared/filter-toggle.js"></script><script src="../review-reason-dialog.js?v=admin-review-reason-2"></script><script src="providers.js?v=provider-request-table-7"></script>
 </body></html>

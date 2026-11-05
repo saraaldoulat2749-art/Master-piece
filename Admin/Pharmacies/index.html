@@ -1,8 +1,61 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pharmacies | CarePlus Admin</title><link rel="stylesheet" href="../admin.css"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="../dashboard-ui.css?v=admin-pages-5"><link rel="stylesheet" href="status-toggle.css"><link rel="stylesheet" href="../../shared/global-button-theme.css"></head>
-<body class="admin-unified" data-protected="true" data-admin-protected="true"><script src="../../auth.js?v=floating-customer-notifications-1"></script><div class="admin-layout">
-<aside class="sidebar" id="admin-sidebar"><a class="brand" href="../index.html"><span class="brand-mark">+</span><span>Care<span>Plus</span><small>ADMIN</small></span></a><nav class="side-nav" aria-label="Admin sections"><a href="../index.html"><span>▦</span>Dashboard</a><a href="../Users/index.html"><span>♙</span>Users</a><a href="../Appointments/index.html"><span>□</span>Appointments</a><a href="../Products/index.html"><span>＋</span>Products</a><a class="active" href="index.html"><span>⌖</span>Pharmacies</a><a href="../CareRequests/index.html"><span>♡</span>Care requests</a><a href="../Orders/index.html"><span>▤</span>Orders</a></nav><div class="sidebar-bottom"><p>Admin workspace</p><a href="../../Home/Master.html">View CarePlus site ↗</a><a class="sidebar-logout" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></div></aside>
-<main class="main-area"><header class="topbar"><button class="menu-toggle" type="button" aria-label="Open admin navigation" aria-controls="admin-sidebar" aria-expanded="false">☰</button><div class="topbar-copy"><span class="eyebrow">CAREPLUS MANAGEMENT</span><h1>Pharmacies</h1></div><a class="logout-link" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></header>
-<section class="page-content" data-admin-page="pharmacies"><div class="welcome-row"><div><p class="eyebrow">PHARMACY DIRECTORY</p><h2>Pharmacies</h2><p>Manage shared demo records. Do not enter real business information.</p></div><button class="primary-button" type="button" data-action="add">＋ Add pharmacy</button></div><section class="panel records-panel"><div class="records-toolbar"><label class="search-control"><span aria-hidden="true">⌕</span><input type="search" data-search placeholder="Search pharmacies" aria-label="Search pharmacies"></label><label><span>Status</span><select data-pharmacy-status-filter aria-label="Filter pharmacies by status"><option value="">All statuses</option><option>Active</option><option>Inactive</option></select></label></div><div class="table-wrap"><table><thead data-table-head></thead><tbody data-table-body></tbody></table><div class="table-empty" data-table-empty>No pharmacy records yet. Add a demo entry to get started.</div></div></section><p class="privacy-note">Pharmacy changes are shared with the pharmacy finder in this browser only.</p></section></main></div>
-<dialog class="record-dialog" aria-labelledby="dialog-title"><form data-record-form><div class="dialog-heading"><div><p class="eyebrow">DEMO RECORD</p><h2 id="dialog-title">Add pharmacy</h2></div><button type="button" class="icon-button" data-close aria-label="Close dialog">×</button></div><div class="form-fields" data-form-fields></div><p class="form-feedback" data-form-feedback role="status"></p><div class="dialog-actions"><button type="button" class="secondary-button" data-close>Cancel</button><button class="primary-button" type="submit">Save demo record</button></div></form></dialog><div class="toast" data-toast role="status" aria-live="polite"></div><script src="../../data/careplus-data.js?v=order-notification-profile-1"></script><script src="../../data/careplus-pharmacy.js?v=acceptance-payment-1"></script><script src="../../shared/delete-dialog.js"></script><script src="../admin.js?v=archive-tools-4"></script><script src="../../shared/compact-tables.js"></script><script src="../../shared/search-toggle.js"></script><script src="../../shared/filter-toggle.js"></script><script src="../dashboard-ui.js?v=admin-pages-4"></script><script src="../admin-nav.js?v=nav-3"></script></body></html>
-
-
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pharmacies | CarePlus Admin</title>
+  <link rel="stylesheet" href="../admin.css">
+  <link rel="stylesheet" href="../theme.css">
+  <link rel="stylesheet" href="../dashboard-ui.css?v=admin-pages-5">
+  <link rel="stylesheet" href="status-toggle.css">
+  <link rel="stylesheet" href="application-requests.css?v=pharmacy-application-review-3">
+  <link rel="stylesheet" href="../../shared/notifications.css?v=admin-sidebar-notifications-1">
+  <link rel="stylesheet" href="../../shared/global-button-theme.css">
+  <link rel="stylesheet" href="../review-reason-dialog.css?v=admin-review-reason-2">
+<link rel="stylesheet" href="../../shared/site-headings.css?v=dancing-script-1">
+</head>
+<body class="admin-unified" data-protected="true" data-admin-protected="true">
+  <script src="../../auth.js?v=professional-role-access-1"></script>
+  <div class="admin-layout">
+    <aside class="sidebar" id="admin-sidebar">
+      <a class="brand" href="../index.html"><span class="brand-mark">+</span><span>Care<span>Plus</span><small>ADMIN</small></span></a>
+      <nav class="side-nav" aria-label="Admin sections">
+        <a href="../index.html"><span>D</span>Dashboard</a>
+        <a href="../Users/index.html"><span>U</span>Users</a>
+        <a href="../Appointments/index.html"><span>A</span>Appointments</a>
+        <a href="../Products/index.html"><span>P</span>Products</a>
+        <a class="active" href="index.html"><span>P</span>Pharmacies</a>
+        <a href="../CareRequests/index.html"><span>C</span>Care requests</a>
+        <a href="../Orders/index.html"><span>O</span>Orders</a>
+      </nav>
+      <div id="careplus-notification-widget" class="cpn-side-slot" aria-label="Admin notifications"></div>
+      <div class="sidebar-bottom"><p>Admin workspace</p><a href="../../Home/Master.html">View CarePlus site</a><a class="sidebar-logout" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></div>
+    </aside>
+    <main class="main-area">
+      <header class="topbar"><button class="menu-toggle" type="button" aria-label="Open admin navigation" aria-controls="admin-sidebar" aria-expanded="false">☰</button><div class="topbar-copy"><span class="eyebrow">CAREPLUS MANAGEMENT</span><h1>Pharmacies</h1></div><a class="logout-link" href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></header>
+      <section class="page-content" data-admin-page="pharmacies">
+        <div class="welcome-row"><div><p class="eyebrow">PHARMACY DIRECTORY</p><h2>Pharmacies</h2><p>Manage shared demo records. Do not enter real business information.</p></div><button class="primary-button" type="button" data-action="add">Add pharmacy</button></div>
+        <section class="panel records-panel">
+          <div class="records-toolbar"><label class="search-control"><span aria-hidden="true">⌕</span><input type="search" data-search placeholder="Search pharmacies" aria-label="Search pharmacies"></label><label><span>Status</span><select data-pharmacy-status-filter aria-label="Filter pharmacies by status"><option value="">All statuses</option><option>Active</option><option>Inactive</option></select></label></div>
+          <div class="table-wrap"><table><thead data-table-head></thead><tbody data-table-body></tbody></table><div class="table-empty" data-table-empty>No pharmacy records yet. Add a demo entry to get started.</div></div>
+        </section>
+        <p class="privacy-note">Pharmacy changes are shared with the pharmacy finder in this browser only.</p>
+      </section>
+    </main>
+  </div>
+  <dialog class="record-dialog" aria-labelledby="dialog-title"><form data-record-form><div class="dialog-heading"><div><p class="eyebrow">DEMO RECORD</p><h2 id="dialog-title">Add pharmacy</h2></div><button type="button" class="icon-button" data-close aria-label="Close dialog">×</button></div><div class="form-fields" data-form-fields></div><p class="form-feedback" data-form-feedback role="status"></p><div class="dialog-actions"><button type="button" class="secondary-button" data-close>Cancel</button><button class="primary-button" type="submit">Save demo record</button></div></form></dialog>
+  <div class="toast" data-toast role="status" aria-live="polite"></div>
+  <script src="../../data/careplus-data.js?v=professional-application-notifications-3"></script>
+  <script src="../../shared/doctor-documents.js?v=pharmacy-application-review-1"></script>
+  <script src="../../data/careplus-pharmacy.js?v=acceptance-payment-1"></script>
+  <script src="../../shared/delete-dialog.js"></script>
+  <script src="../admin.js?v=archive-tools-5"></script>
+  <script src="../../shared/compact-tables.js"></script>
+  <script src="../../shared/search-toggle.js"></script>
+  <script src="../../shared/filter-toggle.js"></script>
+  <script src="../dashboard-ui.js?v=admin-pages-4"></script>
+  <script src="../admin-nav.js?v=nav-3"></script>
+  <script src="../../shared/notifications.js?v=admin-sidebar-notifications-1"></script>
+  <script src="../review-reason-dialog.js?v=admin-review-reason-2"></script><script src="application-requests.js?v=pharmacy-application-review-5"></script>
+</body>
+</html>

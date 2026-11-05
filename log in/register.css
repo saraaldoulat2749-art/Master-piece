@@ -9,6 +9,23 @@
     margin-bottom: 13px;
 }
 
+.role-choice select { width:100%; height:43px; padding:0 12px; border:1px solid #ffffff24; border-radius:9px; background:#ffffff08; color:#fff; font:inherit; font-size:12px; }
+.role-choice select option { background:#10232b; color:#fff; }
+
+.role-choice select {
+    width: 100%;
+    height: 43px;
+    padding: 0 12px;
+    border: 1px solid #ffffff24;
+    border-radius: 9px;
+    background: #ffffff08;
+    color: #fff;
+    font: inherit;
+    font-size: 12px;
+}
+
+.role-choice select option { background: #10232b; color: #fff; }
+
 .register-panel .input-box {
     height: 43px;
 }

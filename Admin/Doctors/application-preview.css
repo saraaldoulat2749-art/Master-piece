@@ -1,0 +1,27 @@
+.application-card--highlight{outline:3px solid rgba(54,174,183,.38);outline-offset:3px;transition:outline-color .4s}
+.is-application-request{background:#f8fdfd}
+.application-detail-dialog .provider-actions{flex-wrap:wrap;white-space:normal;margin-top:12px}
+.application-detail-dialog .provider-actions button.application-approve{border-color:#168f7c;background:#168f7c;color:#fff}
+.application-detail-dialog .provider-actions button.application-reject{border-color:#d8bfc0;color:#a7484e}
+.application-file-missing{padding:6px 8px;border:1px dashed #d7e2e6;border-radius:7px;color:#84949c;font-size:10px}
+.application-detail-dialog{width:min(760px,calc(100% - 28px));max-height:90dvh;overflow:auto;padding:0;border:1px solid #dcebee;border-radius:20px;background:#f5fafb;color:#0d2b3a;box-shadow:0 25px 85px #0d2b3a40}
+.application-detail-dialog::backdrop{background:#0d2b3a85;backdrop-filter:blur(5px)}
+.application-detail-dialog>.dialog-heading{position:sticky;top:0;z-index:2;align-items:center;margin:0;padding:20px 24px;border-bottom:1px solid #deeaef;background:#fff}
+.application-detail-dialog>.dialog-heading h2{margin:6px 0 0;color:#0d2b3a;font-size:22px;overflow-wrap:anywhere}
+.application-detail-dialog>.dialog-heading .eyebrow{margin:0;color:#008f98;font-size:9px;letter-spacing:.13em}
+.application-detail-dialog>.dialog-heading .icon-button{display:grid;flex:0 0 38px;place-items:center;width:38px;height:38px;border-color:#d9e8ed;border-radius:10px;color:#567886;font-size:22px}
+.application-detail-dialog>.provider-details-grid{gap:10px 12px;margin:18px 22px;padding:20px;border:1px solid #dfebee;border-radius:14px;background:#fff}
+.application-detail-dialog .provider-detail{min-height:58px;padding:10px 12px;border-color:#e4edf0;border-radius:10px;background:#fbfdfd}
+.application-detail-dialog .provider-detail small{margin-bottom:5px;color:#6c8795;font-size:10px}
+.application-detail-dialog .provider-detail strong{color:#244b5d;font-size:12px;line-height:1.45}
+.application-detail-dialog>.provider-activity{gap:10px;margin:0 22px 16px;padding:17px 18px;border:1px solid #dfebee;border-radius:14px;background:#fff;color:#173b4c;font-size:13px}
+.application-detail-dialog>.provider-activity>div{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:none;overflow:visible}
+.application-detail-dialog .provider-activity button,.application-detail-dialog .provider-activity .application-file-missing{min-width:0;padding:10px;border:1px solid #d9e5e9;border-radius:9px;background:#fff;color:#315766;font-size:11px;overflow-wrap:anywhere}
+.application-detail-dialog .provider-activity button{cursor:pointer}
+.application-detail-dialog .provider-actions{display:flex;flex-wrap:wrap;gap:9px;margin:0 22px 16px;white-space:normal}
+.application-detail-dialog .provider-actions button{min-height:38px;margin:0;padding:9px 15px;border:1px solid #bedde3;border-radius:9px;background:#eef8fa;color:#086e7a;font:700 12px Arial,Helvetica,sans-serif}
+.application-detail-dialog .provider-actions button.application-approve{border-color:#168f7c;background:#168f7c;color:#fff}
+.application-detail-dialog .provider-actions button.application-reject{border-color:#ecc6d0;background:#fff0f3;color:#b03d54}
+.application-detail-dialog>.dialog-actions{position:sticky;bottom:0;z-index:2;justify-content:flex-end;margin:0;padding:13px 22px;border-top:1px solid #deeaef;background:#fff}
+.application-detail-dialog>.dialog-actions button{min-height:38px;margin:0;padding:9px 15px;font:700 12px Arial,Helvetica,sans-serif}
+@media(max-width:600px){.application-detail-dialog>.provider-details-grid{grid-template-columns:1fr;margin:14px;padding:15px}.application-detail-dialog>.provider-activity{margin:0 14px 14px;padding:14px}.application-detail-dialog>.provider-activity>div{grid-template-columns:1fr}.application-detail-dialog .provider-actions{margin-inline:14px}}

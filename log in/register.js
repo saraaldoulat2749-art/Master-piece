@@ -32,6 +32,8 @@ document.addEventListener("DOMContentLoaded", () => {
         const phone = form.elements
             .namedItem("phone").value.trim();
 
+        const role = form.elements.namedItem("role")?.value || "patient";
+
         const password = form.elements
             .namedItem("password").value;
 
@@ -77,7 +79,8 @@ document.addEventListener("DOMContentLoaded", () => {
                     name,
                     email,
                     phone,
-                    password
+                    password,
+                    role
                 });
 
             if (!result?.ok) {
@@ -85,6 +88,12 @@ document.addEventListener("DOMContentLoaded", () => {
                     result?.error ||
                     "Account creation failed."
                 );
+            }
+
+            if (result.autoLogin && ["doctor", "nurse", "pharmacy"].includes(result.role)) {
+                const applicationPages = { doctor: "../DoctorVerification/index.html", nurse: "../NurseVerification/index.html", pharmacy: "../PharmacyVerification/index.html" };
+                window.location.assign(applicationPages[result.role]);
+                return;
             }
 
             // Clear the form

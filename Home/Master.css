@@ -289,7 +289,7 @@ h1 span {
 .description {
     color: #e0e8ee;
     max-width: 535px;
-    font-size: 15px;
+    font-size: 18px;
     line-height: 1.7;
     margin-bottom: 27px;
     animation: fadeUp .8s .2s ease both;
@@ -493,7 +493,7 @@ h1 span {
         font-size: 39px;
     }
     .description {
-        font-size: 13px;
+        font-size: 16px;
     }
     .features {
         gap: 17px;
@@ -1764,7 +1764,7 @@ body .quick-icon {
     border-radius: 19px;
     color: #008c95;
 }
-body .quick-service h3 { color: #102c3b; font-family: inherit; font-size: 18px; font-weight: 600; }
+body .quick-service h3 { color: #102c3b; font-family: Arial, Helvetica, sans-serif; font-size: 18px; font-weight: 500; }
 body .quick-service:hover {
     background: #f2f9f9;
     border-color: #82c4c8;
@@ -1819,7 +1819,11 @@ body .step-card {
     background: rgba(255, 255, 255, .94);
     border-color: #d2e8e9;
 }
-body .step-card h3 { color: #102c3b; }
+body .step-card h3 {
+    color: #102c3b;
+    font-family: Arial, Helvetica, sans-serif;
+    font-weight: 500;
+}
 body .icon-circle {
     background: #eaf4f4;
     border-color: #9dd2d5;
@@ -2036,9 +2040,7 @@ body .social-links a:hover { background: #94D5D6; color: #041b2a; }
 body .hero .tag { color: #b9eeea; border-color: rgba(120, 216, 209, .7); background: rgba(14, 76, 88, .42); }
 body .hero .feature-icon { color: #78d8d1; }
 
-/* Keep the video visible in the top spacing around the Home navbar. */
 body .hero { background-color: #f2f9f9; }
-/* Keep the spacing above the Home navbar transparent so the video shows through. */
 body .hero #nav-container {
     display: flow-root;
     background-color: transparent;
@@ -2086,4 +2088,36 @@ body .cp-section-label > span {
     body .cp-section-label { gap: 7px; font-size: 10px; letter-spacing: 1.5px; }
     body .cp-section-label::before,
     body .cp-section-label::after { width: 16px; flex-basis: 16px; }
+}
+
+/* Great Vibes for the two-line introductions at the start of each home section. */
+body .about-content h2,
+body .quick-services-heading h2,
+body .section-header > h2,
+body .cp-faq-heading h2 {
+    font-family: "Dancing Script", cursive !important;
+    font-weight: 400 !important;
+}
+
+body .about-label,
+body .cp-section-label > span {
+    font-family: "Caveat", "Segoe Print", cursive !important;
+    font-weight: 500 !important;
+}
+
+body .hero .hero-content,
+body .hero .hero-content .tag,
+body .hero .hero-content h1,
+body .hero .hero-content h1 span,
+body .hero .hero-content .description,
+body .hero .hero-content .feature p,
+body .hero .hero-content .services-btn > span:first-child {
+    font-family: "Caveat", "Segoe Print", cursive !important;
+    font-weight: 500;
+}
+
+body .hero .hero-content h1,
+body .hero .hero-content h1 span {
+    font-family: "Dancing Script", cursive !important;
+    font-weight: 400 !important;
 }

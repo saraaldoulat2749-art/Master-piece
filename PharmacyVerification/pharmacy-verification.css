@@ -1,0 +1,4 @@
+.info-grid label:nth-child(4),.info-grid label:nth-child(5),.info-grid label:nth-child(6),.info-grid label:nth-child(7){grid-column:span 3}
+.steps span:last-child.active:before{content:"2"}
+@media(max-width:860px){.info-grid label:nth-child(4),.info-grid label:nth-child(5),.info-grid label:nth-child(6),.info-grid label:nth-child(7){grid-column:span 3}}
+@media(max-width:600px){.info-grid label:nth-child(4),.info-grid label:nth-child(5),.info-grid label:nth-child(6),.info-grid label:nth-child(7){grid-column:1}}

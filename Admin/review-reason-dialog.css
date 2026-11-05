@@ -1,0 +1,19 @@
+.review-reason-dialog{width:min(500px,calc(100% - 28px));max-height:calc(100% - 28px);padding:0;overflow:auto;border:1px solid #d9e8ed;border-radius:18px;background:#fff;color:#203746;box-shadow:0 24px 70px #06253635;font-family:Arial,Helvetica,sans-serif}
+.review-reason-dialog::backdrop{background:#092a3b88;backdrop-filter:blur(3px)}
+.review-reason-dialog__form{padding:22px}
+.review-reason-dialog__form header{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding-bottom:16px;border-bottom:1px solid #e7eef1}
+.review-reason-dialog__eyebrow{margin:0 0 6px;color:#008b93;font-size:10px;font-weight:800;letter-spacing:.14em}
+.review-reason-dialog__form h2{margin:0;color:#123546;font-size:20px;line-height:1.3}
+.review-reason-dialog__close{display:grid;flex:0 0 36px;place-items:center;width:36px;height:36px;border:1px solid #d9e8ed;border-radius:9px;background:#fff;color:#567886;font-size:22px;cursor:pointer}
+.review-reason-dialog__message{margin:17px 0;color:#607987;font-size:13px;line-height:1.6}
+.review-reason-dialog__label{display:grid;gap:8px;color:#315363;font-size:12px;font-weight:700}
+.review-reason-dialog__label textarea{width:100%;min-height:108px;resize:vertical;padding:12px;border:1px solid #cbdde3;border-radius:10px;background:#fbfdfd;color:#203746;font:13px Arial,Helvetica,sans-serif;line-height:1.5}
+.review-reason-dialog__label textarea:focus{border-color:#39aeb5;outline:3px solid #39aeb526}
+.review-reason-dialog__error{margin:7px 0 0;color:#b03d54;font-size:11px}
+.review-reason-dialog__form footer{display:flex;justify-content:flex-end;gap:9px;margin-top:18px;padding-top:15px;border-top:1px solid #e7eef1}
+.review-reason-dialog__form footer button{min-height:38px;padding:9px 15px;border:1px solid #bedde3;border-radius:9px;background:#eef8fa;color:#086e7a;font:700 12px Arial,Helvetica,sans-serif;cursor:pointer}
+.review-reason-dialog__form footer .review-reason-dialog__submit{border-color:#078b91;background:#078b91;color:#fff}
+.review-reason-dialog__form footer .review-reason-dialog__submit:hover{background:#067983}
+.review-reason-dialog__form footer .review-reason-dialog__submit.is-danger{border-color:#c83d4e;background:#c83d4e;color:#fff}
+.review-reason-dialog__form footer .review-reason-dialog__submit.is-danger:hover{border-color:#ad3040;background:#ad3040}
+@media(max-width:520px){.review-reason-dialog__form{padding:18px}.review-reason-dialog__form h2{font-size:18px}.review-reason-dialog__form footer{flex-direction:column-reverse}.review-reason-dialog__form footer button{width:100%}}

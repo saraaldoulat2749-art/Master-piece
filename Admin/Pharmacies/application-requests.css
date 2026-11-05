@@ -1,0 +1,12 @@
+.is-application-request>td{background:#f2fbfb}
+.is-application-request:hover>td{background:#eaf7f8}
+.is-application-request.is-highlighted>td{box-shadow:inset 0 2px #44b5bb,inset 0 -2px #44b5bb}
+.pharmacy-application-status{background:#fff4d9;color:#8a681e}
+.pharmacy-application-dialog .cp-table-detail-grid{margin-bottom:14px}
+.pharmacy-application-document-actions,.pharmacy-application-review-actions{display:flex;flex-wrap:wrap;align-items:center;gap:9px}
+.pharmacy-application-dialog .cp-table-record-actions button{min-height:38px}
+.pharmacy-application-dialog .application-approve{border-color:#168f7c;background:#168f7c;color:#fff}
+.pharmacy-application-dialog .application-reject{border-color:#ecc6d0;background:#fff0f3;color:#b03d54}
+.pharmacy-application-dialog .application-approve:hover{background:#117b6d;color:#fff}
+.pharmacy-application-dialog .application-reject:hover{background:#ffe2e9;color:#9d3046}
+.pharmacy-application-dialog .cp-table-record-actions>span{color:#6e828c;font-size:12px}

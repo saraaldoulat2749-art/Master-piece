@@ -18,6 +18,7 @@
   const providerId = user => String(user.doctorId || user.nurseId || user.id);
   const archived = user => Boolean(user.archivedAt || user.archived === true);
   let editingId = "";
+  let focusedApplication = false;
   const menuToggle = $(".menu-toggle");
   const closeMenu = () => { document.body.classList.remove("sidebar-open"); menuToggle?.setAttribute("aria-expanded", "false"); };
   menuToggle?.addEventListener("click", () => {
@@ -25,7 +26,7 @@
     menuToggle.setAttribute("aria-expanded", String(open));
   });
   document.addEventListener("click", event => { if (document.body.classList.contains("sidebar-open") && !event.target.closest(".sidebar,.menu-toggle")) closeMenu(); });
-  document.addEventListener("keydown", event => { if (event.key === "Escape") { closeMenu(); $("[data-provider-dialog]")?.close(); $("[data-details-dialog]")?.close(); } });
+  document.addEventListener("keydown", event => { if (event.key === "Escape") { closeMenu(); $("[data-provider-dialog]")?.close(); $("[data-details-dialog]")?.close(); $("[data-application-dialog]")?.close(); } });
 
   function records() { return store.list(collection).filter(user => String(user.role || "").toLowerCase() === type); }
   function appointmentCount(user) {
@@ -48,7 +49,7 @@
       groups.push({ start: item.date, end: item.date, note: item.note || "" });
     });
     const displayDate = value => new Date(`${value}T12:00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" });
-    return groups.map(group => `${displayDate(group.start)}${group.start === group.end ? "" : ` – ${displayDate(group.end)}`}${group.note ? ` (${group.note})` : ""}`).join("; ") || "None scheduled";
+    return groups.map(group => `${displayDate(group.start)}${group.start === group.end ? "" : ` - ${displayDate(group.end)}`}${group.note ? ` (${group.note})` : ""}`).join("; ") || "None scheduled";
   }
   function badge(value, kind) {
     const text = String(value || "Pending");
@@ -81,19 +82,80 @@
     const specialties = $("[data-summary-specialties]");
     if (total) total.textContent = allDoctors.length;
     if (active) active.textContent = allDoctors.filter(user => accountStatus(user).toLowerCase() === "active").length;
-    if (pending) pending.textContent = allDoctors.filter(user => String(user.verificationStatus || "Pending").toLowerCase() === "pending").length;
+    if (pending) pending.textContent = allDoctors.filter(user => String(user.verificationStatus || "Pending").toLowerCase() === "pending").length
+      + store.list("professionalApplications").filter(application => application.role === "doctor" && ["Pending Verification", "Additional Documents Required"].includes(application.status)).length;
     if (inactive) inactive.textContent = allDoctors.filter(user => accountStatus(user).toLowerCase() !== "active").length;
     if (specialties) specialties.textContent = new Set(allDoctors.map(user => String(user.specialty || user.qualifications || "").trim().toLowerCase()).filter(Boolean)).size;
-    const list = store.newestFirst(records()).filter(user => {
+    const providerRows = store.newestFirst(records()).filter(user => {
       const text = [user.id, user.name, user.email, user.phone, user.specialty, user.qualifications].join(" ").toLowerCase();
       const status = archived(user) ? "Archived" : accountStatus(user);
-      return text.includes(query)
-        && (!selectedAccount || status === selectedAccount);
+      return text.includes(query) && (!selectedAccount || status === selectedAccount);
     });
+    const applications = store.list("professionalApplications")
+      .filter(application => application.role === type && ["Pending Verification", "Additional Documents Required", "Rejected"].includes(application.status))
+      .sort((a, b) => String(b.submittedAt || "").localeCompare(String(a.submittedAt || "")));
+    const applicationRows = applications.map(application => ({ application, user: store.get("users", application.userId) || {} }))
+      .filter(({ application, user }) => {
+        const text = [application.id, application.name, application.email, application.specialization, application.qualification, application.university,
+          application.licenseNumber, user.name, user.email, user.phone].join(" ").toLowerCase();
+        return text.includes(query) && (!selectedAccount || application.status === selectedAccount);
+      });
+    const list = [...applicationRows.map(item => ({ kind: "application", ...item })), ...providerRows.map(user => ({ kind: "provider", user }))];
     $("[data-provider-empty]").hidden = list.length > 0;
-    $("[data-provider-rows]").innerHTML = list.map(user => {
+    $("[data-provider-rows]").innerHTML = list.map(row => {
+      if (row.kind === "application") {
+        const applicantName = row.user.name || row.application.name || (type === "nurse" ? "Nurse applicant" : "Doctor applicant");
+        return '<tr class="is-application-request"><td class="doctor-table-name">' + esc(applicantName) + '</td><td>' + badge(row.application.status, "application") + '</td><td><button type="button" class="cp-table-details-button" data-action="application-details" data-application-id="' + esc(row.application.id) + '">View details</button></td></tr>';
+      }
+      const user = row.user;
       return '<tr class="' + (archived(user) ? "is-archived" : "") + '"><td class="doctor-table-name">' + esc(user.name || "Unnamed") + '</td><td>' + badge(archived(user) ? "Archived" : accountStatus(user), "account") + '</td><td><button type="button" class="cp-table-details-button" data-action="details" data-id="' + esc(user.id) + '">View details</button></td></tr>';
     }).join("");
+    const requestedApplicationId = new URLSearchParams(location.search).get("applicationId");
+    if (!focusedApplication && requestedApplicationId) {
+      const button = [...$("[data-provider-rows]").querySelectorAll('[data-action="application-details"]')]
+        .find(item => item.dataset.applicationId === requestedApplicationId);
+      if (button) {
+        focusedApplication = true;
+        button.closest("tr")?.scrollIntoView({ behavior: "smooth", block: "center" });
+        button.click();
+      }
+    }
+  }
+  function openProfessionalApplication(applicationId) {
+    const application = store.get("professionalApplications", applicationId);
+    if (!application || application.role !== type) return;
+    const applicant = store.get("users", application.userId) || {};
+    const values = type === "nurse" ? [
+      ["Full name", applicant.name || application.name], ["Email", applicant.email || application.email], ["Phone", applicant.phone || application.phone],
+      ["Nursing qualification", application.qualification], ["University / college", application.university], ["Graduation year", application.graduationYear],
+      ["Nursing license number", application.licenseNumber], ["License expiration date", application.licenseExpiry || "Not provided"],
+      ["Years of experience", application.experience || "Not provided"], ["Service areas", application.serviceAreas || "Not provided"],
+      ["Application status", application.status], ["Submitted at", application.submittedAt ? new Date(application.submittedAt).toLocaleString() : "Not recorded"],
+      ...(application.reviewReason ? [["Review reason", application.reviewReason]] : []),
+      ["Applicant confirmation", application.confirmation ? "Confirmed" : "Not recorded"]
+    ] : [
+      ["Full name", applicant.name || application.name], ["Email", applicant.email || application.email], ["Phone", applicant.phone || application.phone],
+      ["Medical specialization", application.specialization], ["University name", application.university], ["Graduation year", application.graduationYear],
+      ["Practice license number", application.licenseNumber], ["License expiration date", application.licenseExpiry || "Not provided"],
+      ["Application status", application.status], ["Submitted at", application.submittedAt ? new Date(application.submittedAt).toLocaleString() : "Not recorded"],
+      ...(application.reviewReason ? [["Review reason", application.reviewReason]] : []),
+      ["Applicant confirmation", application.confirmation ? "Confirmed" : "Not recorded"]
+    ];
+    $("[data-application-title]").textContent = (applicant.name || application.name || (type === "nurse" ? "Nurse" : "Doctor")) + " — verification request";
+    $("[data-application-details-grid]").innerHTML = values.map(([label, value]) => '<div class="provider-detail"><small>' + esc(label) + '</small><strong>' + esc(value || "Not provided") + "</strong></div>").join("");
+    const documentLabels = type === "nurse"
+      ? { nursingDegree: "Nursing degree / diploma", practiceLicense: "Nursing practice license", proofOfIdentity: "Proof of identity", additionalCertificate: "Additional certificate" }
+      : { universityDegree: "University degree", practiceLicense: "Medical practice license", specialtyCertificate: "Specialization certificate", proofOfIdentity: "Proof of identity" };
+    $("[data-application-documents]").innerHTML = Object.entries(documentLabels).map(([key, label]) => {
+      const file = application.documents?.[key];
+      return file?.id ? '<button type="button" data-application-file="' + esc(key) + '" data-application-id="' + esc(application.id) + '">View ' + esc(label) + ' | ' + esc(file.name) + '</button>'
+        : '<span class="application-file-missing">' + esc(label) + ': not uploaded</span>';
+    }).join("");
+    const canReview = ["Pending Verification", "Additional Documents Required"].includes(application.status);
+    const providerLabel = type === "nurse" ? "nurse" : "doctor";
+    $("[data-application-review-actions]").innerHTML = canReview
+      ? '<button type="button" class="application-approve" data-application-review="approve" data-application-id="' + esc(application.id) + '">Approve ' + providerLabel + '</button><button type="button" data-application-review="request" data-application-id="' + esc(application.id) + '">Request documents</button><button type="button" class="application-reject" data-application-review="reject" data-application-id="' + esc(application.id) + '">Reject</button>' : "";
+    $("[data-application-dialog]").showModal();
   }
   function openForm(user = null) {
     editingId = user?.id ? String(user.id) : "";
@@ -122,7 +184,7 @@
     $("[data-details-title]").textContent = user.name || role;
     $("[data-details-grid]").innerHTML = fields.map(([label, value]) => '<div class="provider-detail"><small>' + esc(label) + '</small><strong>' + esc(value || "Not recorded") + "</strong></div>").join("");
     const history = Array.isArray(user.adminActivity) ? user.adminActivity.slice().reverse() : [];
-    $("[data-provider-activity]").innerHTML = history.length ? history.map(item => '<small>' + esc(item.action) + " · " + esc(new Date(item.at).toLocaleString()) + " · " + esc(item.by || "Admin") + "</small>").join("") : "<small>No admin activity recorded.</small>";
+    $("[data-provider-activity]").innerHTML = history.length ? history.map(item => '<small>' + esc(item.action) + " | " + esc(new Date(item.at).toLocaleString()) + " | " + esc(item.by || "Admin") + "</small>").join("") : "<small>No admin activity recorded.</small>";
     const actions = archived(user)
       ? '<button type="button" data-action="restore" data-id="' + esc(user.id) + '">Restore</button>'
       : '<button type="button" data-action="edit" data-id="' + esc(user.id) + '">Edit</button>'
@@ -158,7 +220,7 @@
     if (duplicate) { form.querySelector("[data-form-feedback]").textContent = "A provider with this email already exists."; return; }
     const previous = editingId ? store.get(collection, editingId) : null;
     const newId = editingId || globalThis.crypto?.randomUUID?.() || "provider-" + Date.now() + "-" + Math.random().toString(36).slice(2);
-    const next = { ...values, id: newId, [type === "doctor" ? "doctorId" : "nurseId"]: previous ? providerId(previous) : newId, role, ...(password && !previous ? { mustChangePassword: true } : {}), updatedAt: new Date().toISOString(), adminActivity: (previous?.adminActivity || []).concat({ action: previous ? "Profile updated" : "Provider added", at: new Date().toISOString(), by: localStorage.getItem("careplusDemoIdentity") || "Admin" }) };
+    const next = { ...values, id: newId, [type === "doctor" ? "doctorId" : "nurseId"]: previous ? providerId(previous) : newId, role, ...(type === "doctor" && !previous ? { approvalStatus: "Approved", verificationStatus: "Verified", verifiedAt: new Date().toISOString() } : {}), ...(password && !previous ? { mustChangePassword: true } : {}), updatedAt: new Date().toISOString(), adminActivity: (previous?.adminActivity || []).concat({ action: previous ? "Profile updated" : "Provider added", at: new Date().toISOString(), by: localStorage.getItem("careplusDemoIdentity") || "Admin" }) };
     if (editingId) next.archivedAt = previous.archivedAt || "";
     const saved = editingId ? store.update(collection, editingId, next) : store.create(collection, { ...next, createdAt: new Date().toISOString() });
     if (!saved) { form.querySelector("[data-form-feedback]").textContent = "Could not save this provider in this browser."; return; }
@@ -182,9 +244,10 @@
   $("[data-provider-rows]").addEventListener("click", event => {
     const button = event.target.closest("button[data-action]");
     if (!button) return;
+    const action = button.dataset.action;
+    if (action === "application-details") { openProfessionalApplication(button.dataset.applicationId); return; }
     const user = store.get(collection, button.dataset.id);
     if (!user) return;
-    const action = button.dataset.action;
     if (action === "details") { details(user); return; }
     if (action === "edit") { openForm(user); return; }
     const rejectionReason = action === "reject" && type === "doctor" ? requestRejectionReason() : "";
@@ -199,6 +262,41 @@
     if (action === "status") { const status = accountStatus(user) === "Active" ? "Inactive" : "Active"; changes = { status, accountStatus: status, adminActivity: activity(user, "Account " + status.toLowerCase()) }; }
     if (store.update(collection, user.id, changes)) { render(); toast("Provider record updated."); }
     else toast("Could not update provider.", true);
+  });
+  document.querySelectorAll("[data-application-close]").forEach(button => button.addEventListener("click", () => $("[data-application-dialog]").close()));
+  $("[data-application-documents]").addEventListener("click", async event => {
+    const button = event.target.closest("[data-application-file]");
+    if (!button) return;
+    const application = store.get("professionalApplications", button.dataset.applicationId);
+    const file = application?.documents?.[button.dataset.applicationFile];
+    if (!file?.id) return;
+    const tab = window.open("about:blank", "_blank");
+    try {
+      const stored = await window.CarePlusDoctorDocuments.get(file.id);
+      if (stored?.blob && tab) tab.location.href = URL.createObjectURL(stored.blob);
+      else tab?.close();
+    } catch { tab?.close(); window.alert("Could not open this document."); }
+  });
+  $("[data-application-review-actions]").addEventListener("click", async event => {
+    const button = event.target.closest("[data-application-review]");
+    if (!button) return;
+    const decision = button.dataset.applicationReview;
+    const applicationId = button.dataset.applicationId;
+    const providerLabel = type === "nurse" ? "nurse" : "doctor";
+    const reason = decision === "approve" ? "" : await window.CarePlusReviewReason.ask({
+      title: decision === "reject" ? "Reject application" : "Request additional documents",
+      message: decision === "reject" ? "Enter a reason for rejecting this " + providerLabel + "'s registration." : "Specify which documents are missing or need clarification.",
+      placeholder: decision === "reject" ? "Reason for rejection" : "List the documents or details required",
+      submitLabel: decision === "reject" ? "Reject application" : "Send request"
+    });
+    if (decision !== "approve" && reason === null) return;
+    const application = store.get("professionalApplications", applicationId);
+    const review = application?.role === "nurse" ? window.CarePlusAuth.reviewNurseApplication : window.CarePlusAuth.reviewDoctorApplication;
+    const result = review(applicationId, decision, reason || "");
+    if (!result.ok) { window.alert(result.error); return; }
+    $("[data-application-dialog]").close();
+    render();
+    toast(providerLabel.charAt(0).toUpperCase() + providerLabel.slice(1) + " application " + (decision === "approve" ? "approved." : decision === "reject" ? "rejected." : "updated."));
   });
   $("[data-details-actions]").addEventListener("click", event => {
     const button = event.target.closest("button[data-action]");
@@ -230,7 +328,7 @@
       toast("Provider record updated.");
     } else toast("Could not update provider.", true);
   });
-  document.querySelectorAll("[data-provider-dialog],[data-details-dialog]").forEach(dialog => dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); }));
+  document.querySelectorAll("[data-provider-dialog],[data-details-dialog],[data-application-dialog]").forEach(dialog => dialog.addEventListener("click", event => { if (event.target === dialog) dialog.close(); }));
   function toast(message, error = false) { const node = $("[data-provider-toast]"); node.textContent = message; node.classList.toggle("is-error", error); node.classList.add("is-visible"); setTimeout(() => node.classList.remove("is-visible"), 2800); }
   store.subscribe(render);
   window.addEventListener("storage", event => { if (event.key === "careplusCommissionSettingsV1") render(); });

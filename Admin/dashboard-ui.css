@@ -1,4 +1,10 @@
 /* Shared admin visual layer; sidebar structure and existing actions stay intact. */
+/* Match the handwritten welcome heading used on the care dashboard. */
+body.admin-unified :is(h1, h2, h3) {
+  font-family: "Dancing Script", cursive !important;
+  font-weight: 400 !important;
+}
+
 body.admin-unified { --admin-bg: #f2fafb; --admin-ink: #294f62; --admin-line: #dce9ee; background: #f2fafb; }
 .admin-unified .page-content { padding-top: 22px; }
 .admin-unified .side-nav { gap: 3px; }

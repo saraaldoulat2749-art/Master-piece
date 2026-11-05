@@ -17,9 +17,9 @@
 .finance-button--soft { border-color:#d7e4e9; background:#fff; color:#456472; }
 .finance-button--soft:hover { border-color:#9dc9ce; background:#f4fbfb; }
 .finance-notice { margin:0 0 14px; padding:10px 13px; border:1px solid #eadbb4; border-radius:9px; background:#fff9e9; color:#735e2b; font-size:10px; line-height:1.5; }
-.finance-metrics { display:grid; grid-template-columns:repeat(6,minmax(175px,1fr)); gap:16px; margin-bottom:26px; overflow-x:auto; padding:3px 2px 9px; }
-.revenue-summary .admin-ui-metric { min-width:175px; padding:16px 14px; column-gap:10px; }
-.revenue-summary .admin-ui-metric > strong { font-size:clamp(14px,1.35vw,23px); white-space:nowrap; }
+body.admin-unified .finance-metrics.revenue-summary { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr)); gap:16px; margin-bottom:26px; padding:3px 2px 9px; }
+body.admin-unified .revenue-summary .admin-ui-metric { min-width:0; padding:16px 14px; column-gap:10px; }
+body.admin-unified .revenue-summary .admin-ui-metric > strong { max-width:100%; font-size:22px; white-space:normal; overflow-wrap:anywhere; font-variant-numeric:tabular-nums; }
 .revenue-summary .admin-ui-metric-icon svg { display:block; width:21px; height:21px; fill:none; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 .revenue-summary .finance-provider-details { margin:0; font-size:10px; }
 .finance-metric { position:relative; min-width:0; min-height:122px; padding:15px; overflow:hidden; border:1px solid #e0e9ee; border-radius:12px; background:#fff; box-shadow:0 6px 18px #153b4c08; }

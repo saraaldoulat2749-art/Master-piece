@@ -16,6 +16,18 @@
   }
   let user = dataStore?.list("users").find(item => item.email?.toLowerCase() === identityLower || item.phone === identity);
   if (!user && identity) user = dataStore?.upsertDemoUser(identity);
+  const professionalRole = String(user?.selectedRole || "").trim().toLowerCase();
+  const professionalRoutes = {
+    doctor: { dashboard: "../Doctor/index.html", application: "../DoctorVerification/index.html" },
+    nurse: { dashboard: "../Nurse/index.html", application: "../NurseVerification/index.html" },
+    pharmacy: { dashboard: "../Pharmacy/dashboard.html", application: "../PharmacyVerification/index.html" }
+  };
+  if (professionalRoutes[professionalRole]) {
+    const target = String(user.role || "").trim().toLowerCase() === professionalRole
+      ? professionalRoutes[professionalRole].dashboard : professionalRoutes[professionalRole].application;
+    window.location.replace(target);
+    return;
+  }
   if (!dataStore || !user) {
     byId("profile-name").textContent = "Your CarePlus profile";
     byId("profile-welcome").textContent = "We could not match this demo session to a user record.";

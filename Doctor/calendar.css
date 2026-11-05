@@ -111,3 +111,60 @@
   .calendar-agenda { min-height: 230px; }
 }
 @media (min-width: 651px) and (max-width: 1300px) { .calendar-layout { grid-template-columns: minmax(0,1fr); } .calendar-agenda { min-height: 230px; } .calendar-agenda-list { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+
+/* Compact year overview, matching CarePlus calendar styling without altering summary cards or navigation. */
+.calendar-layout { grid-template-columns: minmax(0, 1fr) 300px; gap: 16px; }
+.doctor-calendar-grid.is-year-view { grid-template-columns: repeat(4, minmax(0, 1fr)); min-width: 0; gap: 12px; padding: 0; background: transparent; }
+.doctor-calendar-scroll:has(.is-year-view) { overflow: visible; border: 0; background: transparent; }
+.calendar-month-card { min-width: 0; overflow: hidden; border: 1px solid #e1eaed; border-radius: 15px; background: #fff; box-shadow: 0 3px 8px rgba(33,74,89,.08); }
+.calendar-month-card h3 { display: flex; align-items: center; gap: 9px; min-height: 42px; margin: 0; padding: 0 12px; background: #e6f5fa; color: #254457; font: 800 13px Manrope,Arial,sans-serif; }
+.calendar-month-card h3 span { color: #079ba5; font-size: 17px; }
+.calendar-month-card.month-tone-1 h3 { background: #fff4df; } .calendar-month-card.month-tone-1 h3 span { color: #d28812; }
+.calendar-month-card.month-tone-2 h3 { background: #e5f5ef; } .calendar-month-card.month-tone-2 h3 span { color: #129a79; }
+.calendar-month-card.month-tone-3 h3 { background: #e5f4fc; } .calendar-month-card.month-tone-3 h3 span { color: #198ec4; }
+.calendar-month-card.month-tone-4 h3 { background: #edf6e6; } .calendar-month-card.month-tone-4 h3 span { color: #6b9f29; }
+.calendar-month-card.month-tone-5 h3 { background: #f1eafb; } .calendar-month-card.month-tone-5 h3 span { color: #895bc0; }
+.calendar-month-card.is-selected-month { border-color: #0a9ca5; box-shadow: 0 0 0 1px #0a9ca5, 0 5px 14px rgba(13,155,165,.12); }
+.year-weekdays,.year-month-days { display: grid; grid-template-columns: repeat(7,minmax(0,1fr)); padding: 0 9px; }
+.year-weekdays { padding-top: 8px; color: #627d8c; font-size: 9px; font-weight: 800; text-align: center; }
+.year-month-days { padding-top: 3px; padding-bottom: 9px; }
+.year-day { position: relative; display: grid; min-width: 0; aspect-ratio: 1.35; place-items: center; padding: 0; border: 0; border-radius: 7px; background: transparent; color: #38566a; font: 600 9px Arial,sans-serif; cursor: pointer; }
+.year-day:not(.is-empty):hover { background: #edf8f8; color: #078f99; }
+.year-day.is-empty { cursor: default; }
+.year-day.is-today { background: #effafa; color: #078f99; font-weight: 800; }
+.year-day.is-selected { background: #0d9ba5; color: #fff; box-shadow: 0 2px 5px rgba(13,155,165,.22); }
+.year-day i { position: absolute; right: 3px; bottom: 2px; width: 4px; height: 4px; border-radius: 50%; background: #e69d32; }
+.year-day.is-selected i { background: #fff; }
+.calendar-month-stats { display: grid; gap: 0; padding: 7px 0 10px; border-bottom: 1px solid #eaf0f2; }
+.calendar-month-stats>div { display: grid; grid-template-columns: 20px 1fr auto; align-items: center; gap: 7px; min-height: 36px; color: #617c8b; font-size: 10px; }
+.calendar-month-stats strong { color: #263f54; font: 800 13px Manrope,Arial,sans-serif; }
+.month-stat-dot { width: 18px; height: 18px; border-radius: 6px; background: #e9f5f6; }
+.appointments-dot { background: #e9f5f6; } .confirmed-dot { background: #e8f6f0; } .pending-dot { background: #fff4e5; } .cancelled-dot { background: #fceeee; }
+.confirmed-dot:after,.pending-dot:after,.cancelled-dot:after { display: block; width: 7px; height: 7px; margin: 5px auto; border: 1.5px solid #199b7c; border-radius: 50%; content: ""; }
+.pending-dot:after { border-color: #d69a36; } .cancelled-dot:after { border-color: #d27575; }
+.calendar-upcoming-title { margin: 13px 0 0; color: #263f54; font: 800 12px Manrope,Arial,sans-serif; }
+.calendar-agenda-item { grid-template-columns: 60px minmax(0,1fr) auto; gap: 6px; padding: 9px 7px; }
+.agenda-date { color: #315364; font-size: 9px; font-weight: 800; }
+.agenda-patient strong { color: #176075; font-size: 10px; }
+.calendar-agenda-link { min-height: 39px; background: #07949e; color: #fff; }
+.calendar-agenda-link:hover { background: #087f89; }
+@media (min-width: 1301px) { .calendar-layout { grid-template-columns: minmax(0, 1fr) 300px; } }
+@media (max-width: 1300px) { .calendar-layout { grid-template-columns: minmax(0,1fr); } .calendar-agenda { min-height: 250px; } .calendar-agenda-list { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 1000px) { .doctor-calendar-grid.is-year-view { grid-template-columns: repeat(3,minmax(0,1fr)); } }
+@media (max-width: 700px) { .doctor-calendar-grid.is-year-view { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px; } .calendar-month-card h3 { min-height: 37px; padding: 0 9px; font-size: 11px; } .year-weekdays,.year-month-days { padding-right: 6px; padding-left: 6px; } .year-day { font-size: 8px; } }
+@media (max-width: 420px) { .doctor-calendar-grid.is-year-view { grid-template-columns: minmax(0,1fr); } }
+/* Calendar totals follow the larger stat-card style shown in the dashboard reference. */
+.calendar-summary { gap: 18px; }
+.calendar-summary-card { min-height: 170px; gap: 18px; padding: 20px 26px; border-radius: 21px; }
+.calendar-summary-icon { width: 72px; height: 72px; border-radius: 21px; font-size: 26px; }
+.calendar-summary-icon svg { width: 23px; height: 23px; }
+.calendar-summary-card>div span { max-width: 125px; font-size: 13px; }
+.calendar-summary-card>div strong { font-size: 40px; }
+@media (max-width: 650px) {
+  .calendar-summary { gap: 8px; }
+  .calendar-summary-card { min-height: 105px; gap: 9px; padding: 11px; border-radius: 14px; }
+  .calendar-summary-icon { width: 38px; height: 38px; border-radius: 11px; font-size: 17px; }
+  .calendar-summary-icon svg { width: 17px; height: 17px; }
+  .calendar-summary-card>div span { font-size: 10px; }
+  .calendar-summary-card>div strong { font-size: 28px; }
+}

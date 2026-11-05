@@ -11,6 +11,25 @@
   const home = new URL("Home/Master.html", root).href;
   const login = new URL("log%20in/login.html", root).href;
   const profile = new URL("Profile/index.html", root).href;
+  const professionalRoutes = {
+    doctor: { application: "DoctorVerification/index.html", dashboard: "Doctor/index.html" },
+    nurse: { application: "NurseVerification/index.html", dashboard: "Nurse/index.html" },
+    pharmacy: { application: "PharmacyVerification/index.html", dashboard: "Pharmacy/dashboard.html" }
+  };
+  function selectedProfessionalRole(account) {
+    const selected = String(account?.selectedRole || "").trim().toLowerCase();
+    return professionalRoutes[selected] ? selected : "";
+  }
+  function isProfessionalApplicant(account) {
+    const selected = selectedProfessionalRole(account);
+    return Boolean(selected && accountRole(account) !== selected);
+  }
+  function professionalDestination(account) {
+    const selected = selectedProfessionalRole(account);
+    if (!selected) return "";
+    const route = accountRole(account) === selected ? professionalRoutes[selected].dashboard : professionalRoutes[selected].application;
+    return new URL(route, root).href;
+  }
   function isValidEmail(value) {
     const email = String(value || "").trim();
     return email.length <= 254 && /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email);
@@ -30,6 +49,7 @@
   document.addEventListener("submit", event => {
     const form = event.target;
     if (!(form instanceof HTMLFormElement)) return;
+    if (form.noValidate) return;
     const invalid = [...form.querySelectorAll('input[type="tel"]')].find(input => {
       const value = input.value.trim();
       const valid = !value && !input.required || isValidJordanianPhone(value);
@@ -61,7 +81,7 @@
   function accountState(account) {
     if (account?.archived === true || account?.archivedAt) return "archived";
     const role = accountRole(account);
-    if (["doctor", "pharmacy"].includes(role)) {
+    if (["doctor", "pharmacy", "nurse"].includes(role)) {
       const state = String(account.accountStatus || account.status || "Pending").toLowerCase();
       return state === "active" && String(account.approvalStatus || "Approved").toLowerCase() === "approved" ? "active" : state;
     }
@@ -97,9 +117,11 @@
 
   function hasDemoCustomerSession() {
     try {
+      const account = currentAccount();
       return hasDemoSession()
         && (localStorage.getItem(KEY) === "demo" || sessionStorage.getItem(KEY) === "demo")
-        && Boolean(localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY));
+        && Boolean(localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY))
+        && !isProfessionalApplicant(account);
     }
     catch { return false; }
   }
@@ -125,7 +147,15 @@
   }
 
   function hasDemoDoctorSession() {
-    try { return hasDemoSession() && sessionStorage.getItem(KEY) === "doctor-demo" && accountRole(currentAccount()) === "doctor"; }
+    try {
+      if (!hasDemoSession() || sessionStorage.getItem(KEY) !== "doctor-demo") return false;
+      const account = currentAccount();
+      if (accountRole(account) !== "doctor") return false;
+      const application = window.CarePlusData?.list("professionalApplications")
+        .find(item => String(item.userId) === String(account.id) && item.role === "doctor");
+      if (application) return application.status === "Approved";
+      return ["approved", "verified"].includes(String(account.approvalStatus || account.verificationStatus || "").toLowerCase());
+    }
     catch { return false; }
   }
   function demoDoctorAccount() { return hasDemoDoctorSession() ? currentAccount() : null; }
@@ -179,7 +209,9 @@
     return crypto.subtle.deriveBits({ name: "PBKDF2", salt, iterations: 150000, hash: "SHA-256" }, key, 256);
   }
 
-  async function registerCustomer({ name, email, phone, password }) {
+  async function registerCustomer({ name, email, phone, password, role = "patient" }) {
+    role = String(role || "patient").toLowerCase();
+    if (!["patient", "doctor", "nurse", "pharmacy"].includes(role)) return { ok: false, error: "Choose a valid account type." };
     const normalizedEmail = String(email || "").trim().toLowerCase();
     if (!isValidEmail(normalizedEmail)) return { ok: false, error: "Enter a valid email address." };
     if (!isValidPassword(password)) return { ok: false, error: "Password must be between 8 and 128 characters." };
@@ -193,7 +225,7 @@
       const hash = await passwordHash(String(password), salt);
       const user = window.CarePlusData.create("users", {
         name: String(name).trim(), email: normalizedEmail, phone: String(phone || "").trim(),
-        role: "Customer", status: "Active", source: "demo-signup"
+        role: "Customer", selectedRole: role, status: "Active", source: "demo-signup"
       });
       if (!user) return { ok: false, error: "Could not save the account. Please try again." };
       const credentials = readCredentials();
@@ -203,7 +235,8 @@
         window.CarePlusData.remove("users", user.id);
         return { ok: false, error: "Account storage is full or unavailable." };
       }
-      return { ok: true };
+      const autoLogin = ["doctor", "nurse", "pharmacy"].includes(role) && startDemoSession("user", normalizedEmail);
+      return { ok: true, role, autoLogin };
     } catch {
       return { ok: false, error: "Password protection is unavailable in this browser. Open the site over localhost or HTTPS." };
     }
@@ -224,6 +257,14 @@
       for (let index = 0; index < Math.min(candidate.length, expected.length); index += 1) mismatch |= candidate[index] ^ expected[index];
       if (mismatch) return { ok: false, error: "Email or password is incorrect." };
       const role = accountRole(user);
+      if (["doctor", "nurse", "pharmacy"].includes(user.selectedRole) && role !== user.selectedRole) {
+        const application = window.CarePlusData?.list("professionalApplications").find(item => String(item.userId) === String(user.id) && item.role === user.selectedRole);
+        if (!application || application.status !== "Approved") {
+          return startDemoSession("user", normalizedEmail)
+            ? { ok: true, user, role: `${user.selectedRole}-application` }
+            : { ok: false, error: "Could not start your session." };
+        }
+      }
       if (role === "doctor" && String(user.verificationStatus || "").toLowerCase() === "rejected") {
         return { ok: false, error: "Your doctor application was rejected. Contact CarePlus administration for assistance." };
       }
@@ -235,17 +276,129 @@
     } catch { return { ok: false, error: "Could not verify your account in this browser." }; }
   }
 
+  function submitDoctorApplication(application, draft = false) {
+    const account = currentAccount();
+    if (!account || account.selectedRole !== "doctor") return { ok: false, error: "Sign in with a doctor account to continue." };
+    const existing = window.CarePlusData.list("professionalApplications").find(item => String(item.userId) === String(account.id));
+    const record = {
+      ...(existing || {}), ...application, role: "doctor", userId: account.id,
+      status: draft ? "Draft" : "Pending Verification",
+      submittedAt: draft ? existing?.submittedAt || "" : new Date().toISOString(),
+      reviewReason: ""
+    };
+    const saved = existing
+      ? window.CarePlusData.update("professionalApplications", existing.id, record)
+      : window.CarePlusData.create("professionalApplications", record);
+    if (!saved) return { ok: false, error: "Could not save the application. Please try again." };
+    window.CarePlusData.update("users", account.id, {
+      selectedRole: "doctor",
+      verificationStatus: draft ? "Draft" : "Pending",
+      doctorApplicationId: saved.id,
+      rejectionReason: ""
+    });
+    return { ok: true, application: saved };
+  }
+
+  function submitNurseApplication(application, draft = false) {
+    const account = currentAccount();
+    if (!account || account.selectedRole !== "nurse") return { ok: false, error: "Sign in with a nurse account to continue." };
+    const existing = window.CarePlusData.list("professionalApplications").find(item => String(item.userId) === String(account.id) && item.role === "nurse");
+    const record = { ...(existing || {}), ...application, role: "nurse", userId: account.id,
+      status: draft ? "Draft" : "Pending Verification",
+      submittedAt: draft ? existing?.submittedAt || "" : new Date().toISOString(), reviewReason: "" };
+    const saved = existing ? window.CarePlusData.update("professionalApplications", existing.id, record)
+      : window.CarePlusData.create("professionalApplications", record);
+    if (!saved) return { ok: false, error: "Could not save the application. Please try again." };
+    window.CarePlusData.update("users", account.id, { selectedRole: "nurse", verificationStatus: draft ? "Draft" : "Pending", nurseApplicationId: saved.id, rejectionReason: "" });
+    return { ok: true, application: saved };
+  }
+
+  function reviewNurseApplication(id, decision, reason = "") {
+    if (!hasDemoAdminSession()) return { ok: false, error: "Administrator access required." };
+    const application = window.CarePlusData.get("professionalApplications", id);
+    const user = application && window.CarePlusData.get("users", application.userId);
+    if (!application || !user || application.role !== "nurse") return { ok: false, error: "Nurse application not found." };
+    if (!["approve", "reject", "request"].includes(decision)) return { ok: false, error: "Choose a valid review action." };
+    if (decision !== "approve" && !String(reason).trim()) return { ok: false, error: "A reason is required for this action." };
+    const status = decision === "approve" ? "Approved" : decision === "reject" ? "Rejected" : "Additional Documents Required";
+    const now = new Date().toISOString();
+    window.CarePlusData.update("professionalApplications", id, { status, reviewReason: String(reason).trim(), reviewedAt: now });
+    const changes = decision === "approve"
+      ? { role: "Nurse", nurseId: user.nurseId || user.id, status: "Active", accountStatus: "Active", approvalStatus: "Approved", verificationStatus: "Approved", verifiedAt: now, rejectionReason: "" }
+      : { role: "Customer", selectedRole: "nurse", status: "Active", accountStatus: "Active", approvalStatus: "Pending", verificationStatus: status, rejectionReason: decision === "reject" ? String(reason).trim() : "", additionalDocumentsReason: decision === "request" ? String(reason).trim() : "" };
+    window.CarePlusData.update("users", user.id, changes);
+    return { ok: true };
+  }
+
+  function submitPharmacyApplication(application, draft = false) {
+    const account = currentAccount();
+    if (!account || account.selectedRole !== "pharmacy") return { ok: false, error: "Sign in with a pharmacy account to continue." };
+    const existing = window.CarePlusData.list("professionalApplications").find(item => String(item.userId) === String(account.id) && item.role === "pharmacy");
+    const record = { ...(existing || {}), ...application, role: "pharmacy", userId: account.id,
+      status: draft ? "Draft" : "Pending Verification",
+      submittedAt: draft ? existing?.submittedAt || "" : new Date().toISOString(), reviewReason: "" };
+    const saved = existing ? window.CarePlusData.update("professionalApplications", existing.id, record)
+      : window.CarePlusData.create("professionalApplications", record);
+    if (!saved) return { ok: false, error: "Could not save the application. Please try again." };
+    window.CarePlusData.update("users", account.id, { selectedRole: "pharmacy", verificationStatus: draft ? "Draft" : "Pending", pharmacyApplicationId: saved.id, rejectionReason: "" });
+    return { ok: true, application: saved };
+  }
+
+  function reviewPharmacyApplication(id, decision, reason = "") {
+    if (!hasDemoAdminSession()) return { ok: false, error: "Administrator access required." };
+    const application = window.CarePlusData.get("professionalApplications", id);
+    const user = application && window.CarePlusData.get("users", application.userId);
+    if (!application || !user || application.role !== "pharmacy") return { ok: false, error: "Pharmacy application not found." };
+    if (!["approve", "reject", "request"].includes(decision)) return { ok: false, error: "Choose a valid review action." };
+    if (decision !== "approve" && !String(reason).trim()) return { ok: false, error: "A reason is required for this action." };
+    const status = decision === "approve" ? "Approved" : decision === "reject" ? "Rejected" : "Additional Documents Required";
+    const now = new Date().toISOString();
+    if (decision === "approve") {
+      const pharmacy = window.CarePlusData.create("pharmacies", {
+        name: application.pharmacyName, ownerName: application.responsiblePharmacist, licenseNumber: application.licenseNumber,
+        email: user.email, phone: application.contactPhone || user.phone || "", address: application.address,
+        area: application.city, city: application.city, hours: "Hours not provided", open: false, medicines: [], inventory: [], status: "Active"
+      });
+      if (!pharmacy) return { ok: false, error: "Could not create the pharmacy profile. Please retry the approval." };
+      window.CarePlusData.update("users", user.id, { role: "Pharmacy", pharmacyId: String(pharmacy.id), name: application.responsiblePharmacist || user.name,
+        status: "Active", accountStatus: "Active", approvalStatus: "Approved", verificationStatus: "Approved", verifiedAt: now, rejectionReason: "" });
+    } else {
+      window.CarePlusData.update("users", user.id, { role: "Customer", selectedRole: "pharmacy", status: "Active", accountStatus: "Active", approvalStatus: "Pending", verificationStatus: status,
+        rejectionReason: decision === "reject" ? String(reason).trim() : "", additionalDocumentsReason: decision === "request" ? String(reason).trim() : "" });
+    }
+    window.CarePlusData.update("professionalApplications", id, { status, reviewReason: String(reason).trim(), reviewedAt: now });
+    return { ok: true };
+  }
+
+  function reviewDoctorApplication(id, decision, reason = "") {
+    if (!hasDemoAdminSession()) return { ok: false, error: "Administrator access required." };
+    const application = window.CarePlusData.get("professionalApplications", id);
+    const user = application && window.CarePlusData.get("users", application.userId);
+    if (!application || !user || application.role !== "doctor") return { ok: false, error: "Doctor application not found." };
+    if (!["approve", "reject", "request"].includes(decision)) return { ok: false, error: "Choose a valid review action." };
+    if (decision !== "approve" && !String(reason).trim()) return { ok: false, error: "A reason is required for this action." };
+    const status = decision === "approve" ? "Approved" : decision === "reject" ? "Rejected" : "Additional Documents Required";
+    const now = new Date().toISOString();
+    window.CarePlusData.update("professionalApplications", id, { status, reviewReason: String(reason).trim(), reviewedAt: now });
+    const userChanges = decision === "approve"
+      ? { role: "Doctor", doctorId: user.doctorId || user.id, status: "Active", accountStatus: "Active", approvalStatus: "Approved", verificationStatus: "Approved", verifiedAt: now, rejectionReason: "" }
+      : { role: "Customer", selectedRole: "doctor", status: "Active", accountStatus: "Active", approvalStatus: "Pending", verificationStatus: status, rejectionReason: decision === "reject" ? String(reason).trim() : "", additionalDocumentsReason: decision === "request" ? String(reason).trim() : "" };
+    window.CarePlusData.update("users", user.id, userChanges);
+    return { ok: true };
+  }
+
   function paintNavigation() {
     configurePhoneInputs();
     document.querySelectorAll("[data-profile-link]").forEach(link => { link.href = profile; });
     const customer = hasDemoCustomerSession();
+    const professionalApplicant = hasDemoSession() && isProfessionalApplicant(currentAccount());
     const admin = hasDemoAdminSession();
     const pharmacy = hasDemoPharmacySession();
     const doctor = hasDemoDoctorSession();
     const nurse = hasDemoNurseSession();
     const loggedIn = customer || admin || pharmacy || doctor || nurse;
     let notificationWidget = document.querySelector("#careplus-notification-widget.cpn-floating-slot") || document.getElementById("careplus-notification-widget");
-    if (customer) {
+    if (customer || professionalApplicant) {
       document.querySelectorAll("#careplus-notification-widget").forEach(node => { if (node !== notificationWidget) node.remove(); });
       if (!notificationWidget) {
         notificationWidget = document.createElement("div");
@@ -254,7 +407,7 @@
       notificationWidget.className = "cpn-floating-slot cpn-widget";
       notificationWidget.hidden = false;
       if (notificationWidget.parentElement !== document.body) document.body.appendChild(notificationWidget);
-      const notificationCss = new URL("shared/notifications.css?v=floating-customer-2", root).href;
+      const notificationCss = new URL("shared/notifications.css?v=doctor-status-notification-dot-1", root).href;
       const notificationJs = new URL("shared/notifications.js?v=floating-customer-2", root).href;
       if (![...document.querySelectorAll('link[rel="stylesheet"]')].some(link => new URL(link.href).pathname.endsWith("/shared/notifications.css"))) {
         const link = document.createElement("link"); link.rel = "stylesheet"; link.href = notificationCss; document.head.appendChild(link);
@@ -322,13 +475,32 @@
       window.location.replace(new URL("log%20in/change-password.html", root).href);
       return;
     }
+    const customerRoute = document.body?.dataset.customerProtected === "true"
+      || document.body?.dataset.protected === "true"
+        && document.body?.dataset.adminProtected !== "true"
+        && document.body?.dataset.pharmacyProtected !== "true"
+        && document.body?.dataset.doctorProtected !== "true"
+        && document.body?.dataset.nurseProtected !== "true";
+    const notificationsPage = decodeURIComponent(location.pathname).toLowerCase().endsWith("/shared/notifications.html");
+    const professionalPage = Object.values(professionalRoutes).some(routes =>
+      location.pathname.toLowerCase().endsWith("/" + routes.application.toLowerCase())
+      || location.pathname.toLowerCase().endsWith("/" + routes.dashboard.toLowerCase()));
+    if (customerRoute && !changePasswordPage && !notificationsPage && !professionalPage && hasDemoSession()) {
+      const account = currentAccount();
+      const destination = professionalDestination(account);
+      if (destination) { window.location.replace(destination); return; }
+    }
     if (document.body?.dataset.adminProtected === "true" && !hasDemoAdminSession()) {
       window.location.replace(hasDemoSession() ? home : login);
     }
     if (document.body?.dataset.pharmacyProtected === "true" && !hasDemoPharmacySession()) {
       window.location.replace(loginUrl());
     }
-    if (document.body?.dataset.doctorProtected === "true" && !hasDemoDoctorSession()) window.location.replace(loginUrl());
+    if (document.body?.dataset.doctorProtected === "true" && !hasDemoDoctorSession()) {
+      const account = currentAccount();
+      if (hasDemoSession() && (account?.selectedRole === "doctor" || accountRole(account) === "doctor")) endDemoSession();
+      window.location.replace(home);
+    }
     if (document.body?.dataset.nurseProtected === "true" && !hasDemoNurseSession()) window.location.replace(loginUrl());
   }
 
@@ -438,7 +610,7 @@
       try { localStorage.setItem(demo.marker, "1"); } catch {}
     }
   }
-  window.CarePlusAuth = { isValidEmail, isValidPassword, isValidJordanianPhone, hasDemoSession, hasDemoAdminSession, hasDemoPharmacySession, demoPharmacyId, demoPharmacyAccount, updatePharmacyLoginEmail, hasDemoDoctorSession, demoDoctorAccount, hasDemoNurseSession, demoNurseAccount, hasDemoCustomerSession, endDemoSession, registerCustomer, loginCustomer, setDemoPassword, changeOwnPassword, removeDemoPassword, moveDemoPassword, ensureDemoAdmin, ensureDemoRoleAccounts, paintNavigation, guardProtectedPage };
+  window.CarePlusAuth = { isValidEmail, isValidPassword, isValidJordanianPhone, hasDemoSession, hasDemoAdminSession, hasDemoPharmacySession, demoPharmacyId, demoPharmacyAccount, updatePharmacyLoginEmail, hasDemoDoctorSession, demoDoctorAccount, hasDemoNurseSession, demoNurseAccount, hasDemoCustomerSession, endDemoSession, registerCustomer, loginCustomer, submitDoctorApplication, reviewDoctorApplication, submitNurseApplication, reviewNurseApplication, submitPharmacyApplication, reviewPharmacyApplication, setDemoPassword, changeOwnPassword, removeDemoPassword, moveDemoPassword, ensureDemoAdmin, ensureDemoRoleAccounts, paintNavigation, guardProtectedPage };
   guardProtectedPage();
   new MutationObserver(paintNavigation).observe(document.documentElement, { childList: true, subtree: true });
   document.addEventListener("DOMContentLoaded", () => { guardProtectedPage(); paintNavigation(); });

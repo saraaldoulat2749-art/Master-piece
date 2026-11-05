@@ -13,7 +13,7 @@
   let activeStatus = "All";
   let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
   let calendarSelectedDate = localDate();
-  let calendarView = "month";
+  let calendarView = "year";
   let toastTimer;
   let pendingRejectionId = "";
   let savedBreak = { start: schedule.breakStart || "", end: schedule.breakEnd || "" };
@@ -135,6 +135,8 @@
     if (!grid) return;
     const year = calendarMonth.getFullYear();
     const month = calendarMonth.getMonth();
+    const todayKey = localDate();
+    document.getElementById("calendarToday").textContent = year;
     const monthLabel = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(calendarMonth);
     const appointmentsByDate = new Map();
     const allAppointments = ownedAppointments().filter(row => {
@@ -148,11 +150,48 @@
       return date.getFullYear() === year && date.getMonth() === month;
     });
     const normalizedStatus = row => String(row.status || "Requested").trim().toLowerCase();
-    document.getElementById("calendarTotalCount").textContent = monthAppointments.length;
-    document.getElementById("calendarPendingCount").textContent = monthAppointments.filter(row => ["requested", "pending", "pending deposit"].includes(normalizedStatus(row))).length;
-    document.getElementById("calendarConfirmedCount").textContent = monthAppointments.filter(row => ["confirmed", "accepted"].includes(normalizedStatus(row))).length;
-    document.getElementById("calendarCancelledCount").textContent = monthAppointments.filter(row => ["cancelled", "rejected"].includes(normalizedStatus(row))).length;
-    document.getElementById("calendarAppointmentCount").textContent = `${monthAppointments.length} appointment${monthAppointments.length === 1 ? "" : "s"}`;
+    const yearAppointments = allAppointments.filter(row => new Date(`${row.date}T12:00:00`).getFullYear() === year);
+    document.getElementById("calendarTotalCount").textContent = yearAppointments.length;
+    document.getElementById("calendarPendingCount").textContent = yearAppointments.filter(row => ["requested", "pending", "pending deposit"].includes(normalizedStatus(row))).length;
+    document.getElementById("calendarConfirmedCount").textContent = yearAppointments.filter(row => ["confirmed", "accepted"].includes(normalizedStatus(row))).length;
+    document.getElementById("calendarCancelledCount").textContent = yearAppointments.filter(row => ["cancelled", "rejected"].includes(normalizedStatus(row))).length;
+    const dayAppointments = (appointmentsByDate.get(calendarSelectedDate) || []).sort((a, b) => String(a.time || "").localeCompare(String(b.time || "")));
+    const selectedDateLabel = new Date(`${calendarSelectedDate}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+    document.getElementById("calendarAgendaTitle").textContent = selectedDateLabel;
+    document.getElementById("calendarAgendaDate").textContent = `Selected day · ${monthLabel}`;
+    document.getElementById("calendarAgendaCount").textContent = dayAppointments.length;
+    document.getElementById("calendarAgendaTotal").textContent = monthAppointments.length;
+    document.getElementById("calendarAgendaConfirmed").textContent = monthAppointments.filter(row => ["confirmed", "accepted"].includes(normalizedStatus(row))).length;
+    document.getElementById("calendarAgendaPending").textContent = monthAppointments.filter(row => ["requested", "pending", "pending deposit"].includes(normalizedStatus(row))).length;
+    document.getElementById("calendarAgendaCancelled").textContent = monthAppointments.filter(row => ["cancelled", "rejected"].includes(normalizedStatus(row))).length;
+    document.getElementById("calendarUpcomingTitle").textContent = `Appointments on ${new Intl.DateTimeFormat(undefined, { weekday: "long" }).format(new Date(`${calendarSelectedDate}T12:00:00`))}`;
+    document.getElementById("calendarAgendaList").innerHTML = dayAppointments.length ? dayAppointments.map(row => {
+      const state = normalizedStatus(row).replace(/[^a-z]+/g, "-");
+      const label = normalizedStatus(row) === "requested" ? "Pending" : row.status || "Pending";
+      return `<article class="calendar-agenda-item status-${esc(state)}"><span class="agenda-time">${esc(timeText(row.time))}</span><span class="agenda-patient"><strong>${esc(row.patient || "Patient")}</strong><small>${esc(row.specialty || "Appointment")}</small></span><span class="agenda-status">${esc(label)}</span></article>`;
+    }).join("") : `<div class="calendar-agenda-empty"><strong>No appointments on this day</strong><small>Choose another date in the calendar.</small></div>`;
+    if (calendarView === "year") {
+      document.getElementById("calendarMonthLabel").textContent = `${year} Year Overview`;
+      grid.classList.add("is-year-view");
+      grid.classList.remove("is-day-view", "is-week-view");
+      grid.style.removeProperty("--calendar-columns");
+      const weekDays = ["S", "M", "T", "W", "T", "F", "S"];
+      grid.innerHTML = Array.from({ length: 12 }, (_, monthIndex) => {
+        const firstDay = new Date(year, monthIndex, 1).getDay();
+        const dayCount = new Date(year, monthIndex + 1, 0).getDate();
+        const name = new Intl.DateTimeFormat(undefined, { month: "long" }).format(new Date(year, monthIndex, 1));
+        const blanks = Array.from({ length: firstDay }, () => `<span class="year-day is-empty" aria-hidden="true"></span>`).join("");
+        const days = Array.from({ length: dayCount }, (_, dayIndex) => {
+          const date = new Date(year, monthIndex, dayIndex + 1, 12);
+          const key = localDate(date);
+          const eventCount = (appointmentsByDate.get(key) || []).length;
+          return `<button type="button" class="year-day ${key === todayKey ? "is-today" : ""} ${key === calendarSelectedDate ? "is-selected" : ""} ${eventCount ? "has-events" : ""}" data-calendar-date="${key}" aria-label="${esc(date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" }))}" aria-pressed="${key === calendarSelectedDate}">${dayIndex + 1}${eventCount ? `<i aria-label="${eventCount} appointments"></i>` : ""}</button>`;
+        }).join("");
+        return `<section class="calendar-month-card month-tone-${monthIndex % 6} ${monthIndex === month ? "is-selected-month" : ""}"><h3><span aria-hidden="true">▦</span>${esc(name)}</h3><div class="year-weekdays" aria-hidden="true">${weekDays.map(day => `<span>${day}</span>`).join("")}</div><div class="year-month-days">${blanks}${days}</div></section>`;
+      }).join("");
+      return;
+    }
+    grid.classList.remove("is-year-view");
     const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     const selected = new Date(`${calendarSelectedDate}T12:00:00`);
     let firstDate;
@@ -172,7 +211,6 @@
     document.getElementById("calendarMonthLabel").textContent = calendarView === "month" ? monthLabel : calendarView === "week"
       ? `${dateText(localDate(firstDate))} – ${dateText(localDate(new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate() + 6, 12)))}`
       : new Intl.DateTimeFormat(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(selected);
-    const todayKey = localDate();
     const headerCount = calendarView === "month" ? 7 : cellCount;
     const headers = Array.from({ length: headerCount }, (_, index) => {
       const date = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate() + index, 12);
@@ -353,12 +391,14 @@
   document.getElementById("menuButton").addEventListener("click", () => document.getElementById("sidebar").classList.toggle("open"));
   document.getElementById("appointmentSearch").addEventListener("input", renderAppointments);
   document.getElementById("calendarPrev").addEventListener("click", () => {
-    if (calendarView === "month") { calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1); calendarSelectedDate = localDate(calendarMonth); }
+    if (calendarView === "year") { calendarMonth = new Date(calendarMonth.getFullYear() - 1, calendarMonth.getMonth(), 1); calendarSelectedDate = localDate(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1, 12)); }
+    else if (calendarView === "month") { calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1); calendarSelectedDate = localDate(calendarMonth); }
     else { const selected = new Date(`${calendarSelectedDate}T12:00:00`); selected.setDate(selected.getDate() - (calendarView === "week" ? 7 : 1)); calendarSelectedDate = localDate(selected); calendarMonth = new Date(selected.getFullYear(), selected.getMonth(), 1); }
     renderCalendar();
   });
   document.getElementById("calendarNext").addEventListener("click", () => {
-    if (calendarView === "month") { calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1); calendarSelectedDate = localDate(calendarMonth); }
+    if (calendarView === "year") { calendarMonth = new Date(calendarMonth.getFullYear() + 1, calendarMonth.getMonth(), 1); calendarSelectedDate = localDate(new Date(calendarMonth.getFullYear(), calendarMonth.getMonth(), 1, 12)); }
+    else if (calendarView === "month") { calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1); calendarSelectedDate = localDate(calendarMonth); }
     else { const selected = new Date(`${calendarSelectedDate}T12:00:00`); selected.setDate(selected.getDate() + (calendarView === "week" ? 7 : 1)); calendarSelectedDate = localDate(selected); calendarMonth = new Date(selected.getFullYear(), selected.getMonth(), 1); }
     renderCalendar();
   });

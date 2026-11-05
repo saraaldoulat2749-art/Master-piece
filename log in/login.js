@@ -85,6 +85,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 return;
             }
 
+            if (result.role === "doctor-application") {
+                window.location.assign("../DoctorVerification/index.html");
+                return;
+            }
+            if (result.role === "nurse-application") {
+                window.location.assign("../NurseVerification/index.html");
+                return;
+            }
+            if (result.role === "pharmacy-application") {
+                window.location.assign("../PharmacyVerification/index.html");
+                return;
+            }
+
             const destinations = {
                 admin: "../Admin/index.html",
                 doctor: "../Doctor/index.html",

@@ -4,7 +4,7 @@
   const scriptUrl = document.currentScript?.src || new URL("notifications.js", location.href).href;
   const appRoot = new URL("../", scriptUrl);
   const allNotificationsUrl = new URL("shared/notifications.html", appRoot).href;
-  const categories = { appointment: "Appointments", pharmacy: "Pharmacy orders", care: "Elderly care", store: "Store orders" };
+  const categories = { appointment: "Appointments", pharmacy: "Pharmacy orders", care: "Elderly care", store: "Store orders", professional: "Professional applications" };
   const icons = { appointment: "▦", pharmacy: "♡", care: "♡", store: "▣" };
   const escapeHtml = value => String(value ?? "").replace(/[&<>"']/g, char => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
 

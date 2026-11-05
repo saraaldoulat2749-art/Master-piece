@@ -80,6 +80,8 @@
   let selectedRequestId = "";
   let pendingCompletionId = "";
   let pendingRejectId = "";
+  let nurseCalendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  let nurseCalendarSelectedDate = today();
   let toastTimer;
 
   function toast(message, error = false) {
@@ -241,6 +243,67 @@
     }).join("");
     $("visitEmpty").hidden = rows.length > 0;
   }
+  function renderVisitCalendar() {
+    const grid = $("nurseCalendarGrid");
+    if (!grid) return;
+    const year = nurseCalendarMonth.getFullYear();
+    const month = nurseCalendarMonth.getMonth();
+    const monthDate = new Date(year, month, 1, 12);
+    const monthLabel = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(monthDate);
+    const todayKey = today();
+    const byDate = new Map();
+    const validVisits = assignedVisits().filter(visit => /^\d{4}-\d{2}-\d{2}$/.test(String(visit.date || "")));
+    validVisits.forEach(visit => {
+      if (!byDate.has(visit.date)) byDate.set(visit.date, []);
+      byDate.get(visit.date).push(visit);
+    });
+    const yearVisits = validVisits.filter(visit => new Date(`${visit.date}T12:00:00`).getFullYear() === year);
+    const monthVisits = validVisits.filter(visit => {
+      const date = new Date(`${visit.date}T12:00:00`);
+      return date.getFullYear() === year && date.getMonth() === month;
+    });
+    const status = visit => statusName(visit).trim().toLowerCase();
+    const count = (items, names) => items.filter(visit => names.includes(status(visit))).length;
+    $("nurseCalendarYearLabel").textContent = `${year} Year Overview`;
+    $("nurseCalendarToday").textContent = year;
+    $("nurseCalendarTotal").textContent = yearVisits.length;
+    $("nurseCalendarAccepted").textContent = count(yearVisits, ["accepted"]);
+    $("nurseCalendarCompleted").textContent = count(yearVisits, ["completed"]);
+    $("nurseCalendarCancelled").textContent = count(yearVisits, ["cancelled"]);
+    $("nurseMonthTotal").textContent = monthVisits.length;
+    $("nurseMonthAccepted").textContent = count(monthVisits, ["accepted"]);
+    $("nurseMonthProgress").textContent = count(monthVisits, ["in progress"]);
+    $("nurseMonthCancelled").textContent = count(monthVisits, ["cancelled"]);
+
+    const selectedDate = new Date(`${nurseCalendarSelectedDate}T12:00:00`);
+    const selectedDateLabel = selectedDate.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric" });
+    const selectedVisits = (byDate.get(nurseCalendarSelectedDate) || []).sort((a, b) => String(a.time || "").localeCompare(String(b.time || "")));
+    $("nurseAgendaTitle").textContent = selectedDateLabel;
+    $("nurseAgendaDate").textContent = `Selected day · ${monthLabel}`;
+    $("nurseAgendaCount").textContent = selectedVisits.length;
+    $("nurseAgendaListTitle").textContent = `Visits on ${selectedDate.toLocaleDateString(undefined, { weekday: "long" })}`;
+    $("nurseAgendaList").innerHTML = selectedVisits.length ? selectedVisits.map(visit => {
+      const state = statusClass(statusName(visit));
+      const label = statusName(visit);
+      const name = visit.elderlyName || visit.client || visit.patient || "Care recipient";
+      return `<article class="calendar-agenda-item status-${esc(state)}"><span class="agenda-time">${esc(timeText(visit.time))}</span><span class="agenda-patient"><strong>${esc(name)}</strong><small>${esc(visit.service || "Home care visit")}</small></span><span class="agenda-status">${esc(label)}</span></article>`;
+    }).join("") : `<div class="calendar-agenda-empty"><strong>No visits on this day</strong><small>Choose another date in the calendar.</small></div>`;
+
+    const weekDays = ["S", "M", "T", "W", "T", "F", "S"];
+    grid.innerHTML = Array.from({ length: 12 }, (_, monthIndex) => {
+      const firstDay = new Date(year, monthIndex, 1).getDay();
+      const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+      const name = new Intl.DateTimeFormat(undefined, { month: "long" }).format(new Date(year, monthIndex, 1));
+      const blanks = Array.from({ length: firstDay }, () => `<span class="year-day is-empty" aria-hidden="true"></span>`).join("");
+      const days = Array.from({ length: daysInMonth }, (_, index) => {
+        const date = new Date(year, monthIndex, index + 1, 12);
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+        const hasVisits = (byDate.get(key) || []).length > 0;
+        return `<button type="button" class="year-day ${key === todayKey ? "is-today" : ""} ${key === nurseCalendarSelectedDate ? "is-selected" : ""} ${hasVisits ? "has-events" : ""}" data-nurse-calendar-date="${key}" aria-label="${esc(date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" }))}" aria-pressed="${key === nurseCalendarSelectedDate}">${index + 1}${hasVisits ? "<i></i>" : ""}</button>`;
+      }).join("");
+      return `<section class="calendar-month-card month-tone-${monthIndex % 6} ${monthIndex === month ? "is-selected-month" : ""}"><h3><span aria-hidden="true">▦</span>${esc(name)}</h3><div class="year-weekdays" aria-hidden="true">${weekDays.map(day => `<span>${day}</span>`).join("")}</div><div class="year-month-days">${blanks}${days}</div></section>`;
+    }).join("");
+  }
   function patientGroups() {
     const grouped = new Map();
     assignedVisits().forEach(request => {
@@ -332,6 +395,7 @@
   }
   function setPhotoPreview(url) {
     const preview = $("photoPreview");
+    if (!preview) return;
     preview.replaceChildren();
     if (url) {
       const image = document.createElement("img");
@@ -343,7 +407,7 @@
     else preview.textContent = initials(profile.name);
   }
   function initials(name) { return String(name || "N").trim().split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase() || "N"; }
-  function renderAll() { renderHeader(); renderDashboard(); renderRequests(); renderVisits(); renderPatientCare(); renderNurseEarnings(); }
+  function renderAll() { renderHeader(); renderDashboard(); renderRequests(); renderVisits(); renderPatientCare(); renderNurseEarnings(); if ($("page-calendar")?.classList.contains("active")) renderVisitCalendar(); }
   function navigate(page) {
     document.querySelectorAll(".page").forEach(section => {
       const active = section.id === `page-${page}`;
@@ -351,12 +415,37 @@
       section.hidden = !active;
     });
     document.querySelectorAll(".nav-link[data-page]").forEach(button => button.classList.toggle("active", button.dataset.page === page));
+    if (page === "calendar") renderVisitCalendar();
     $("sidebar").classList.remove("open");
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   document.querySelectorAll(".nav-link[data-page]").forEach(button => button.addEventListener("click", () => navigate(button.dataset.page)));
   document.querySelectorAll("[data-open-page]").forEach(button => button.addEventListener("click", () => navigate(button.dataset.openPage)));
+  $("nurseCalendarPrev").addEventListener("click", () => {
+    nurseCalendarMonth = new Date(nurseCalendarMonth.getFullYear() - 1, nurseCalendarMonth.getMonth(), 1);
+    nurseCalendarSelectedDate = `${nurseCalendarMonth.getFullYear()}-${String(nurseCalendarMonth.getMonth() + 1).padStart(2, "0")}-01`;
+    renderVisitCalendar();
+  });
+  $("nurseCalendarNext").addEventListener("click", () => {
+    nurseCalendarMonth = new Date(nurseCalendarMonth.getFullYear() + 1, nurseCalendarMonth.getMonth(), 1);
+    nurseCalendarSelectedDate = `${nurseCalendarMonth.getFullYear()}-${String(nurseCalendarMonth.getMonth() + 1).padStart(2, "0")}-01`;
+    renderVisitCalendar();
+  });
+  $("nurseCalendarToday").addEventListener("click", () => {
+    nurseCalendarSelectedDate = today();
+    const now = new Date();
+    nurseCalendarMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    renderVisitCalendar();
+  });
+  $("nurseCalendarGrid").addEventListener("click", event => {
+    const day = event.target.closest("[data-nurse-calendar-date]");
+    if (!day) return;
+    nurseCalendarSelectedDate = day.dataset.nurseCalendarDate;
+    const selected = new Date(`${nurseCalendarSelectedDate}T12:00:00`);
+    nurseCalendarMonth = new Date(selected.getFullYear(), selected.getMonth(), 1);
+    renderVisitCalendar();
+  });
   ["requestSearch", "requestStatus"].forEach(id => $(id).addEventListener("input", renderRequests));
   $("requestStatus").addEventListener("change", renderRequests);
   ["visitSearch", "visitStatus", "visitRange"].forEach(id => $(id).addEventListener("input", renderVisits));
