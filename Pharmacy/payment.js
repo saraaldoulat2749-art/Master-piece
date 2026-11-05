@@ -27,8 +27,9 @@ function unavailableMessage(text) {
 }
 function showSimulatedSuccess() {
   message.classList.remove("error");
-  message.textContent = "Payment submitted successfully.";
+  message.textContent = "Demo payment submitted. No card was charged or stored.";
   form.querySelectorAll("input").forEach(input => { input.value = ""; input.disabled = true; });
+  form.querySelectorAll("label").forEach(label => { label.hidden = true; });
   submit.hidden = true;
   continueLink.href = `order-confirmed.html?orderId=${encodeURIComponent(order.id)}`;
   continueLink.hidden = false;
@@ -36,7 +37,7 @@ function showSimulatedSuccess() {
 
 if (!order || order.source !== "pharmacy-order" || !customer || String(order.userId) !== customer.userId) {
   unavailableMessage("This payment page is only available to the customer who placed the order.");
-} else if (order.paymentStatus !== "Pending" || order.status === "Cancelled") {
+} else if (order.status !== "Accepted" || order.paymentStatus !== "Pending") {
   unavailableMessage(`This order cannot be paid in its current state (${order.paymentStatus || order.status}).`);
 } else {
   card.hidden = false;
@@ -72,6 +73,6 @@ form.addEventListener("submit", event => {
   }
   // No card fields are sent to or persisted in browser storage.
   showSimulatedSuccess();
-  message.textContent = "Payment submitted. Opening your order confirmation…";
+  message.textContent = "Demo payment submitted. No card was charged. Opening your order confirmation…";
   setTimeout(() => location.assign(`order-confirmed.html?orderId=${encodeURIComponent(order.id)}`), 900);
 });

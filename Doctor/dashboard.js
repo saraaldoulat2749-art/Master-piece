@@ -11,6 +11,9 @@
   let profile = clinic?.getProfile(providerId) || read(PROFILE_KEY, defaults);
   let schedule = clinic?.getSchedule(providerId) || read(SCHEDULE_KEY, { days: [1, 2, 3, 4, 5], start: "09:00", end: "17:00", duration: 30, breakStart: "", breakEnd: "", holidays: [] });
   let activeStatus = "All";
+  let calendarMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+  let calendarSelectedDate = localDate();
+  let calendarView = "month";
   let toastTimer;
   let pendingRejectionId = "";
   let savedBreak = { start: schedule.breakStart || "", end: schedule.breakEnd || "" };
@@ -114,9 +117,9 @@
         || normalizedPaymentStatus === "succeeded"
         || Number(row.depositAmount) > 0 && Number(row.depositPaid) >= Number(row.depositAmount);
       let actions = "—";
-      if (["Pending Deposit", "Requested"].includes(row.status) && (!hasFee || depositReady)) actions = `<div class="row-actions"><button class="action accept" data-action="Confirmed" data-id="${esc(row.id)}">Accept</button><button class="action reject" data-action="Rejected" data-id="${esc(row.id)}">Reject</button></div>`;
+      if (row.status === "Requested") actions = `<div class="row-actions"><button class="action accept" data-action="Confirmed" data-id="${esc(row.id)}">Accept</button><button class="action reject" data-action="Rejected" data-id="${esc(row.id)}">Reject</button></div>`;
+      else if (row.status === "Pending Deposit" && (!hasFee || depositReady)) actions = `<div class="row-actions"><button class="action accept" data-action="Confirmed" data-id="${esc(row.id)}">Accept</button><button class="action reject" data-action="Rejected" data-id="${esc(row.id)}">Reject</button></div>`;
       else if (row.status === "Pending Deposit") actions = `<div class="row-actions"><button class="action accept" type="button" disabled title="Accept after the deposit is completed">Accept</button><button class="action reject" data-action="Rejected" data-id="${esc(row.id)}">Reject</button></div><small class="payment-wait">Awaiting deposit</small>`;
-      else if (row.status === "Requested") actions = `<div class="row-actions"><button class="action accept" type="button" disabled title="Accept after the deposit is completed">Accept</button><button class="action reject" data-action="Rejected" data-id="${esc(row.id)}">Reject</button></div><small class="payment-wait">Awaiting deposit</small>`;
       else if (row.status === "Confirmed") actions = `<div class="row-actions"><button class="action" data-action="Completed" data-id="${esc(row.id)}">Complete</button><button class="action cancel" data-action="Cancelled" data-id="${esc(row.id)}">Cancel</button></div>`;
       const paymentStatus = String(row.paymentStatus || "Pending").startsWith("Demo") ? "Paid" : (row.paymentStatus || "Pending");
       const payment = hasFee ? `<small class="finance-lines">Fee ${esc(money(row.consultationFee))} · Deposit paid ${esc(money(row.depositPaid))} / required ${esc(money(row.depositAmount))} · Balance ${esc(money(row.remainingBalance))}<br>CarePlus ${esc(Number(row.commissionRate || 0))}% = ${esc(money(row.commissionAmount))} · Collected ${esc(money(row.commissionCollected))} · To settle ${esc(money(row.commissionRemainingToSettle))}<br>Doctor net ${esc(money(row.doctorNetEarnings))}<br>Payment: ${esc(paymentStatus)}</small>` : `<small class="finance-lines">No payment details recorded</small>`;
@@ -127,6 +130,83 @@
     document.getElementById("appointmentEmpty").hidden = filtered.length > 0;
     document.getElementById("appointmentCount").textContent = `${filtered.length} appointment${filtered.length === 1 ? "" : "s"}`;
   };
+  function renderCalendar() {
+    const grid = document.getElementById("doctorCalendar");
+    if (!grid) return;
+    const year = calendarMonth.getFullYear();
+    const month = calendarMonth.getMonth();
+    const monthLabel = new Intl.DateTimeFormat(undefined, { month: "long", year: "numeric" }).format(calendarMonth);
+    const appointmentsByDate = new Map();
+    const allAppointments = ownedAppointments().filter(row => {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(String(row.date || ""))) return false;
+      if (!appointmentsByDate.has(row.date)) appointmentsByDate.set(row.date, []);
+      appointmentsByDate.get(row.date).push(row);
+      return true;
+    });
+    const monthAppointments = allAppointments.filter(row => {
+      const date = new Date(`${row.date}T12:00:00`);
+      return date.getFullYear() === year && date.getMonth() === month;
+    });
+    const normalizedStatus = row => String(row.status || "Requested").trim().toLowerCase();
+    document.getElementById("calendarTotalCount").textContent = monthAppointments.length;
+    document.getElementById("calendarPendingCount").textContent = monthAppointments.filter(row => ["requested", "pending", "pending deposit"].includes(normalizedStatus(row))).length;
+    document.getElementById("calendarConfirmedCount").textContent = monthAppointments.filter(row => ["confirmed", "accepted"].includes(normalizedStatus(row))).length;
+    document.getElementById("calendarCancelledCount").textContent = monthAppointments.filter(row => ["cancelled", "rejected"].includes(normalizedStatus(row))).length;
+    document.getElementById("calendarAppointmentCount").textContent = `${monthAppointments.length} appointment${monthAppointments.length === 1 ? "" : "s"}`;
+    const weekdays = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+    const selected = new Date(`${calendarSelectedDate}T12:00:00`);
+    let firstDate;
+    let cellCount;
+    if (calendarView === "day") {
+      firstDate = selected;
+      cellCount = 1;
+    } else if (calendarView === "week") {
+      firstDate = new Date(selected.getFullYear(), selected.getMonth(), selected.getDate() - selected.getDay(), 12);
+      cellCount = 7;
+    } else {
+      const firstDayOffset = new Date(year, month, 1).getDay();
+      firstDate = new Date(year, month, 1 - firstDayOffset, 12);
+      const monthDays = new Date(year, month + 1, 0).getDate();
+      cellCount = Math.ceil((firstDayOffset + monthDays) / 7) * 7;
+    }
+    document.getElementById("calendarMonthLabel").textContent = calendarView === "month" ? monthLabel : calendarView === "week"
+      ? `${dateText(localDate(firstDate))} – ${dateText(localDate(new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate() + 6, 12)))}`
+      : new Intl.DateTimeFormat(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" }).format(selected);
+    const todayKey = localDate();
+    const headerCount = calendarView === "month" ? 7 : cellCount;
+    const headers = Array.from({ length: headerCount }, (_, index) => {
+      const date = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate() + index, 12);
+      return `<div class="calendar-weekday" role="columnheader"><span>${weekdays[date.getDay()]}</span><small>${date.toLocaleDateString(undefined, { month: "short", day: "numeric" })}</small></div>`;
+    }).join("");
+    grid.style.setProperty("--calendar-columns", calendarView === "day" ? 1 : 7);
+    grid.classList.toggle("is-day-view", calendarView === "day");
+    grid.classList.toggle("is-week-view", calendarView === "week");
+    const cells = Array.from({ length: cellCount }, (_, index) => {
+      const date = new Date(firstDate.getFullYear(), firstDate.getMonth(), firstDate.getDate() + index, 12);
+      const dayNumber = date.getDate();
+      const inMonth = date.getMonth() === month;
+      const dateKey = localDate(date);
+      const rows = (appointmentsByDate.get(dateKey) || []).sort((a, b) => String(a.time || "").localeCompare(String(b.time || "")));
+      const events = rows.slice(0, 2).map(row => {
+        const state = String(row.status || "Requested").toLowerCase().replace(/[^a-z]+/g, "-");
+        return `<article class="calendar-event status-${esc(state)}" title="${esc(`${timeText(row.time)} · ${row.patient || "Patient"} · ${row.status || "Pending"}`)}"><time>${esc(timeText(row.time))}</time><strong>${esc(row.patient || "Patient")}</strong><small>${esc(row.status === "Requested" ? "Pending" : row.status || "Pending")}</small></article>`;
+      }).join("");
+      const more = rows.length > 2 ? `<span class="calendar-more">+${rows.length - 2} more appointment${rows.length === 3 ? "" : "s"}</span>` : "";
+      const dayCount = rows.length ? `<span class="calendar-day-count">${rows.length}</span>` : "";
+      return `<div class="calendar-day ${inMonth || calendarView !== "month" ? "" : "is-outside"} ${dateKey === todayKey ? "is-today" : ""} ${dateKey === calendarSelectedDate ? "is-selected" : ""} ${rows.length ? "has-events" : ""}" role="gridcell" tabindex="0" data-calendar-date="${dateKey}" aria-selected="${dateKey === calendarSelectedDate}" aria-label="${esc(date.toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" }))}"><div class="calendar-day-heading"><span class="calendar-day-number">${dayNumber}</span>${dayCount}</div><div class="calendar-day-events">${events}${more}</div></div>`;
+    }).join("");
+    grid.innerHTML = headers + cells;
+    const selectedRows = (appointmentsByDate.get(calendarSelectedDate) || []).sort((a, b) => String(a.time || "").localeCompare(String(b.time || "")));
+    document.getElementById("calendarAgendaTitle").textContent = calendarSelectedDate === todayKey ? "Today's appointments" : "Selected day";
+    document.getElementById("calendarAgendaDate").textContent = new Date(`${calendarSelectedDate}T12:00:00`).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" });
+    document.getElementById("calendarAgendaCount").textContent = selectedRows.length;
+    document.getElementById("calendarAgendaList").innerHTML = selectedRows.length ? selectedRows.map(row => {
+      const state = normalizedStatus(row).replace(/[^a-z]+/g, "-");
+      const label = row.status === "Requested" ? "Pending" : row.status || "Pending";
+      return `<article class="calendar-agenda-item status-${esc(state)}"><span class="agenda-time">${esc(timeText(row.time))}</span><span class="agenda-patient"><strong>${esc(row.patient || "Patient")}</strong><small>${esc(row.specialty || "Appointment")}</small></span><span class="agenda-status">${esc(label)}</span></article>`;
+    }).join("") : `<div class="calendar-agenda-empty"><span aria-hidden="true">▦</span><strong>No appointments on this day</strong><small>Choose another date in the calendar.</small></div>`;
+  }
+
   function renderPatients() {
     const query = document.getElementById("patientSearch").value.trim().toLowerCase();
     const byKey = new Map();
@@ -263,15 +343,43 @@
       paintIdentity(); renderAll(); showToast("Profile saved.");
     } catch { document.getElementById("profileMessage").textContent = "Could not save changes in this browser."; }
   }
-  function renderAll() { paintIdentity(); renderDashboard(); renderAppointments(); renderPatients(); }
+  function renderAll() { paintIdentity(); renderDashboard(); renderAppointments(); renderPatients(); if (document.querySelector("#page-calendar.active")) renderCalendar(); }
   function showToast(message) { const node = document.getElementById("toast"); node.textContent = message; node.classList.add("show"); clearTimeout(toastTimer); toastTimer = setTimeout(() => node.classList.remove("show"), 2800); }
-  function navigate(page) { document.querySelectorAll(".page").forEach(node => node.classList.toggle("active", node.id === `page-${page}`)); document.querySelectorAll(".nav-link").forEach(node => node.classList.toggle("active", node.dataset.page === page)); const active = document.querySelector(`.nav-link[data-page="${page}"]`); document.getElementById("crumb").textContent = active?.textContent.trim() || "Dashboard"; document.getElementById("sidebar").classList.remove("open"); if (page === "appointments") renderAppointments(); if (page === "patients") renderPatients(); if (page === "schedule") renderSchedule(); if (page === "profile") renderProfile(); window.scrollTo({ top: 0, behavior: "smooth" }); }
+  function navigate(page) { document.querySelectorAll(".page").forEach(node => node.classList.toggle("active", node.id === `page-${page}`)); document.querySelectorAll(".nav-link").forEach(node => node.classList.toggle("active", node.dataset.page === page)); const active = document.querySelector(`.nav-link[data-page="${page}"]`); document.getElementById("crumb").textContent = active?.textContent.trim() || "Dashboard"; document.getElementById("sidebar").classList.remove("open"); if (page === "appointments") renderAppointments(); if (page === "calendar") renderCalendar(); if (page === "patients") renderPatients(); if (page === "schedule") renderSchedule(); if (page === "profile") renderProfile(); window.scrollTo({ top: 0, behavior: "smooth" }); }
 
   document.querySelectorAll(".nav-link").forEach(button => button.addEventListener("click", () => navigate(button.dataset.page)));
   document.querySelectorAll("[data-go-appointments]").forEach(button => button.addEventListener("click", () => navigate("appointments")));
   document.querySelectorAll("[data-go-schedule]").forEach(button => button.addEventListener("click", () => navigate("schedule")));
   document.getElementById("menuButton").addEventListener("click", () => document.getElementById("sidebar").classList.toggle("open"));
   document.getElementById("appointmentSearch").addEventListener("input", renderAppointments);
+  document.getElementById("calendarPrev").addEventListener("click", () => {
+    if (calendarView === "month") { calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() - 1, 1); calendarSelectedDate = localDate(calendarMonth); }
+    else { const selected = new Date(`${calendarSelectedDate}T12:00:00`); selected.setDate(selected.getDate() - (calendarView === "week" ? 7 : 1)); calendarSelectedDate = localDate(selected); calendarMonth = new Date(selected.getFullYear(), selected.getMonth(), 1); }
+    renderCalendar();
+  });
+  document.getElementById("calendarNext").addEventListener("click", () => {
+    if (calendarView === "month") { calendarMonth = new Date(calendarMonth.getFullYear(), calendarMonth.getMonth() + 1, 1); calendarSelectedDate = localDate(calendarMonth); }
+    else { const selected = new Date(`${calendarSelectedDate}T12:00:00`); selected.setDate(selected.getDate() + (calendarView === "week" ? 7 : 1)); calendarSelectedDate = localDate(selected); calendarMonth = new Date(selected.getFullYear(), selected.getMonth(), 1); }
+    renderCalendar();
+  });
+  document.getElementById("calendarToday").addEventListener("click", () => { const now = new Date(); calendarSelectedDate = localDate(now); calendarMonth = new Date(now.getFullYear(), now.getMonth(), 1); renderCalendar(); });
+  document.querySelectorAll("[data-calendar-view]").forEach(button => button.addEventListener("click", () => {
+    calendarView = button.dataset.calendarView;
+    document.querySelectorAll("[data-calendar-view]").forEach(view => view.classList.toggle("is-active", view === button));
+    renderCalendar();
+  }));
+  document.getElementById("doctorCalendar").addEventListener("click", event => {
+    const cell = event.target.closest("[data-calendar-date]");
+    if (!cell) return;
+    calendarSelectedDate = cell.dataset.calendarDate;
+    const selected = new Date(`${calendarSelectedDate}T12:00:00`);
+    calendarMonth = new Date(selected.getFullYear(), selected.getMonth(), 1);
+    renderCalendar();
+  });
+  document.getElementById("doctorCalendar").addEventListener("keydown", event => {
+    const cell = event.target.closest("[data-calendar-date]");
+    if (cell && (event.key === "Enter" || event.key === " ")) { event.preventDefault(); cell.click(); }
+  });
   document.getElementById("patientSearch").addEventListener("input", renderPatients);
   document.getElementById("appointmentStatusFilter").addEventListener("change", event => { activeStatus = event.target.value; renderAppointments(); });
   document.getElementById("appointmentRows").addEventListener("click", event => {
@@ -291,9 +399,18 @@
   });
   function updateAppointmentStatus(row, status, rejectionReason = "") {
     const changes = { status, lastActionByRole: "Doctor", lastActionById: String(providerId) };
+    if (status === "Confirmed" && row.paymentStatus === "Awaiting Doctor Acceptance") {
+      changes.paymentStatus = "Pending";
+      changes.depositPaymentStatus = "Pending";
+      changes.commissionStatus = "Pending Deposit";
+    }
     if (status === "Rejected") changes.rejectionReason = rejectionReason;
     if (status === "Completed") changes.commissionStatus = row.paymentStatus === "Paid" && row.balancePaymentStatus === "Paid" ? "Pending Review" : "Not payable — payment or balance unpaid";
     if (["Cancelled", "Rejected"].includes(status)) {
+      if (row.paymentStatus === "Awaiting Doctor Acceptance") {
+        changes.paymentStatus = "Not Required";
+        changes.depositPaymentStatus = "Not Required";
+      }
       changes.commissionStatus = ["Pending Review", "Payable", "Settled", "Review required — appointment reopened"].includes(row.commissionStatus) ? "Reversed" : "Not earned";
         if (Number(row.commissionCollected) > 0) changes.commissionReversedAmount = Number(row.commissionCollected);
         changes.commissionCollected = 0;

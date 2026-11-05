@@ -154,7 +154,7 @@
           "order", after.id, portalUrl("Pharmacy/dashboard.html", { page: "orders", orderId: after.id }));
       } else if (customerId) {
         addNotification("customer", customerId, "pharmacy", baseKey, `Order ${status.toLowerCase()}`, message,
-          "order", after.id, portalUrl("Pharmacy/orders.html", { orderId: after.id }));
+          "order", after.id, portalUrl("Profile/index.html", { tab: "orders" }));
       }
       return;
     }

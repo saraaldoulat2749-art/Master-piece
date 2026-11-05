@@ -153,8 +153,8 @@
       commissionAmount, commissionCollected: 0, commissionRemainingToSettle: commissionAmount,
       doctorNetEarnings: Number((fee - commissionAmount).toFixed(2)),
       commissionAppointmentId: appointmentId, commissionStatus: "Pending Deposit",
-      paymentStatus: "Pending", depositPaymentStatus: "Pending", balancePaymentStatus: "Pending",
-      status: "Pending Deposit", duration: getSchedule(doctorId).duration,
+      paymentStatus: "Awaiting Doctor Acceptance", depositPaymentStatus: "Awaiting Doctor Acceptance", balancePaymentStatus: "Pending",
+      status: "Requested", duration: getSchedule(doctorId).duration,
       source: "user-booking", idempotencyKey: booking.idempotencyKey || ""
     });
     return record ? { ok: true, appointment: record } : { ok: false, error: "Could not save the appointment in this browser." };
@@ -164,7 +164,7 @@
     const appointment = window.CarePlusData?.get("appointments", id);
     if (!appointment || appointment.commissionAppointmentId !== appointment.id) return null;
     if (appointment.depositPaymentStatus === "Demo Simulated" || appointment.depositPaymentStatus === "Paid") return appointment;
-    if (appointment.status !== "Pending Deposit") return null;
+    if (!['Confirmed', 'Accepted'].includes(String(appointment.status || ""))) return null;
     if (!isAvailable({ doctor: appointment.doctor, doctorId: appointment.doctorId, date: appointment.date, time: appointment.time, ignoreId: appointment.id })) return null;
     return updateAppointment(id, {
       depositPaymentStatus: "Demo Simulated",
@@ -173,7 +173,7 @@
       paymentVerification: "Simulated only; no funds collected",
       depositPaid: Number(appointment.depositAmount || 0),
       lastActionByRole: "Customer", lastActionById: String(appointment.userId || appointment.bookingUserId || ""),
-      status: "Requested", commissionStatus: "Awaiting appointment"
+      commissionStatus: "Awaiting appointment"
     });
   }
   function subscribe(callback) {

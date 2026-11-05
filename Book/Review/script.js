@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     if (!result?.ok) return showError(result?.error || "Could not save this booking. Please try again.");
 
-    const paymentParams = new URLSearchParams({ appointmentId: result.appointment.id });
-    window.location.href = `../Payment/index.html?${paymentParams.toString()}`;
+    const requestParams = new URLSearchParams({ appointmentId: result.appointment.id });
+    window.location.href = `../Success/index.html?${requestParams.toString()}`;
   });
 });

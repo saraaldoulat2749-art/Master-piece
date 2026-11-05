@@ -16,7 +16,10 @@ function renderOrders() {
     const state = normalize(order.status), history = Array.isArray(order.statusHistory) && order.statusHistory.length ? order.statusHistory : [{ status: "Pending", at: order.placedAt || order.createdAt, actor: "Customer" }];
     const canCancel = ["Pending", "Accepted", "Preparing"].includes(state);
     const chargeBreakdown = `Medicine JOD ${Number(order.subtotal ?? order.total).toFixed(2)} + CarePlus JOD ${Number(order.customerCommissionAmount || 0).toFixed(2)} + ${order.deliveryZoneLabel || pharmacyApi.deliveryZoneLabel(order.deliveryZone)} delivery JOD ${Number(order.deliveryFee || 0).toFixed(2)}`;
-    const paymentLink = `<span class="delivery-payment-note">Medicine and delivery: cash on delivery · CarePlus commission: ${escapeHtml(order.commissionPaymentStatus || (order.paymentDemoResult === "simulated-success" ? "Demo Simulated" : "Pending"))}</span>`;
+    const commissionStatus = order.paymentDemoResult === "simulated-success" ? "Demo Simulated" : (order.commissionPaymentStatus || order.paymentStatus || "Pending");
+    const paymentLink = state === "Accepted" && order.paymentStatus === "Pending" && order.paymentDemoResult !== "simulated-success"
+      ? `<a class="delivery-payment-note" href="payment.html?orderId=${encodeURIComponent(order.id)}">Pay CarePlus commission</a>`
+      : `<span class="delivery-payment-note">Medicine and delivery: cash on delivery · CarePlus commission: ${escapeHtml(order.paymentDemoResult === "simulated-success" ? "Demo payment submitted (no charge)" : commissionStatus === "Awaiting Pharmacy Acceptance" ? "Pay after pharmacy accepts" : commissionStatus)}</span>`;
     const timeline = state === "Rejected" || state === "Cancelled" ? [...stages.slice(0, Math.max(1, stages.indexOf(state))), state] : stages;
     const currentIndex = stages.indexOf(state);
     const progress = (state === "Rejected" || state === "Cancelled") ? "" : `style="--progress:${currentIndex < 0 ? 0 : currentIndex / (stages.length - 1) * 100}%"`;

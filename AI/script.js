@@ -5,6 +5,8 @@
   const typing = document.getElementById("typing-indicator");
   const suggestions = document.getElementById("suggestions");
   const sendButton = form.querySelector(".send-button");
+  const historyPanel = document.getElementById("chat-history");
+  const historyList = document.getElementById("chat-history-list");
   const robotStage = document.getElementById("robot-stage");
   const robotStateLabel = document.getElementById("robot-state-label");
   let identity = "demo-account";
@@ -12,6 +14,10 @@
   const usageKey = `careplusAiAttempts:${identity.toLowerCase()}`;
   const usageEventKey = "careplusAiUsageEventsV1";
   const accessKey = `careplusAiAccessUntil:${identity.toLowerCase()}`;
+  const historyKey = `careplusAiChatHistory:${identity.toLowerCase()}`;
+  let conversations = [];
+  let currentConversationId = `${Date.now()}`;
+  try { conversations = JSON.parse(localStorage.getItem(historyKey) || "[]"); if (!Array.isArray(conversations)) conversations = []; } catch { conversations = []; }
   let accessUntil = 0;
   try { accessUntil = Number(localStorage.getItem(accessKey)) || 0; } catch { /* The current tab still enforces the free attempt limit. */ }
   let attemptsUsed = 0;
@@ -53,6 +59,8 @@
     const isUser = role === "user";
     const article = document.createElement("article");
     article.className = `message ${isUser ? "user-message" : "assistant-message"}`;
+    article.dataset.role = role;
+    article.dataset.text = text;
 
     if (!isUser) {
       const avatar = document.createElement("div");
@@ -79,6 +87,8 @@
       link.className = "message-link";
       link.href = action.href;
       link.textContent = `${action.label} `;
+      article.dataset.actionHref = action.href;
+      article.dataset.actionLabel = action.label;
       content.append(link);
     }
 
@@ -86,6 +96,65 @@
     article.append(content);
     conversation.insertBefore(article, typing);
     conversation.scrollTop = conversation.scrollHeight;
+    saveCurrentConversation();
+  }
+
+  function getCurrentMessages() {
+    return [...conversation.querySelectorAll(".message")].map(article => ({
+      role: article.dataset.role || (article.classList.contains("user-message") ? "user" : "assistant"),
+      text: article.dataset.text || article.querySelector(".message-content p")?.textContent || "",
+      action: article.dataset.actionHref ? { href: article.dataset.actionHref, label: article.dataset.actionLabel || "Open" } : null,
+      time: article.querySelector("time")?.textContent || ""
+    })).filter(message => message.text);
+  }
+
+  function saveCurrentConversation() {
+    const messages = getCurrentMessages();
+    const userMessage = messages.find(message => message.role === "user");
+    if (!userMessage) return;
+    const existing = conversations.findIndex(item => item.id === currentConversationId);
+    const record = { id: currentConversationId, title: userMessage.text.slice(0, 58), updated: Date.now(), messages };
+    if (existing >= 0) conversations[existing] = record; else conversations.unshift(record);
+    conversations.sort((a, b) => b.updated - a.updated);
+    conversations = conversations.slice(0, 30);
+    try { localStorage.setItem(historyKey, JSON.stringify(conversations)); } catch { /* Conversation history is optional when browser storage is unavailable. */ }
+    renderHistory();
+  }
+
+  function renderHistory() {
+    historyList.replaceChildren();
+    if (!conversations.length) {
+      const empty = document.createElement("p");
+      empty.className = "history-empty";
+      empty.textContent = "Your saved conversations will appear here.";
+      historyList.append(empty);
+      return;
+    }
+    conversations.forEach(item => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "history-item";
+      button.textContent = item.title || "Conversation";
+      button.addEventListener("click", () => openConversation(item.id));
+      historyList.append(button);
+    });
+  }
+
+  function openConversation(id) {
+    const item = conversations.find(record => record.id === id);
+    if (!item) return;
+    currentConversationId = item.id;
+    conversation.querySelectorAll(".message").forEach(node => node.remove());
+    item.messages.forEach(message => addMessage(message.role, message.text, message.action));
+    suggestions.hidden = true;
+    historyPanel.hidden = true;
+    document.getElementById("show-history").setAttribute("aria-expanded", "false");
+  }
+
+  function restoreLatestConversation() {
+    const latest = conversations[0];
+    if (!latest?.messages?.length) return;
+    openConversation(latest.id);
   }
 
   function makeReply(message) {
@@ -167,6 +236,7 @@
     typing.hidden = true;
     renderUsage();
     conversation.querySelectorAll(".message").forEach(node => node.remove());
+    currentConversationId = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     addMessage("assistant", message);
     setRobotState("greeting", "Starting a fresh conversation", 2000);
     suggestions.hidden = false;
@@ -201,9 +271,18 @@
   });
 
   document.getElementById("clear-chat").addEventListener("click", async () => {
-    if (!await window.CarePlusDelete.confirm({ kind: "conversation", name: "Current conversation", description: "This will clear the messages in your current conversation." })) return;
+    if (!await window.CarePlusDelete.confirm({ kind: "conversation", name: "Conversation history", description: "This will delete all saved conversations in this browser." })) return;
     resetConversation("Your conversation has been cleared. What would you like help with?");
+    conversations = [];
+    try { localStorage.removeItem(historyKey); } catch { /* Ignore unavailable browser storage. */ }
+    renderHistory();
     window.CarePlusDelete.success({ kind: "conversation" });
+  });
+
+  document.getElementById("show-history").addEventListener("click", event => {
+    historyPanel.hidden = !historyPanel.hidden;
+    event.currentTarget.setAttribute("aria-expanded", String(!historyPanel.hidden));
+    if (!historyPanel.hidden) renderHistory();
   });
 
   document.getElementById("payment-details-toggle").addEventListener("click", event => {
@@ -213,5 +292,7 @@
   });
   window.addEventListener("storage", event => { if (event.key === accessKey) renderUsage(); });
   renderUsage();
+  renderHistory();
+  restoreLatestConversation();
   setRobotState("greeting", "Waving hello", 2100);
 })();

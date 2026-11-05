@@ -27,14 +27,14 @@ fetch("../../Nav/index.html")
             <div class="progress-step completed"><span>✓</span><strong>Book Appointment</strong></div>
             <div class="progress-step completed"><span>✓</span><strong>Select Date &amp; Time</strong></div>
             <div class="progress-step completed"><span>✓</span><strong>Review Booking</strong></div>
-            <div class="progress-step completed"><span>✓</span><strong>Deposit Payment</strong></div>
-            <div class="progress-step active"><span>5</span><strong>Request Received</strong></div>
+            <div class="progress-step active"><span>4</span><strong>Doctor review</strong></div>
+            <div class="progress-step"><span>5</span><strong>Deposit after acceptance</strong></div>
         </div>
         <section class="success-header">
             <div class="success-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7" /></svg></div>
             <h1>Appointment booking submitted</h1>
             <p>
-                Your appointment is saved and appears in your bookings. The doctor will review and respond to your request.
+                Your request is saved and the doctor will review it. You can pay the 10% deposit from My appointments after the doctor accepts.
             </p>
         </section>
         <section class="booking-card">
@@ -79,11 +79,11 @@ fetch("../../Nav/index.html")
                 </div>
                 <div class="detail-item">
                     <div class="detail-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg></div>
-                    <div class="detail-text"><span>Appointment status</span><strong id="bookingStatus">Pending deposit</strong></div>
+                    <div class="detail-text"><span>Appointment status</span><strong id="bookingStatus">Awaiting doctor acceptance</strong></div>
                 </div>
                 <div class="detail-item"><div class="detail-text"><span>Appointment ID</span><strong id="appointmentId">Not available</strong></div></div>
                 <div class="detail-item"><div class="detail-text"><span>Consultation fee</span><strong id="consultationFee">JOD 0.00</strong></div></div>
-                <div class="detail-item"><div class="detail-text"><span>Required deposit (10%)</span><strong id="depositRequired">JOD 0.00</strong></div></div>
+                <div class="detail-item"><div class="detail-text"><span>Deposit due after acceptance (10%)</span><strong id="depositRequired">JOD 0.00</strong></div></div>
                 <div class="detail-item"><div class="detail-text"><span>Deposit paid</span><strong id="depositPaid">JOD 0.00</strong></div></div>
                 <div class="detail-item"><div class="detail-text"><span>Remaining balance</span><strong id="remainingBalance">JOD 0.00</strong></div></div>
                 <div class="detail-item"><div class="detail-text"><span>CarePlus commission (10% of full fee)</span><strong id="commissionAmount">JOD 0.00</strong></div></div>
@@ -91,6 +91,9 @@ fetch("../../Nav/index.html")
             <div class="buttons">
                 <a href="../index.html" class="btn btn-primary">
                     Book Another Appointment
+                </a>
+                <a href="../../Profile/index.html?tab=appointments" class="btn btn-secondary">
+                    My appointments
                 </a>
                 <a href="../../Home/Master.html" class="btn btn-secondary">
                     Back to Home
@@ -107,7 +110,7 @@ fetch("../../Nav/index.html")
         })
         .catch(error => console.error("Error loading footer:", error));
 </script>
-<script src="../../data/careplus-data.js?v=archive-aware-1"></script><script src="script.js"></script>
+<script src="../../data/careplus-data.js?v=order-notification-profile-2"></script><script src="script.js?v=doctor-acceptance-1"></script>
     <script src="../../Footer/footer.js?v=footer-hearts-removed-1"></script>
 </body>
 </html>

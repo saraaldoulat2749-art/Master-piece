@@ -30,6 +30,15 @@
     document.getElementById("commissionCollected").textContent = money(record.commissionCollected);
     document.getElementById("commissionRemaining").textContent = money(record.commissionRemainingToSettle);
     document.getElementById("doctorNet").textContent = money(record.doctorNetEarnings);
+    if (!["confirmed", "accepted"].includes(String(record.status || "").toLowerCase())) {
+      document.getElementById("paymentMessage").textContent = "Deposit payment is available only after the doctor accepts your appointment.";
+      document.getElementById("paymentMessage").hidden = false;
+      button.disabled = true;
+      button.textContent = "Pay after doctor accepts";
+      cardForm.hidden = true;
+      viewLink.hidden = true;
+      return;
+    }
     const complete = record.depositPaymentStatus === "Demo Simulated" || record.depositPaymentStatus === "Paid";
     button.disabled = complete;
     button.textContent = complete ? "Paid" : "Pay now";

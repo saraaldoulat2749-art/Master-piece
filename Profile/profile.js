@@ -3,6 +3,7 @@
   const byId = id => document.getElementById(id);
   let pendingCancellationId = "";
   let pendingCareCancellationId = "";
+  let pendingPharmacyOrderId = "";
   let identity = String(sessionStorage.getItem("careplusDemoIdentity") || "").trim();
   let identityLower = identity.toLowerCase();
   if (window.CarePlusAuth?.hasDemoAdminSession()) {
@@ -83,6 +84,8 @@
     || String(record.email || record.customer?.email || "").toLowerCase() === identityLower
     || String(record.phone || record.customer?.phone || "") === identity;
   let appointmentFilter = "upcoming";
+  let careFilter = "upcoming";
+  let orderFilter = "upcoming";
   let toastTimeout;
 
   function showToast(message) {
@@ -248,12 +251,25 @@
       const details = makeElement("button", "button button--outline", "View details"); details.type = "button";
       details.addEventListener("click", () => showAppointmentDetails(appointment));
       actions.append(details);
+      const acceptedByDoctor = ["confirmed", "accepted"].includes(String(appointment.status || "").toLowerCase());
+      const depositPaid = ["paid", "demo simulated"].includes(String(appointment.depositPaymentStatus || "").toLowerCase());
+      if (acceptedByDoctor && !depositPaid) {
+        const pay = makeElement("a", "button button--primary", "Pay deposit");
+        pay.href = `../Book/Payment/index.html?appointmentId=${encodeURIComponent(appointment.id)}`;
+        actions.append(pay);
+      } else if (String(appointment.paymentStatus || "") === "Awaiting Doctor Acceptance") {
+        actions.append(makeElement("span", "order-payment-waiting", "Deposit payment is available after the doctor accepts."));
+      }
       if (isAppointmentUpcoming(appointment)) {
         const reschedule = makeElement("button", "button button--outline", "Reschedule"); reschedule.type = "button";
         reschedule.addEventListener("click", () => openReschedule(appointment));
-        const cancel = makeElement("button", "button button--danger", "Cancel appointment"); cancel.type = "button";
-        cancel.addEventListener("click", () => cancelAppointment(appointment));
-        actions.append(reschedule, cancel);
+        actions.append(reschedule);
+        const pendingBeforeAcceptance = ["requested", "pending", "pending deposit"].includes(String(appointment.status || "").trim().toLowerCase());
+        if (pendingBeforeAcceptance) {
+          const cancel = makeElement("button", "button button--danger", "Cancel appointment"); cancel.type = "button";
+          cancel.addEventListener("click", () => cancelAppointment(appointment));
+          actions.append(cancel);
+        }
       }
       card.append(actions); list.append(card);
     });
@@ -270,7 +286,13 @@
   }
 
   function renderCareRequests() {
-    const requests = dataStore.newestFirst(ownedRecords("careRequests"));
+    const query = byId("care-search").value.trim().toLowerCase();
+    const requests = dataStore.newestFirst(ownedRecords("careRequests").filter(request => {
+      const rawStatus = String(request.status || "new").trim().toLowerCase();
+      const group = ["cancelled", "rejected"].includes(rawStatus) ? "cancelled" : ["closed", "completed"].includes(rawStatus) ? "past" : "upcoming";
+      const searchable = [request.id, request.elderlyName, request.client, request.service, request.status, request.date, request.time, request.area, request.city, request.address, request.cancelReason].join(" ").toLowerCase();
+      return group === careFilter && searchable.includes(query);
+    }));
     const list = byId("care-list"); list.replaceChildren();
     if (!requests.length) {
       list.append(emptyState("heart", "No care requests yet", "When you request elderly care, you can follow its status here.", "Request elderly care", "../elederly/index.html"));
@@ -348,7 +370,14 @@
   }
 
   function renderOrders() {
-    const orders = ownedRecords("orders").slice().sort((a, b) => String(b.placedAt || b.createdAt || "").localeCompare(String(a.placedAt || a.createdAt || "")));
+    const query = byId("order-search").value.trim().toLowerCase();
+    const orders = ownedRecords("orders").filter(order => {
+      const status = String(orderStatus(order)).trim().toLowerCase();
+      const group = ["cancelled", "rejected"].includes(status) ? "cancelled" : ["completed", "delivered"].includes(status) ? "past" : "upcoming";
+      const itemNames = orderItems(order).map(line => (line.product || line).name || "").join(" ");
+      const searchable = [order.id, order.reference, order.pharmacyName, order.status, order.paymentStatus, order.customer?.name, order.customer?.address, order.customer?.area, order.customer?.city, itemNames].join(" ").toLowerCase();
+      return group === orderFilter && searchable.includes(query);
+    }).slice().sort((a, b) => String(b.placedAt || b.createdAt || "").localeCompare(String(a.placedAt || a.createdAt || "")));
     const list = byId("order-list"); list.replaceChildren();
     if (!orders.length) {
       list.append(emptyState("bag", "No orders yet", "Your CarePlus pharmacy and medical store orders will appear here.", "Browse CarePlus", "../Pharmacy/index.html"));
@@ -429,6 +458,24 @@
       const actions = makeElement("div", "record-actions");
       const details = makeElement("button", "button button--outline", "Order details"); details.type = "button";
       details.addEventListener("click", () => showOrderDetails(order)); actions.append(details);
+      if (order.source === "pharmacy-order") {
+        const paymentIsPending = order.paymentStatus === "Pending" && orderStatus(order) === "Accepted" && order.paymentDemoResult !== "simulated-success";
+        if (paymentIsPending) {
+          const pay = makeElement("a", "button button--primary", "Complete payment");
+          pay.href = `../Pharmacy/payment.html?orderId=${encodeURIComponent(order.id)}`;
+          actions.append(pay);
+        } else if (order.paymentDemoResult === "simulated-success") {
+          actions.append(makeElement("span", "order-payment-waiting", "Demo payment submitted; no charge was made."));
+        } else if (order.paymentStatus === "Awaiting Pharmacy Acceptance") {
+          actions.append(makeElement("span", "order-payment-waiting", "Payment will be available after the pharmacy accepts."));
+        }
+        if (orderStatus(order) === "Pending") {
+          const cancelOrder = makeElement("button", "button button--danger", "Cancel order");
+          cancelOrder.type = "button";
+          cancelOrder.addEventListener("click", () => openPharmacyOrderCancellation(order));
+          actions.append(cancelOrder);
+        }
+      }
       card.append(actions); list.append(card);
     });
   }
@@ -510,6 +557,17 @@
     byId("cancel-care-request-reason").focus();
   }
 
+  function openPharmacyOrderCancellation(order) {
+    pendingPharmacyOrderId = String(order.id);
+    const form = byId("cancel-pharmacy-order-form");
+    form.reset();
+    form.elements.namedItem("orderId").value = order.id;
+    byId("cancel-pharmacy-order-label").textContent = `${order.reference || order.id} · ${order.pharmacyName || "Pharmacy"}`;
+    byId("cancel-pharmacy-order-feedback").textContent = "";
+    byId("cancel-pharmacy-order-dialog").showModal();
+    byId("cancel-pharmacy-order-reason").focus();
+  }
+
   function openReschedule(appointment) {
     const form = byId("reschedule-form");
     form.elements.namedItem("appointmentId").value = appointment.id;
@@ -575,6 +633,18 @@
     renderAppointments();
   }));
   byId("appointment-search").addEventListener("input", renderAppointments);
+  document.querySelectorAll("[data-care-filter]").forEach(button => button.addEventListener("click", () => {
+    careFilter = button.dataset.careFilter;
+    document.querySelectorAll("[data-care-filter]").forEach(item => item.classList.toggle("is-active", item === button));
+    renderCareRequests();
+  }));
+  byId("care-search").addEventListener("input", renderCareRequests);
+  document.querySelectorAll("[data-order-filter]").forEach(button => button.addEventListener("click", () => {
+    orderFilter = button.dataset.orderFilter;
+    document.querySelectorAll("[data-order-filter]").forEach(item => item.classList.toggle("is-active", item === button));
+    renderOrders();
+  }));
+  byId("order-search").addEventListener("input", renderOrders);
   byId("cancel-appointment-form").addEventListener("submit", event => {
     event.preventDefault();
     const form = event.currentTarget;
@@ -619,6 +689,25 @@
     byId("cancel-care-request-dialog").close();
     pendingCareCancellationId = "";
     refreshUser(); showToast("Care request cancelled; the nurse and admin can see the reason.");
+  });
+  byId("cancel-pharmacy-order-form").addEventListener("submit", event => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const reasonField = form.elements.namedItem("reason");
+    const reason = reasonField.value.trim();
+    const orderId = form.elements.namedItem("orderId").value;
+    const feedback = byId("cancel-pharmacy-order-feedback");
+    if (reason.length < 3) { feedback.textContent = "Please enter a reason with at least 3 characters."; reasonField.focus(); return; }
+    const order = dataStore.get("orders", orderId);
+    if (!order || String(order.id) !== pendingPharmacyOrderId || !ownedRecords("orders").some(item => String(item.id) === pendingPharmacyOrderId) || orderStatus(order) !== "Pending") {
+      feedback.textContent = "Only a pending order on your account can be cancelled."; return;
+    }
+    const result = window.CarePlusPharmacy?.cancelCustomerOrder(order.id, user.id, reason);
+    if (!result?.ok) { feedback.textContent = result?.error || "Could not cancel this order. Please try again."; return; }
+    byId("cancel-pharmacy-order-dialog").close();
+    pendingPharmacyOrderId = "";
+    renderAll();
+    showToast("Order cancelled; the pharmacy and admin can see your reason.");
   });
   byId("reschedule-form").elements.namedItem("date").addEventListener("change", event => {
     const id = byId("reschedule-form").elements.namedItem("appointmentId").value;
@@ -669,6 +758,10 @@
 
   ensureProfileDemoRecords();
   renderAll();
+  const pageParams = new URLSearchParams(window.location.search);
+  if (["orders", "appointments"].includes(pageParams.get("tab"))) {
+    document.querySelector(`[data-tab="${pageParams.get("tab")}"]`)?.click();
+  }
   let knownAppointmentStatuses = new Map(ownedRecords("appointments").map(appointment => [String(appointment.id), String(appointment.status || "Requested")]));
   let knownCareStatuses = new Map(ownedRecords("careRequests").map(request => [String(request.id), String(request.status || "").toLowerCase()]));
   let knownOrderStatuses = new Map(ownedRecords("orders").map(order => [String(order.id), String(order.status || "Placed").toLowerCase()]));

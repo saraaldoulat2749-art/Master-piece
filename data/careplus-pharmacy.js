@@ -236,8 +236,8 @@
       deliveryAddress: address, deliveryPhone: phone, deliveryZone, deliveryZoneLabel: deliveryZoneLabel(deliveryZone),
       customerName: customer.name, items: [{ medicineId: medicine.id, name: medicine.name, image: medicine.image || "", price: unitPrice, quantity: count }],
       subtotal, customerCommissionAmount, deliveryFee, total: roundMoney(subtotal + customerCommissionAmount + deliveryFee), currency: "JOD", placedAt: new Date().toISOString(), status: "Pending",
-      paymentMethod: "cash-on-delivery", paymentStatus: "Pending", paymentVerified: false,
-      commissionPaymentStatus: "Pending", onlineAmount: customerCommissionAmount, cashOnDeliveryAmount: roundMoney(subtotal + deliveryFee),
+      paymentMethod: "cash-on-delivery", paymentStatus: "Awaiting Pharmacy Acceptance", paymentVerified: false,
+      commissionPaymentStatus: "Awaiting Pharmacy Acceptance", onlineAmount: customerCommissionAmount, cashOnDeliveryAmount: roundMoney(subtotal + deliveryFee),
       commissionRate, commissionAmount: 0, commissionStatus: "Not Eligible", cancelReason: "",
       idempotencyKey: idempotencyKey || "", inventoryReserved: true,
       statusHistory: [{ status: "Pending", at: new Date().toISOString(), actor: "Customer", note: "Order received" }]
@@ -301,6 +301,10 @@
     const at = new Date().toISOString();
     const history = [...orderHistory(order), { status, at, actor: "Pharmacy", pharmacyId: String(pharmacyId), ...(options.reason ? { reason: String(options.reason).trim() } : {}) }];
     const changes = { status, statusHistory: history, statusUpdatedAt: at };
+    if (status === "Accepted" && order.paymentStatus === "Awaiting Pharmacy Acceptance") {
+      changes.paymentStatus = "Pending";
+      changes.commissionPaymentStatus = "Pending";
+    }
     if (["Pending", "Accepted", "Preparing", "Ready for Pickup"].includes(status)) changes.inventoryReserved = reopeningRejectedOrder ? true : Boolean(order.inventoryReserved);
     if (status === "Accepted") changes.acceptedAt = at;
     if (status === "Preparing") changes.preparingAt = at;
@@ -313,6 +317,10 @@
       if (status === "Cancelled") changes.cancelledAt = at;
       changes.commissionStatus = "Not Eligible";
       changes.commissionAmount = 0;
+      if (order.paymentStatus === "Awaiting Pharmacy Acceptance") {
+        changes.paymentStatus = "Not Required";
+        changes.commissionPaymentStatus = "Not Required";
+      }
       if (options.paymentFailed === true) changes.paymentStatus = "Failed";
     }
     if (status !== "Rejected" && currentStatus === "Rejected") changes.rejectionReason = "";
@@ -353,7 +361,7 @@
   function cancelCustomerOrder(orderId, userId, reason = "") {
     const order = window.CarePlusData.get("orders", orderId);
     const customer = currentCustomer();
-    if (!customer || String(customer.userId) !== String(userId) || !order || String(order.userId) !== String(userId) || !["Pending", "Accepted", "Preparing"].includes(canonicalOrderStatus(order.status))) return { ok: false, error: "This order cannot be cancelled." };
+    if (!customer || String(customer.userId) !== String(userId) || !order || String(order.userId) !== String(userId) || canonicalOrderStatus(order.status) !== "Pending") return { ok: false, error: "Only pending orders can be cancelled." };
     reason = String(reason || "").trim();
     if (!reason) return { ok: false, error: "Enter a cancellation reason." };
     if (order.inventoryReserved) { const restored = reserveInventory(order, 1); if (!restored.ok) return restored; }
@@ -382,7 +390,7 @@
     const order = window.CarePlusData.get("orders", orderId);
     const customer = currentCustomer();
     if (!customer || String(customer.userId) !== String(userId) || !order || order.source !== "pharmacy-order" || String(order.userId) !== String(userId) || !["online-gateway", "cash-on-delivery"].includes(order.paymentMethod)) return { ok: false, error: "This order is unavailable for demo checkout." };
-    if (order.status === "Cancelled" || order.paymentStatus !== "Pending") return { ok: false, error: "This order is not awaiting payment." };
+    if (order.status !== "Accepted" || order.paymentStatus !== "Pending") return { ok: false, error: "Payment is available only after the pharmacy accepts the order." };
     if (order.paymentDemoResult === "simulated-success") return { ok: true, order, duplicate: true };
     const updated = window.CarePlusData.update("orders", orderId, { paymentMethod: "cash-on-delivery", onlineAmount: Number(order.customerCommissionAmount || 0), cashOnDeliveryAmount: roundMoney(Number(order.subtotal ?? order.total) + Number(order.deliveryFee || 0)), commissionPaymentStatus: "Demo Simulated", paymentDemoResult: "simulated-success", paymentDemoAt: new Date().toISOString() });
     if (!updated) return { ok: false, error: "The demo payment result could not be saved." };

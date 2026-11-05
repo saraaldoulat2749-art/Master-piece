@@ -60,6 +60,14 @@
     } catch { return allNotificationsUrl; }
   }
 
+  function notificationTarget(id, fallback) {
+    const notification = store.list("notifications").find(item => String(item.id) === String(id));
+    if (notification?.recipientRole === "customer" && notification.category === "pharmacy" && notification.recordType === "order") {
+      return new URL("Profile/index.html?tab=orders", appRoot).href;
+    }
+    return safeTarget(fallback);
+  }
+
   function mountWidget(root) {
     if (!root || root.dataset.mounted === "true") return;
     root.dataset.mounted = "true";
@@ -80,7 +88,7 @@
       if (!link) return;
       event.preventDefault();
       notificationService.markRead(link.dataset.notificationId);
-      window.location.assign(safeTarget(link.href));
+      window.location.assign(notificationTarget(link.dataset.notificationId, link.href));
     });
     root.addEventListener("click", event => event.stopPropagation());
     document.addEventListener("click", event => {
@@ -173,7 +181,7 @@
     if (openLink) {
       event.preventDefault();
       notificationService.markRead(openLink.dataset.cpnOpen);
-      window.location.assign(safeTarget(openLink.href));
+      window.location.assign(notificationTarget(openLink.dataset.cpnOpen, openLink.href));
     }
   });
 

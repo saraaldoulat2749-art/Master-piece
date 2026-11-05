@@ -49,7 +49,7 @@ function updateSummary() {
   submitButton.disabled = !hasAddress || !hasValidPhone;
   feedback.classList.remove("error");
   feedback.textContent = hasAddress && hasValidPhone
-    ? "Pay only the CarePlus commission now. Medicine and delivery are paid in cash on delivery."
+    ? "Your request goes to the pharmacy first. You can pay the CarePlus commission after the pharmacy accepts. Medicine and delivery are paid in cash on delivery."
     : `To enable the button, ${[
         !hasAddress ? "enter a delivery address with at least 8 characters" : "",
         !hasValidPhone ? "enter a contact phone with at least 7 digits" : ""
@@ -84,5 +84,5 @@ form.addEventListener("submit", event => {
     submitButton.disabled = false;
     return;
   }
-  location.assign(`payment.html?orderId=${encodeURIComponent(result.order.id)}`);
+  location.assign("../Profile/index.html?tab=orders");
 });

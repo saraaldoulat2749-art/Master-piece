@@ -7,5 +7,6 @@ if (!order || order.source !== "pharmacy-order" || !customer || String(order.use
 } else {
   document.getElementById("confirmedOrderReference").textContent = order.reference;
   document.getElementById("confirmedOrderStatus").textContent = order.status;
+  document.querySelector(".pharmacy-flow-links a").href = "../Profile/index.html?tab=orders";
   document.getElementById("orderSuccessMessage").textContent = `${order.pharmacyName} received your request. You can follow status changes from My medicine orders.`;
 }
