@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="../Nav/style.css">
   <link rel="stylesheet" href="../Footer/style.css">
   <link rel="stylesheet" href="profile.css?v=profile-user-icons-1">
-  <link rel="stylesheet" href="payment.css?v=profile-user-icons-1">
+  <link rel="stylesheet" href="payment.css?v=care-checkout-2">
 <link rel="stylesheet" href="../shared/global-button-theme.css"><link rel="stylesheet" href="../shared/site-headings.css?v=dancing-script-1">
 </head>
 <body class="profile-page payment-page" data-protected="true">
@@ -27,6 +27,7 @@
           <div class="payment-total"><span>Amount due</span><strong id="payment-amount"></strong></div>
         </section>
         <form class="payment-form" id="card-form" novalidate>
+          <div class="payment-form-heading"><span class="profile-kicker">PAYMENT DETAILS</span><h2>Complete your booking</h2><p>Your care request has been accepted. Complete the payment below.</p></div>
           <div class="card-preview" aria-hidden="true"><span class="card-chip"></span><span class="card-brand">CAREPLUS PAY</span><strong id="card-number-preview">•••• •••• •••• ••••</strong><div><span id="card-name-preview">CARDHOLDER NAME</span><span id="card-expiry-preview">MM/YY</span></div></div>
           <div class="payment-fields">
             <label>Cardholder name<input name="cardholder" autocomplete="cc-name" required minlength="2" placeholder="Name on card"></label>
@@ -37,12 +38,12 @@
           <button class="button button--primary payment-submit" type="submit">Complete payment</button>
         </form>
       </div>
-      <section class="payment-result" id="payment-result" hidden role="status" aria-live="polite"><span aria-hidden="true">✓</span><h2 id="payment-result-title">Payment recorded</h2><p id="payment-result-copy"></p><a class="button button--primary" href="index.html#care">Return to My Care Requests</a></section>
+      <dialog class="payment-result" id="payment-result" aria-labelledby="payment-result-title" aria-describedby="payment-result-copy"><button class="payment-result-close" type="button" aria-label="Close and return to care requests">&times;</button><span class="payment-result-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12 4 4L19 6"/></svg></span><div class="payment-result-kicker">CAREPLUS CHECKOUT</div><h2 id="payment-result-title">Payment recorded</h2><p id="payment-result-copy"></p><a class="button button--primary" href="index.html#care">Return to My Care Requests</a></dialog>
     </div>
   </main>
   <div id="footer-container" data-footer-autoload></div>
   <script src="../data/careplus-data.js?v=order-notification-profile-1"></script>
-  <script src="payment.js"></script>
+  <script src="payment.js?v=care-checkout-2"></script>
   <script src="../Footer/footer.js?v=footer-hearts-removed-1"></script>
 </body>
 </html>

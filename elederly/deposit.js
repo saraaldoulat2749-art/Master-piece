@@ -42,6 +42,9 @@
   let previewed = false;
   let attempt = 0;
   const money = value => `JOD ${Number(value).toFixed(2)}`;
+  const payable = request => request && (request.bookingFlow === 'nurse-first'
+    ? request.status === 'Accepted' && Boolean(request.acceptedAt)
+    : request.status === 'Pending Payment');
   const cardForm = find("[data-card-form]");
   const clearCard = () => cardForm.reset();
   cardForm.addEventListener("submit", event => { event.preventDefault(); find("[data-preview]").click(); });
@@ -65,7 +68,7 @@
     await new Promise(resolve => setTimeout(resolve, 1000));
     if (currentAttempt !== attempt || !dialog.open) return;
     const request = window.CarePlusData?.get("careRequests", currentId);
-    if (!request || request.status !== "Pending Payment") { cancel(); return; }
+    if (!payable(request) || request.demoPaymentStatus === 'Succeeded') { cancel(); return; }
     const succeeded = scenario === "success";
     const reference = succeeded ? `DEMO-${globalThis.crypto?.randomUUID?.() || Date.now()}` : null;
     // Store simulation results separately. Never change real payment/booking status.
@@ -109,7 +112,7 @@
   window.CarePlusDeposit = Object.freeze({
     open(id) {
       const request = window.CarePlusData?.get("careRequests", id);
-      if (!request || request.status !== "Pending Payment" || request.depositRate !== 0.1) return;
+      if (!payable(request) || request.depositRate !== 0.1 || request.demoPaymentStatus === 'Succeeded') return;
       requestId = id;
       find("[data-checkout-fields]").hidden = false;
       find("[data-cancel]").textContent = "Cancel";

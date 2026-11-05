@@ -1,0 +1,21 @@
+.nurse-picker-dialog { width: min(760px, calc(100% - 28px)); max-height: 88vh; margin: auto; padding: 28px; overflow-y: auto; border: 1px solid #d6e9eb; border-radius: 22px; background: #f9fdfd; color: #173d4d; box-shadow: 0 24px 90px #06253640; font-family: Arial, sans-serif; }
+.nurse-picker-dialog::backdrop { background: #06253685; backdrop-filter: blur(5px); }
+.nurse-picker-heading { display: flex; align-items: flex-start; gap: 20px; padding-bottom: 20px; border-bottom: 1px solid #dfeded; }
+.nurse-picker-heading > div { flex: 1; }
+.nurse-picker-heading span { color: #008e95; font-size: 10px; font-weight: 700; letter-spacing: 2px; }
+.nurse-picker-heading h2 { margin: 10px 0; font-size: 27px; }
+.nurse-picker-heading p { color: #748b99; font-size: 13px; line-height: 1.7; }
+.nurse-picker-heading button { width: 34px; height: 34px; border: 1px solid #d9e8ea; border-radius: 10px; background: white; color: #527381; font-size: 24px; cursor: pointer; }
+.nurse-picker-list { display: grid; gap: 12px; margin: 22px 0; }
+.nurse-picker-card { display: flex; align-items: center; gap: 16px; padding: 20px; border: 1px solid #dce9ec; border-radius: 15px; background: white; cursor: pointer; }
+.nurse-picker-card:has(input:checked) { border-color: #008f98; background: #effafa; box-shadow: 0 0 0 2px #008f9815; }
+.nurse-picker-card input { accent-color: #008f98; width: 18px; height: 18px; flex-shrink: 0; }
+.nurse-picker-avatar { display: grid; place-items: center; width: 50px; height: 50px; flex-shrink: 0; border-radius: 16px; background: #e0f3f2; color: #008b92; font-weight: 700; }
+.nurse-picker-card strong { display: block; margin-bottom: 7px; font-size: 15px; }
+.nurse-picker-card div > span { display: block; color: #6c8593; font-size: 12px; line-height: 1.8; }
+.nurse-picker-actions { display: flex; justify-content: flex-end; flex-wrap: wrap; gap: 12px; padding-top: 18px; border-top: 1px solid #dfeded; }
+.nurse-picker-actions button { padding: 13px 20px; border: 1px solid #c9dfe2; border-radius: 10px; background: white; color: #427180; font-weight: 600; cursor: pointer; }
+.nurse-picker-actions button[type="submit"] { background: #008f98; border-color: #008f98; color: white; }
+.nurse-picker-actions button:disabled { opacity: .5; cursor: not-allowed; }
+.nurse-picker-message { color: #9b4e3c; font-size: 13px; line-height: 1.6; }
+@media(max-width: 540px) { .nurse-picker-dialog { padding: 18px; } .nurse-picker-card { gap: 10px; padding: 14px; } .nurse-picker-avatar { width: 38px; height: 38px; } .nurse-picker-actions button { flex: 1; } }

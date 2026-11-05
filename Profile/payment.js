@@ -7,6 +7,9 @@
   const identity = String(sessionStorage.getItem("careplusDemoIdentity") || "").trim();
   const identityLower = identity.toLowerCase();
   const params = new URLSearchParams(window.location.search);
+  const returnToRequests = () => { window.location.href = 'index.html#care'; };
+  result.querySelector('.payment-result-close').addEventListener('click', returnToRequests);
+  result.addEventListener('cancel', event => { event.preventDefault(); returnToRequests(); });
 
   if (window.CarePlusAuth?.hasDemoAdminSession()) {
     window.location.replace("../Admin/index.html");
@@ -23,16 +26,16 @@
 
   const owner = dataStore?.list("users").find(user => user.email?.toLowerCase() === identityLower || user.phone === identity);
   const request = dataStore?.get("careRequests", params.get("requestId"));
-  const ownsRequest = request && ((owner && String(request.userId) === String(owner.id))
+  const ownsRequest = identity && request && ((owner && String(request.userId) === String(owner.id))
     || String(request.email || "").toLowerCase() === identityLower
     || String(request.phone || "") === identity);
-  const accepted = request && ["accepted", "approved"].includes(String(request.status || "").toLowerCase());
+  const accepted = request && ["accepted", "approved"].includes(String(request.status || "").toLowerCase()) && (request.bookingFlow !== 'nurse-first' || Boolean(request.acceptedAt));
 
   function showResult(title, message) {
     document.getElementById("payment-result-title").textContent = title;
     document.getElementById("payment-result-copy").textContent = message;
-    result.hidden = false;
-    content.hidden = true;
+    result.dataset.state = title === 'Payment unavailable' ? 'error' : 'success';
+    if (!result.open) result.showModal();
   }
 
   if (!dataStore || !ownsRequest || !accepted) {
@@ -40,7 +43,7 @@
     return;
   }
 
-  const amount = request.service === "Hospital companion"
+  const amount = request.bookingFlow === 'nurse-first' ? Number(request.depositAmount) : request.service === "Hospital companion"
     ? (Number(request.duration) || 1) * 7 + (request.tripOption === "roundtrip" ? 5 : 0) + 1
     : (Number(request.duration) || 1) * 8 + 1;
   const dateText = request.date ? new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(new Date(`${request.date}T12:00:00`)) : "Not specified";
@@ -51,7 +54,7 @@
   document.getElementById("payment-amount").textContent = `JOD ${amount.toFixed(2)}`;
   content.hidden = false;
 
-  if (String(request.paymentStatus || "").toLowerCase() === "paid") {
+  if (String(request.paymentStatus || "").toLowerCase() === "paid" || request.demoPaymentStatus === 'Succeeded') {
     showResult("Payment already recorded", "This care request has already been paid.");
     return;
   }
@@ -89,15 +92,20 @@
     if (!latest || !["accepted", "approved"].includes(String(latest.status || "").toLowerCase())) {
       error.textContent = "This request is no longer eligible for payment."; return;
     }
-    if (String(latest.paymentStatus || "").toLowerCase() === "paid") {
+    if (String(latest.paymentStatus || "").toLowerCase() === "paid" || latest.demoPaymentStatus === 'Succeeded') {
       showResult("Payment already recorded", "This care request has already been paid."); return;
     }
-    const saved = dataStore.update("careRequests", request.id, {
+    const payment = latest.bookingFlow === 'nurse-first' ? {
+      demoPaymentStatus: 'Succeeded', demoTransactionReference: `DEMO-${crypto.randomUUID()}`,
+      demoPaymentMethod: 'card', demoPaymentAt: new Date().toISOString()
+    } : {
       paymentStatus: "Paid", paymentMethod: `Card ending in ${digits.slice(-4)}`,
       paymentLast4: digits.slice(-4), paymentAmount: amount, paidAt: new Date().toISOString()
-    });
+    };
+    const saved = dataStore.update("careRequests", request.id, payment);
     if (!saved) { error.textContent = "Payment could not be recorded. Please try again."; return; }
     form.reset();
+    form.querySelector('[type="submit"]').disabled = true;
     showResult("Payment recorded", `JOD ${amount.toFixed(2)} payment recorded.`);
   });
 })();

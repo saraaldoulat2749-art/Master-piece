@@ -50,6 +50,9 @@
     return Number.isNaN(value.getTime()) ? 0 : value.getTime();
   };
   const statusName = item => String(item.status || "New");
+  const visitTimeReached = request => /^\d{4}-\d{2}-\d{2}$/.test(String(request.date || ''))
+    && /^([01]\d|2[0-3]):[0-5]\d$/.test(String(request.time || ''))
+    && timestamp(request) > 0 && timestamp(request) <= Date.now();
   const requestQueueStatus = request => ["new", "reviewing", "contacted"].includes(statusName(request).toLowerCase()) ? "Pending" : statusName(request);
   const statusClass = status => String(status).toLowerCase().replace(/[^a-z]+/g, "-");
   const isHomeCare = request => !request.service || /home\s*care|elderly\s*care|hospital\s*companion/i.test(String(request.service));
@@ -59,7 +62,9 @@
   const demoDepositPaid = request => request.paymentMode === "demo" && request.demoPaymentStatus === "Succeeded" && String(request.demoTransactionReference || "").startsWith("DEMO-");
   // Only the deposit gates care delivery. The remaining balance is settled outside this flow.
   const depositReady = request => request.depositRate !== 0.1 || demoDepositPaid(request) || (request.paymentStatus === "Paid" && request.paymentVerified === true && Boolean(request.transactionReference));
-  const isOpen = request => depositReady(request) && (["new", "pending", "requested", "reviewing", "contacted", "accepted", "confirmed"].includes(statusName(request).toLowerCase()) || (statusName(request).toLowerCase() === "pending payment" && demoDepositPaid(request)));
+  const isOpen = request => request.bookingFlow === "nurse-first"
+    ? isMine(request) && statusName(request).toLowerCase() === "requested"
+    : depositReady(request) && (["new", "pending", "requested", "reviewing", "contacted", "accepted", "confirmed"].includes(statusName(request).toLowerCase()) || (statusName(request).toLowerCase() === "pending payment" && demoDepositPaid(request)));
   const canSeeRequest = request => isHomeCare(request) && (isMine(request) || (!request.assignedNurseId && !request.nurseId && (isOpen(request) || (request.status === "Pending Payment" && demoDepositPaid(request)) || statusName(request).toLowerCase() === "cancelled")));
   const requests = () => (store?.list("careRequests") || []).filter(canSeeRequest);
   const assignedVisits = () => requests().filter(request => isMine(request) && ["accepted", "in progress", "completed", "cancelled"].includes(statusName(request).toLowerCase()));
@@ -237,7 +242,10 @@
     $("visitRows").innerHTML = rows.map(request => {
       const state = statusName(request).toLowerCase();
       let actions = actionButton("details", "Details", request.id);
-      if (state === "accepted") actions += actionButton("start", "Start visit", request.id, "accept");
+      if (state === "accepted") {
+        const enabled = visitTimeReached(request) && depositReady(request);
+        actions += `<button class="action accept" type="button" data-action="start" data-id="${esc(request.id)}"${enabled ? '' : ' disabled'} title="${!visitTimeReached(request) ? 'Available at the scheduled visit time' : !depositReady(request) ? 'Waiting for deposit payment' : 'Start this visit'}">Start visit</button>`;
+      }
       if (state === "in progress") actions += actionButton("complete", "Complete", request.id, "accept");
       return `<tr data-request-id="${esc(request.id)}"><td data-label="Elderly person"><span class="visit-main"><b>${esc(visitLabel(request))}</b><small>${esc(requestLabel(request))} · ${esc(request.service || "Home care")}</small></span></td><td data-label="Status">${statusBadge(statusName(request))}</td><td data-label="Actions"><div class="row-actions">${actions}</div></td></tr>`;
     }).join("");
@@ -457,7 +465,7 @@
     if (button.dataset.action === "details") { openRequestDetails(request); return; }
     if (!isOpen(request) || (request.assignedNurseId && !isMine(request))) return;
     if (button.dataset.action === "accept") {
-      const updated = updateRequest(request.id, { status: "Accepted", assignedNurseId: nurseId, assignedNurseName: profile.name || nurse.name, acceptedAt: new Date().toISOString() });
+      const updated = updateRequest(request.id, { status: "Accepted", assignedNurseId: nurseId, assignedNurseName: profile.name || nurse.name, acceptedAt: new Date().toISOString(), ...(request.bookingFlow === "nurse-first" ? { paymentStatus: "Awaiting Payment" } : {}) });
       if (updated) {
         $("visitRange").value = "all";
         $("visitStatus").value = "all";
@@ -495,7 +503,7 @@
       if (state !== "accepted") return;
       if (!depositReady(request)) { toast("The deposit must be paid before starting this visit.", true); return; }
       if (!request.date || !request.time) { toast("This visit needs a scheduled date and time before it can start.", true); return; }
-      if (timestamp(request) > Date.now()) { toast("This visit cannot start before its scheduled date and time.", true); return; }
+      if (!visitTimeReached(request)) { toast("This visit cannot start before its scheduled date and time.", true); return; }
       const now = new Date().toISOString();
       if (updateRequest(request.id, { status: "In Progress", visitStatus: "In Progress", actualStartAt: now, startedAt: now })) { toast("Visit started."); renderAll(); navigate("patient-care"); selectedRequestId = String(request.id); renderPatientCare(); }
     }
@@ -545,6 +553,14 @@
   });
 
   store?.subscribe(renderAll);
+  setInterval(() => {
+    document.querySelectorAll('#visitRows button[data-action="start"]').forEach(button => {
+      const request = store.get('careRequests', button.dataset.id);
+      const ready = request && isMine(request) && statusName(request).toLowerCase() === 'accepted' && visitTimeReached(request) && depositReady(request);
+      button.disabled = !ready;
+      button.title = ready ? 'Start this visit' : request && !visitTimeReached(request) ? 'Available at the scheduled visit time' : 'Waiting for deposit payment';
+    });
+  }, 1000);
   renderProfileForm(); renderAll();
   const section = new URLSearchParams(location.search).get("section");
   if (["dashboard", "requests", "visits", "patient-care", "profile"].includes(section)) navigate(section);

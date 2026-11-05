@@ -63,53 +63,11 @@ if (form) {
   // Editable prototype rates; these do not represent live provider quotes.
   const PRICING = Object.freeze({ homeHourlyJod: 8, companionHourlyJod: 7, sampleReturnFeeJod: 5 });
   const isHome = form.dataset.service === "home";
-  let submittedRequest = null;
+  let submitting = false;
   const duration = form.elements.namedItem("duration");
   const tripOption = form.elements.namedItem("tripOption");
   const money = amount => `JOD ${amount.toFixed(2)}`;
   const commissionRate = () => Number(window.CarePlusPharmacy?.settings().careCommissionRate) || 0;
-  const sharedPanel = document.createElement("section");
-  sharedPanel.className = "shared-request-panel";
-  sharedPanel.setAttribute("aria-live", "polite");
-  sharedPanel.innerHTML = '<h3>My care requests</h3><p>Request statuses update here when CarePlus reviews them.</p><div class="shared-request-list"></div>';
-  const paymentNotice = document.querySelector(".booking-intro .payment-status");
-  if (paymentNotice) paymentNotice.after(sharedPanel);
-  else document.querySelector(".booking-section")?.append(sharedPanel);
-  function renderMyRequests() {
-    const identity = String(sessionStorage.getItem("careplusDemoIdentity") || "").toLowerCase();
-    const user = window.CarePlusData?.list("users").find(item => item.email?.toLowerCase() === identity || item.phone === identity);
-    const requests = window.CarePlusData?.list("careRequests").filter(item => (user && item.userId === user.id) || item.email?.toLowerCase() === identity || item.phone === identity) || [];
-    const list = sharedPanel.querySelector(".shared-request-list");
-    list.replaceChildren();
-    if (!requests.length) { const empty = document.createElement("p"); empty.textContent = "No submitted care requests for this login yet."; list.append(empty); return; }
-    window.CarePlusData.newestFirst(requests).forEach(request => {
-      const item = document.createElement("article"); item.className = "shared-request-item";
-      const title = document.createElement("strong"); title.textContent = request.service;
-      const detail = document.createElement("span"); detail.textContent = `Preferred date: ${request.date || "Not specified"}${Number.isFinite(Number(request.estimatedTotal)) ? ` · Estimate: ${money(Number(request.estimatedTotal))}` : ""}`;
-      const status = document.createElement("b");
-      const rawStatus = String(request.status || "New");
-      status.textContent = ["accepted", "approved"].includes(rawStatus.toLowerCase()) ? "Accepted by CarePlus" : rawStatus;
-      item.append(title, detail, status);
-      if (request.demoPaymentStatus === "Succeeded" && request.demoTransactionReference) {
-        const paid = document.createElement("b");
-        paid.textContent = `Deposit paid: ${money(Number(request.depositAmount))}`;
-        paid.style.color = "#087e80";
-        item.append(paid);
-      }
-      if (request.status === "Pending Payment" && request.depositRate === 0.1 && request.demoPaymentStatus !== "Succeeded") {
-        const resume = document.createElement("button");
-        resume.type = "button";
-        resume.className = "button button-primary";
-        resume.textContent = "View deposit";
-        resume.addEventListener("click", () => window.CarePlusDeposit.open(request.id));
-        item.append(resume);
-      }
-      list.append(item);
-    });
-  }
-  window.CarePlusData?.subscribe(renderMyRequests);
-  renderMyRequests();
-
   function updateEstimate() {
     const hours = Math.max(1, Number(duration.value) || 1);
     const base = hours * (isHome ? PRICING.homeHourlyJod : PRICING.companionHourlyJod);
@@ -134,11 +92,19 @@ if (form) {
     input.min = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
   });
 
-  form.addEventListener("submit", event => {
+  form.addEventListener("submit", async event => {
     event.preventDefault();
-    if (submittedRequest) { window.CarePlusDeposit.open(submittedRequest.id); return; }
+    if (submitting) return;
     if (!form.reportValidity()) return;
-
+    const identity = sessionStorage.getItem('careplusDemoIdentity');
+    const customer = identity && window.CarePlusData?.list('users').find(user => user.email?.toLowerCase() === identity.toLowerCase() || user.phone === identity);
+    if (!customer) { document.getElementById('form-feedback').textContent = 'Please sign in to send a care request.'; return; }
+    submitting = true;
+    let selectedNurse;
+    try { selectedNurse = await window.CarePlusNursePicker.open(); }
+    catch { document.getElementById('form-feedback').textContent = 'Nurse selection could not be opened. Please refresh and try again.'; }
+    finally { submitting = false; }
+    if (!selectedNurse || !form.reportValidity()) return;
     const values = new FormData(form);
     const estimate = updateEstimate();
     const request = window.CarePlusData?.create("careRequests", {
@@ -182,7 +148,8 @@ if (form) {
       paymentStatus: "Unpaid",
       paymentMode: "demo",
       transactionReference: null,
-      status: "Pending Payment", source: "user-request",
+      status: "Requested", source: "user-request", bookingFlow: "nurse-first",
+      assignedNurseId: selectedNurse.nurseId, assignedNurseName: selectedNurse.name,
       userId: window.CarePlusData?.list("users").find(user => user.email?.toLowerCase() === sessionStorage.getItem("careplusDemoIdentity")?.toLowerCase() || user.phone === sessionStorage.getItem("careplusDemoIdentity"))?.id || ""
     });
     if (!request) {
@@ -190,10 +157,8 @@ if (form) {
       return;
     }
     const submitButton = form.querySelector(".submit-button");
-    submittedRequest = request;
-    submitButton.textContent = "View deposit requirement";
-    document.getElementById("form-feedback").textContent = "Booking request saved — Pending Payment. This is not a confirmed booking.";
-    window.CarePlusDeposit.open(request.id);
+    submitButton.textContent = "Submit another care request";
+    document.getElementById("form-feedback").textContent = `Request sent to ${selectedNurse.name}. You can pay the deposit after the nurse accepts. Follow its status and pay from your profile.`;
   });
 
   window.addEventListener("careplus:commission", updateEstimate);

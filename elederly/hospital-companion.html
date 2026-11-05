@@ -5,14 +5,14 @@
   <title>Hospital &amp; Clinic Companion Request | CarePlus</title>
   <link rel="stylesheet" href="../Nav/style.css"><link rel="stylesheet" href="../Footer/style.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="deposit.css">
 <link rel="stylesheet" href="../shared/global-button-theme.css"><link rel="stylesheet" href="../shared/site-headings.css?v=dancing-script-1">
-</head>
+<link rel="stylesheet" href="nurse-picker.css?v=1"></head>
 <body class="elderly-page service-request-page" data-protected="true"><script src="../auth.js?v=professional-role-access-1"></script>
   <div id="nav-container"></div>
   <main>
     <section class="request-hero section-wrap"><a class="breadcrumb" href="index.html">Elderly Care <span aria-hidden="true">/</span> Appointment Companion</a><span class="eyebrow">HOSPITAL &amp; CLINIC COMPANION</span><h1>Appointment support, with <span>someone by your side.</span></h1><p>Request non-clinical accompaniment for a hospital, clinic, or medical appointment. The CarePlus team must confirm coverage, provider availability, transport arrangements, and final pricing.</p><a class="button button-secondary" href="home-care.html">Looking for in-home support?</a></section>
     <section class="booking-section">
       <div class="booking-layout section-wrap">
-        <aside class="booking-intro"><span class="eyebrow">COMPANION REQUEST</span><h2>Plan an appointment trip.</h2><p>Enter the pickup and destination details, appointment schedule, waiting needs, and requested return option.</p><div class="demo-status"><span class="status-dot"></span><div><strong>Availability not live</strong><small>No matching provider or trip status is shown until confirmed by CarePlus.</small></div></div></aside>
+        <aside class="booking-intro"><span class="eyebrow">COMPANION REQUEST</span><h2>Plan an appointment trip.</h2><p>Enter the pickup and destination details, appointment schedule, waiting needs, and requested return option.</p><div class="demo-status"><span class="status-dot"></span><div><strong>Choose your nurse</strong><small>Select a nurse after completing the form. Your nurse will review the trip before you pay.</small></div></div></aside>
 
         <form class="booking-form" id="care-form" data-service="companion">
           <div class="form-heading"><div><span class="form-step">APPOINTMENT COMPANION</span><h3>Trip and appointment details</h3></div><p>* Required fields</p></div>
@@ -48,11 +48,11 @@
           <button class="button button-primary submit-button" type="submit">Submit care request <span aria-hidden="true">&rarr;</span></button><p class="form-feedback" id="form-feedback" role="status" aria-live="polite"></p>
         </form>
 
-        <aside class="price-card" aria-live="polite"><span class="eyebrow">SAMPLE ESTIMATE</span><h3>Companion total</h3><div class="price-row"><span id="base-label">Companion service &middot; 3 hours</span><strong id="base-price">JOD 21.00</strong></div><div class="price-row" id="return-fee-row" hidden><span>Sample return-trip fee</span><strong id="return-fee">JOD 5.00</strong></div><div class="price-row"><span>CarePlus commission (<span id="care-commission-rate">10</span>%)</span><strong id="care-commission-amount">JOD 2.10</strong></div><div class="price-total"><span>Estimate</span><strong id="total-price">JOD 23.10</strong></div><p>Editable sample rates. This is an estimate only; payment is not enabled and CarePlus must confirm final pricing.</p><div class="price-config"><span>Hourly sample rate</span><strong>JOD 7</strong></div><div class="price-config"><span>Sample round-trip fee</span><strong>JOD 5</strong></div></aside>
+        <aside class="price-card" aria-live="polite"><span class="eyebrow">SAMPLE ESTIMATE</span><h3>Companion total</h3><div class="price-row"><span id="base-label">Companion service &middot; 3 hours</span><strong id="base-price">JOD 21.00</strong></div><div class="price-row" id="return-fee-row" hidden><span>Sample return-trip fee</span><strong id="return-fee">JOD 5.00</strong></div><div class="price-row"><span>CarePlus commission (<span id="care-commission-rate">10</span>%)</span><strong id="care-commission-amount">JOD 2.10</strong></div><div class="price-total"><span>Estimate</span><strong id="total-price">JOD 23.10</strong></div><p>Estimated service cost. Choose a nurse and send your request. A 10% deposit is due after the nurse accepts. Payments are simulated in this demo.</p><div class="price-config"><span>Hourly sample rate</span><strong>JOD 7</strong></div><div class="price-config"><span>Sample round-trip fee</span><strong>JOD 5</strong></div></aside>
       </div>
     </section>
   </main>
-  <div id="footer-container"></div><script src="../data/careplus-data.js?v=order-notification-profile-1"></script><script src="../data/careplus-pharmacy.js?v=acceptance-payment-1"></script><script src="deposit.js"></script><script src="script.js"></script>
+  <div id="footer-container"></div><script src="../data/careplus-data.js?v=order-notification-profile-1"></script><script src="../data/careplus-pharmacy.js?v=acceptance-payment-1"></script><script src="deposit.js?v=nurse-first-1"></script><script src="nurse-picker.js?v=1"></script><script src="script.js?v=nurse-first-1"></script>
   <script src="../Footer/footer.js?v=footer-hearts-removed-1"></script>
 </body>
 </html>
