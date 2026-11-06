@@ -8,10 +8,19 @@
   const appointment = () => appointmentId && window.CarePlusData?.get("appointments", appointmentId);
 
   function render() {
+    window.CarePlusClinic?.expireUnpaidHolds();
     const record = appointment();
     if (!record) {
       document.getElementById("paymentMessage").textContent = "This appointment could not be found. Return to booking and try again.";
       button.disabled = true;
+      return;
+    }
+    if (record.expiredAt && record.paymentStatus === 'Expired') {
+      const message = document.getElementById('paymentMessage');
+      message.textContent = 'The one-hour payment deadline has passed. This booking expired and the time is available again. Please book another appointment.';
+      message.hidden = false;
+      button.disabled = true; button.textContent = 'Payment deadline expired';
+      cardForm.hidden = true; viewLink.hidden = true;
       return;
     }
     const identity = sessionStorage.getItem("careplusDemoIdentity") || localStorage.getItem("careplusDemoIdentity") || "";
@@ -40,6 +49,10 @@
       return;
     }
     const complete = record.depositPaymentStatus === "Demo Simulated" || record.depositPaymentStatus === "Paid";
+    if (!complete && record.paymentDueAt) {
+      const seconds = Math.max(0, Math.ceil((Date.parse(record.paymentDueAt) - Date.now()) / 1000));
+      document.getElementById('paymentMessage').textContent = `Your time is reserved. Pay within ${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')} to confirm; otherwise it becomes available again.`;
+    }
     button.disabled = complete;
     button.textContent = complete ? "Paid" : "Pay now";
     cardForm.hidden = complete;
@@ -71,5 +84,6 @@
     location.href = `../Success/index.html?appointmentId=${encodeURIComponent(updated.id)}`;
   });
   window.CarePlusData?.subscribe(render);
+  setInterval(render, 1000);
   render();
 })();

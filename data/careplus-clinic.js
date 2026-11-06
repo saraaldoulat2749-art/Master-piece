@@ -36,7 +36,30 @@
     try { localStorage.setItem(scopedKey(SCHEDULE_KEY, doctorId), JSON.stringify(schedule)); emit("schedule"); return true; }
     catch { return false; }
   }
-  function listAppointments() { return window.CarePlusData?.list("appointments") || []; }
+  const PAYMENT_HOLD_MS = 60 * 60 * 1000;
+  const hasDeposit = item => ['paid', 'demo simulated'].includes(String(item.depositPaymentStatus || '').toLowerCase())
+    || ['paid', 'succeeded'].includes(String(item.paymentStatus || '').toLowerCase())
+    || String(item.paymentStatus || '').toLowerCase().startsWith('demo simulated')
+    || Number(item.depositAmount) > 0 && Number(item.depositPaid) >= Number(item.depositAmount);
+  const holdExpired = item => ['confirmed', 'accepted'].includes(String(item.status || '').toLowerCase())
+    && !hasDeposit(item) && Number.isFinite(Date.parse(item.paymentDueAt)) && Date.parse(item.paymentDueAt) <= Date.now();
+  let expiring = false;
+  function expireUnpaidHolds() {
+    if (expiring) return;
+    expiring = true;
+    try {
+      for (const item of window.CarePlusData?.list('appointments') || []) {
+        if (!holdExpired(item)) continue;
+        window.CarePlusData.update('appointments', item.id, {
+          status: 'Cancelled', paymentStatus: 'Expired', depositPaymentStatus: 'Expired',
+          cancelReason: 'Payment was not completed within one hour of doctor acceptance.',
+          expiredAt: new Date().toISOString(), commissionStatus: 'Not earned',
+          lastActionByRole: 'System', lastActionById: ''
+        });
+      }
+    } finally { expiring = false; }
+  }
+  function listAppointments() { expireUnpaidHolds(); return window.CarePlusData?.list("appointments") || []; }
   function resolveDoctor(doctorName, requestedId = "") {
     const accounts = window.CarePlusData?.list("users") || [];
     const account = accounts.find(user => String(user.role || "").toLowerCase() === "doctor"
@@ -92,7 +115,7 @@
     const normalizedDoctor = String(doctor).trim().toLowerCase();
     const taken = listAppointments().some(item => {
       if (String(item.id) === String(ignoreId) || String(item.doctor || "").trim().toLowerCase() !== normalizedDoctor
-        || item.date !== date || ["Cancelled", "Rejected"].includes(item.status)) return false;
+        || item.date !== date || ["Cancelled", "Rejected"].includes(item.status) || holdExpired(item)) return false;
       const appointmentStatus = String(item.status || "").toLowerCase();
       const depositStatus = String(item.depositPaymentStatus || "").toLowerCase();
       const paymentStatus = String(item.paymentStatus || "").toLowerCase();
@@ -159,8 +182,20 @@
     });
     return record ? { ok: true, appointment: record } : { ok: false, error: "Could not save the appointment in this browser." };
   }
-  function updateAppointment(id, changes) { return window.CarePlusData?.update("appointments", id, changes) || null; }
+  function updateAppointment(id, changes) {
+    expireUnpaidHolds();
+    const current = window.CarePlusData?.get('appointments', id);
+    if (!current) return null;
+    if (changes.status === 'Completed' && current.paymentDueAt && !hasDeposit(current)) return null;
+    if (['Confirmed', 'Accepted'].includes(changes.status) && !['Confirmed', 'Accepted'].includes(current.status)) {
+      if (!['Requested', 'Pending Deposit'].includes(current.status)) return null;
+      if (!isAvailable({ doctor: current.doctor, doctorId: current.doctorId, date: current.date, time: current.time, ignoreId: current.id })) return null;
+      changes = { ...changes, acceptedAt: new Date().toISOString(), ...(!hasDeposit(current) && Number(current.depositAmount) > 0 ? { paymentDueAt: new Date(Date.now() + PAYMENT_HOLD_MS).toISOString() } : {}) };
+    }
+    return window.CarePlusData?.update("appointments", id, changes) || null;
+  }
   function recordDemoDepositStep(id) {
+    expireUnpaidHolds();
     const appointment = window.CarePlusData?.get("appointments", id);
     if (!appointment || appointment.commissionAppointmentId !== appointment.id) return null;
     if (appointment.depositPaymentStatus === "Demo Simulated" || appointment.depositPaymentStatus === "Paid") return appointment;
@@ -172,6 +207,7 @@
       paymentMethod: "Demo checkout",
       paymentVerification: "Simulated only; no funds collected",
       depositPaid: Number(appointment.depositAmount || 0),
+      bookingConfirmedAt: new Date().toISOString(),
       lastActionByRole: "Customer", lastActionById: String(appointment.userId || appointment.bookingUserId || ""),
       commissionStatus: "Awaiting appointment"
     });
@@ -183,5 +219,8 @@
     window.addEventListener("careplus:clinic", callback);
     return () => { unsubscribeData(); window.removeEventListener("storage", handler); window.removeEventListener("careplus:clinic", callback); };
   }
-  window.CarePlusClinic = { getProfile, saveProfile, getSchedule, saveSchedule, listAppointments, listDoctors, resolveDoctor, isAvailable, availableSlots, createBooking, recordDemoDepositStep, updateAppointment, subscribe };
+  window.CarePlusClinic = { getProfile, saveProfile, getSchedule, saveSchedule, listAppointments, listDoctors, resolveDoctor, isAvailable, availableSlots, createBooking, recordDemoDepositStep, updateAppointment, subscribe, expireUnpaidHolds, hasDeposit };
+  expireUnpaidHolds();
+  setInterval(expireUnpaidHolds, 1000);
+  window.addEventListener('focus', expireUnpaidHolds);
 })();

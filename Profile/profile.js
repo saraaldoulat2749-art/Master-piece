@@ -266,6 +266,7 @@
       const acceptedByDoctor = ["confirmed", "accepted"].includes(String(appointment.status || "").toLowerCase());
       const depositPaid = ["paid", "demo simulated"].includes(String(appointment.depositPaymentStatus || "").toLowerCase());
       if (acceptedByDoctor && !depositPaid) {
+        if (appointment.paymentDueAt) actions.append(makeElement('span', 'order-payment-waiting', `Pay before ${new Date(appointment.paymentDueAt).toLocaleString('en-GB')} to keep this time.`));
         const pay = makeElement("a", "button button--primary", "Pay deposit");
         pay.href = `../Book/Payment/index.html?appointmentId=${encodeURIComponent(appointment.id)}`;
         actions.append(pay);
