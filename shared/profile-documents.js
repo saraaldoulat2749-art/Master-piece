@@ -37,7 +37,12 @@
     pharmacy: [['pharmacyLicense', 'Pharmacy Operating License', true], ['pharmacistLicense', 'Responsible Pharmacist License', true], ['proofOfIdentity', 'Owner / Responsible Person ID', true], ['commercialRegistration', 'Commercial Registration', false]]
   }[role];
   const application = () => data.list('professionalApplications').find(item => String(item.userId) === String(account.id) && item.role === role);
-  const documents = () => application()?.documents || data.get('users', account.id)?.professionalDocuments || {};
+  const documents = () => {
+    const user = data.get('users', account.id);
+    const saved = { ...(application()?.documents || user?.professionalDocuments || {}) };
+    if (user?.professionalLicense?.document) saved[role === 'pharmacy' ? 'pharmacyLicense' : 'practiceLicense'] = user.professionalLicense.document;
+    return saved;
+  };
   const form = document.createElement('form');
   form.className = 'panel profile-documents';
   form.innerHTML = '<div class="profile-documents-heading"><div><span class="profile-documents-eyebrow">PROFESSIONAL CREDENTIALS</span><h2>Certificates &amp; documents</h2><p>Keep your licenses and qualifications up to date.</p></div></div><div class="profile-document-grid"></div><div class="profile-documents-footer"><p role="status" aria-live="polite" class="profile-document-status">Choose a file, then save your documents.</p><button type="submit" class="primary-button button primary">Save documents</button></div>';
@@ -71,6 +76,20 @@
     upload.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M12 16V4m-4 4 4-4 4 4M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg><span>Choose document<small>Click to browse your files</small></span>';
     upload.append(input);
     label.append(heading, note, upload);
+    if (key === (role === 'pharmacy' ? 'pharmacyLicense' : 'practiceLicense')) {
+      input.disabled = true;
+      upload.remove();
+      note.textContent = 'License changes require Admin approval.';
+      const renew = document.createElement('button');
+      renew.type = 'button'; renew.textContent = 'Renew License';
+      renew.dataset.profileRenewLicense = '';
+      renew.addEventListener('click', () => document.dispatchEvent(new CustomEvent('careplus:renew-license')));
+      label.append(renew);
+      const licenseStatus = document.createElement('small');
+      licenseStatus.dataset.profileLicenseStatus = '';
+      licenseStatus.setAttribute('role', 'status');
+      label.append(licenseStatus);
+    }
     const current = document.createElement('span');
     current.className = 'profile-document-current';
     const view = document.createElement('button');
@@ -92,7 +111,7 @@
       } catch (error) { status.textContent = error.message; }
     });
     row.append(label, current, view); grid.append(row);
-    return { key, required, input, current, view, row };
+    return { key, required: input.disabled ? false : required, input, current, view, row };
   });
   function refresh() {
     const saved = documents();

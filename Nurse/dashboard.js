@@ -45,27 +45,37 @@
   const requestSchedule = request => `<span class="request-schedule"><span class="request-schedule-date">${esc(dateText(request.date))}</span><span class="request-schedule-time"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>${esc(timeText(request.time))}</span></span>`;
   const timestamp = item => {
     const day = String(item.date || "");
-    const time = String(item.time || "00:00");
-    const value = new Date(`${day}T${time.length === 5 ? time : "00:00"}`);
+    const match = /^(\d{1,2}):([0-5]\d)(?::[0-5]\d)?\s*(AM|PM)?$/i.exec(String(item.time || '').trim());
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day) || !match) return 0;
+    let hour = Number(match[1]);
+    if (match[3]) { if (hour < 1 || hour > 12) return 0; hour = hour % 12 + (match[3].toUpperCase() === 'PM' ? 12 : 0); }
+    if (hour > 23) return 0;
+    const value = new Date(`${day}T${String(hour).padStart(2, '0')}:${match[2]}:00+03:00`);
     return Number.isNaN(value.getTime()) ? 0 : value.getTime();
   };
-  const statusName = item => String(item.status || "New");
-  const visitTimeReached = request => /^\d{4}-\d{2}-\d{2}$/.test(String(request.date || ''))
-    && /^([01]\d|2[0-3]):[0-5]\d$/.test(String(request.time || ''))
-    && timestamp(request) > 0 && timestamp(request) <= Date.now();
+  const statusName = item => ({ confirmed: 'Accepted', approved: 'Accepted' }[String(item.status || '').trim().toLowerCase()] || String(item.status || 'New').trim());
+  const visitTimeReached = request => timestamp(request) > 0 && timestamp(request) <= Date.now();
   const requestQueueStatus = request => ["new", "reviewing", "contacted"].includes(statusName(request).toLowerCase()) ? "Pending" : statusName(request);
   const statusClass = status => String(status).toLowerCase().replace(/[^a-z]+/g, "-");
   const isHomeCare = request => !request.service || /home\s*care|elderly\s*care|hospital\s*companion/i.test(String(request.service));
   const isHospitalCompanion = request => /hospital\s*companion/i.test(String(request.service || ""));
-  const isMine = request => String(request.assignedNurseId || request.nurseId || "") === nurseId;
+  const isMine = request => [nurseId, String(nurse.id)].includes(String(request.assignedNurseId || request.nurseId || ""));
   // Admin-reviewed requests with no nurse assigned are still available for a nurse to claim.
   const demoDepositPaid = request => request.paymentMode === "demo" && request.demoPaymentStatus === "Succeeded" && String(request.demoTransactionReference || "").startsWith("DEMO-");
   // Only the deposit gates care delivery. The remaining balance is settled outside this flow.
   const depositReady = request => request.depositRate !== 0.1 || demoDepositPaid(request) || (request.paymentStatus === "Paid" && request.paymentVerified === true && Boolean(request.transactionReference));
+  function startVisitGate(request) {
+    if (!request || !isMine(request) || statusName(request).toLowerCase() !== 'accepted') return { ready: false, reason: 'Only an accepted visit assigned to you can be started.' };
+    if (window.CarePlusLicenses && !window.CarePlusLicenses.canProvide('nurse', nurseId)) return { ready: false, reason: 'Your professional license must be valid and approved.' };
+    if (!depositReady(request)) return { ready: false, reason: 'Waiting for the customer to pay the deposit.' };
+    if (!timestamp(request)) return { ready: false, reason: 'The visit needs a valid scheduled date and time.' };
+    if (!visitTimeReached(request)) return { ready: false, reason: `Available on ${dateText(request.date)} at ${timeText(request.time)} (Amman time).` };
+    return { ready: true, reason: '' };
+  }
   const isOpen = request => request.bookingFlow === "nurse-first"
     ? isMine(request) && statusName(request).toLowerCase() === "requested"
     : depositReady(request) && (["new", "pending", "requested", "reviewing", "contacted", "accepted", "confirmed"].includes(statusName(request).toLowerCase()) || (statusName(request).toLowerCase() === "pending payment" && demoDepositPaid(request)));
-  const canSeeRequest = request => isHomeCare(request) && (isMine(request) || (!request.assignedNurseId && !request.nurseId && (isOpen(request) || (request.status === "Pending Payment" && demoDepositPaid(request)) || statusName(request).toLowerCase() === "cancelled")));
+  const canSeeRequest = request => isHomeCare(request) && (isMine(request) || ((!window.CarePlusLicenses || window.CarePlusLicenses.canProvide('nurse', nurseId)) && !request.assignedNurseId && !request.nurseId && (isOpen(request) || (request.status === "Pending Payment" && demoDepositPaid(request)) || statusName(request).toLowerCase() === "cancelled")));
   const requests = () => (store?.list("careRequests") || []).filter(canSeeRequest);
   const assignedVisits = () => requests().filter(request => isMine(request) && ["accepted", "in progress", "completed", "cancelled"].includes(statusName(request).toLowerCase()));
   const readProfile = () => {
@@ -79,7 +89,8 @@
     email: nurse.email || "",
     specialty: nurse.specialty || "",
     experience: nurse.experience || "",
-    availability: nurse.availability || ""
+    availability: nurse.availability || "",
+    workSchedule: nurse.workSchedule || null
   });
   let profile = readProfile();
   let selectedRequestId = "";
@@ -106,7 +117,7 @@
   function visitLabel(request) { return request.elderlyName || request.client || "Care recipient"; }
   function statusBadge(status) { return `<span class="status ${statusClass(status)}">${esc(status)}</span>`; }
   function actionButton(action, label, id, className = "") {
-    const isDetails = action === "details";
+    const isDetails = action === "details" || action === 'patient-details';
     const content = isDetails ? `<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M2.5 10s2.7-5 7.5-5 7.5 5 7.5 5-2.7 5-7.5 5-7.5-5-7.5-5Z"/><circle cx="10" cy="10" r="2"/></svg><span>View details</span>` : esc(label);
     return `<button class="action ${isDetails ? "action-details" : ""} ${className}" type="button" data-action="${action}" data-id="${esc(id)}"${isDetails ? ` aria-label="View details for ${esc(visitLabel(store.get("careRequests", id) || {}))}"` : ""}>${content}</button>`;
   }
@@ -114,7 +125,7 @@
     const hospital = isHospitalCompanion(request);
     $("dialogTitle").textContent = `${visitLabel(request)} · ${requestLabel(request)}`;
     const fields = [
-      ["Service", request.service || "Home care"], ["Requested date", dateText(request.date)], ["Preferred time", request.time || "Not specified"],
+      ["Service", request.service || "Home care"], ["Requested date", dateText(request.date)], ["Preferred time", timeText(request.time)],
       ["Duration", request.duration ? `${request.duration} hours` : "Not specified"], ["City / area", [request.city, request.area].filter(Boolean).join(" · ") || "Not specified"],
       [hospital ? "Pickup location" : "Home address", hospital ? (request.pickupAddress || request.address || "Not provided") : (request.address || "Not provided")],
       ...(hospital ? [
@@ -181,7 +192,7 @@
     $("upcomingVisits").textContent = String(upcoming.length);
     $("completedVisits").textContent = String(completed.length);
     $("workingHours").textContent = hours.toFixed(1);
-    $("dashboardVisits").innerHTML = allVisits.slice().sort((a, b) => timestamp(b) - timestamp(a)).slice(0, 3).map(request => `<article class="appointment-item"><span class="time-block">${esc(request.time || "—")}</span><span class="patient-main"><b>${esc(visitLabel(request))}</b><small>${esc(dateText(request.date))} · ${esc(request.address || request.area || "Address not provided")}</small></span>${statusBadge(statusName(request))}</article>`).join("") || `<div class="empty-state">No visits have been assigned to you yet.</div>`;
+    $("dashboardVisits").innerHTML = allVisits.slice().sort((a, b) => timestamp(b) - timestamp(a)).slice(0, 3).map(request => `<article class="appointment-item"><span class="time-block">${esc(timeText(request.time))}</span><span class="patient-main"><b>${esc(visitLabel(request))}</b><small>${esc(dateText(request.date))} · ${esc(request.address || request.area || "Address not provided")}</small></span>${statusBadge(statusName(request))}</article>`).join("") || `<div class="empty-state">No visits have been assigned to you yet.</div>`;
     const reminders = [];
     if (newRequests.length) reminders.push(["!", `${newRequests.length} new home-care request${newRequests.length === 1 ? "" : "s"} need review.`]);
     if (todayVisits.length) reminders.push(["◷", `You have ${todayVisits.length} visit${todayVisits.length === 1 ? "" : "s"} scheduled for today.`]);
@@ -243,8 +254,8 @@
       const state = statusName(request).toLowerCase();
       let actions = actionButton("details", "Details", request.id);
       if (state === "accepted") {
-        const enabled = visitTimeReached(request) && depositReady(request);
-        actions += `<button class="action accept" type="button" data-action="start" data-id="${esc(request.id)}"${enabled ? '' : ' disabled'} title="${!visitTimeReached(request) ? 'Available at the scheduled visit time' : !depositReady(request) ? 'Waiting for deposit payment' : 'Start this visit'}">Start visit</button>`;
+        const gate = startVisitGate(request);
+        actions += `<span class="visit-start-control"><button class="action accept" type="button" data-action="start" data-id="${esc(request.id)}"${gate.ready ? '' : ' disabled'} title="${esc(gate.reason || 'Start this visit')}">Start visit</button><small data-start-reason ${gate.ready ? 'hidden' : ''}>${esc(gate.reason)}</small></span>`;
       }
       if (state === "in progress") actions += actionButton("complete", "Complete", request.id, "accept");
       return `<tr data-request-id="${esc(request.id)}"><td data-label="Elderly person"><span class="visit-main"><b>${esc(visitLabel(request))}</b><small>${esc(requestLabel(request))} · ${esc(request.service || "Home care")}</small></span></td><td data-label="Status">${statusBadge(statusName(request))}</td><td data-label="Actions"><div class="row-actions">${actions}</div></td></tr>`;
@@ -315,7 +326,8 @@
   function patientGroups() {
     const grouped = new Map();
     assignedVisits().forEach(request => {
-      const key = String(request.phone || request.elderlyName || request.client || request.id).toLowerCase();
+      const identity = String(request.userId || request.bookingUserId || request.phone || request.email || request.client || request.id).trim().toLowerCase();
+      const key = `${identity}:${visitLabel(request).trim().toLowerCase()}`;
       if (!grouped.has(key)) grouped.set(key, []);
       grouped.get(key).push(request);
     });
@@ -324,17 +336,22 @@
   function renderPatientCare() {
     const query = $("patientSearch").value.trim().toLowerCase();
     const allGroups = patientGroups();
-    const careVisits = assignedVisits();
-    const groups = allGroups.filter(items => [visitLabel(items[0]), items[0].client, items[0].phone, items[0].area, items[0].city].join(" ").toLowerCase().includes(query));
+    const status = $('patientStatus').value;
+    $('patientTotal').textContent = String(allGroups.length);
+    [['patientAccepted', 'accepted'], ['patientProgress', 'in progress'], ['patientCompleted', 'completed']].forEach(([id, state]) => {
+      $(id).textContent = String(allGroups.filter(items => statusName(items[0]).toLowerCase() === state).length);
+    });
+    const groups = allGroups.filter(items => (status === 'all' || statusName(items[0]).toLowerCase() === status)
+      && items.some(item => [visitLabel(item), item.client, item.phone, item.area, item.city].join(' ').toLowerCase().includes(query)));
     $("patientCards").innerHTML = groups.map(items => {
       const latest = items[0];
-      const initials = visitLabel(latest).split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
-      return `<button class="patient-card ${selectedRequestId === latest.id ? "selected" : ""}" type="button" data-patient-id="${esc(latest.id)}"><span class="patient-avatar">${esc(initials)}</span><span class="patient-info"><b>${esc(visitLabel(latest))}</b><small>${esc(items.length)} assigned visit${items.length === 1 ? "" : "s"} · ${esc(latest.address || latest.area || "Address not provided")}</small></span><span class="details-button">Open</span><span class="patient-history"><strong>Most recent:</strong> ${esc(dateText(latest.date))} · ${esc(statusName(latest))}</span></button>`;
+      return `<tr data-patient-id="${esc(latest.id)}"><td data-label="Elderly person"><span class="visit-main"><b>${esc(visitLabel(latest))}</b><small>${esc(items.length)} assigned visit${items.length === 1 ? '' : 's'} · ${esc(dateText(latest.date))} · ${esc(timeText(latest.time))}</small></span></td><td data-label="Status">${statusBadge(statusName(latest))}</td><td data-label="Actions"><div class="row-actions">${actionButton('patient-details', 'View details', latest.id)}</div></td></tr>`;
     }).join("");
     $("patientEmpty").hidden = groups.length > 0;
-    if (selectedRequestId && assignedVisits().some(request => String(request.id) === selectedRequestId)) renderCareDetail(selectedRequestId);
-    else if (groups.length) { selectedRequestId = String(groups[0][0].id); renderCareDetail(selectedRequestId); }
-    else $("careDetail").innerHTML = `<div class="care-detail-empty"><span>♡</span><h2>Select an assigned patient</h2><p>Visit-specific care instructions, selected support tasks, and history will appear here.</p></div>`;
+    if ($('patientCareDialog').open) {
+      if (selectedRequestId && assignedVisits().some(request => String(request.id) === selectedRequestId)) renderCareDetail(selectedRequestId);
+      else $('patientCareDialog').close();
+    }
   }
   function renderCareDetail(id) {
     const request = assignedVisits().find(item => String(item.id) === String(id));
@@ -342,10 +359,10 @@
     selectedRequestId = String(id);
     const completed = new Set(Array.isArray(request.completedTasks) ? request.completedTasks : []);
     const tasks = Array.isArray(request.tasks) ? request.tasks : [];
-    const history = assignedVisits().filter(item => visitLabel(item) === visitLabel(request) && item.id !== request.id).sort((a, b) => timestamp(b) - timestamp(a));
+    const history = (patientGroups().find(items => items.some(item => String(item.id) === String(request.id))) || []).filter(item => String(item.id) !== String(request.id));
     const specialRequirements = request.specialCareRequirements || request.specialRequirements || "No special care requirements are recorded.";
     const authorizedInstructions = request.authorizedCareInstructions || request.careInstructions || "No separate authorized care instructions are recorded.";
-    $("careDetail").innerHTML = `<article class="care-record"><p class="eyebrow">ASSIGNED VISIT · ${esc(request.id)}</p><h2>${esc(visitLabel(request))}</h2><p class="muted">${esc(request.service || "Home care")} · ${esc(dateText(request.date))} at ${esc(request.time || "time not specified")} · ${request.duration ? `${esc(request.duration)} hours` : "duration not specified"}</p><section class="care-record-section"><h3>Relevant contact &amp; location</h3><p><b>Address:</b> ${esc(request.address || "Not provided")}</p><p><b>Area:</b> ${esc([request.area, request.city].filter(Boolean).join(", ") || "Not provided")}</p><p><b>Family contact:</b> ${esc(request.client || "Not provided")}${request.phone ? ` · ${esc(request.phone)}` : ""}</p><p><b>Emergency contact:</b> ${esc([request.emergencyName, request.emergencyPhone].filter(Boolean).join(" · ") || "Not provided")}</p></section><section class="care-record-section"><h3>Special requirements &amp; authorized instructions</h3><p><b>Requirements:</b> ${esc(specialRequirements)}</p><p><b>Authorized instructions:</b> ${esc(authorizedInstructions)}</p><p><b>Additional family information:</b> ${esc(request.notes || "None provided.")}</p></section><section class="care-record-section"><h3>Requested support tasks</h3>${tasks.length ? `<div class="care-task-list">${tasks.map(task => `<label><input type="checkbox" data-care-task="${esc(task)}" ${completed.has(task) ? "checked" : ""}><span>${esc(task)}</span></label>`).join("")}</div>` : `<p>No support tasks were selected in this request.</p>`}</section><section class="care-record-section"><h3>Assigned visit history</h3>${history.length ? history.map(item => `<p>${esc(dateText(item.date))} · ${esc(item.time || "—")} · ${esc(statusName(item))}</p>`).join("") : `<p>No previous assigned visits are recorded.</p>`}</section></article>`;
+    $("careDetail").innerHTML = `<article class="care-record"><p class="eyebrow">ASSIGNED VISIT · ${esc(request.id)}</p><h2>${esc(visitLabel(request))}</h2><p class="muted">${esc(request.service || "Home care")} · ${esc(dateText(request.date))} at ${esc(timeText(request.time))} · ${request.duration ? `${esc(request.duration)} hours` : "duration not specified"}</p><section class="care-record-section"><h3>Relevant contact &amp; location</h3><p><b>Address:</b> ${esc(request.address || "Not provided")}</p><p><b>Area:</b> ${esc([request.area, request.city].filter(Boolean).join(", ") || "Not provided")}</p><p><b>Family contact:</b> ${esc(request.client || "Not provided")}${request.phone ? ` · ${esc(request.phone)}` : ""}</p><p><b>Emergency contact:</b> ${esc([request.emergencyName, request.emergencyPhone].filter(Boolean).join(" · ") || "Not provided")}</p></section><section class="care-record-section"><h3>Special requirements &amp; authorized instructions</h3><p><b>Requirements:</b> ${esc(specialRequirements)}</p><p><b>Authorized instructions:</b> ${esc(authorizedInstructions)}</p><p><b>Additional family information:</b> ${esc(request.notes || "None provided.")}</p></section><section class="care-record-section"><h3>Requested support tasks</h3>${tasks.length ? `<div class="care-task-list">${tasks.map(task => `<label><input type="checkbox" data-care-task="${esc(task)}" ${completed.has(task) ? "checked" : ""}><span>${esc(task)}</span></label>`).join("")}</div>` : `<p>No support tasks were selected in this request.</p>`}</section><section class="care-record-section"><h3>Assigned visit history</h3>${history.length ? history.map(item => `<p>${esc(dateText(item.date))} · ${esc(timeText(item.time))} · ${esc(statusName(item))}</p>`).join("") : `<p>No previous assigned visits are recorded.</p>`}</section></article>`;
     const record = $("careDetail").querySelector(".care-record");
     const careSections = record.querySelectorAll(".care-record-section");
     const makeInfoSection = (title, rows) => {
@@ -376,7 +393,6 @@
         ["Schedule", request.schedule], ["Preferred shift", request.shift]
       ]), careSections[1]);
     }
-    document.querySelectorAll(".patient-card").forEach(card => card.classList.toggle("selected", card.dataset.patientId === selectedRequestId));
   }
   function renderNurseEarnings() {
     const completedAndVerified = assignedVisits().filter(request => statusName(request).toLowerCase() === "completed"
@@ -398,6 +414,14 @@
     const form = $("profileForm");
     Object.entries(profile).forEach(([key, value]) => { const field = form.elements.namedItem(key); if (field) field.value = value || ""; });
     form.elements.namedItem("email").value = nurse.email || profile.email || "";
+    const work = window.CarePlusNurseAvailability?.scheduleFor(nurse);
+    form.querySelectorAll('[name="workDays"]').forEach(input => { input.checked = Boolean(work?.days.includes(Number(input.value))); });
+    form.elements.namedItem('workStart').value = work?.start || '';
+    form.elements.namedItem('workEnd').value = work?.end || '';
+    form.elements.namedItem('workFullDay').checked = work?.fullDay === true;
+    form.elements.namedItem('workStart').disabled = work?.fullDay === true;
+    form.elements.namedItem('workEnd').disabled = work?.fullDay === true;
+    form.elements.namedItem('availability').value = window.CarePlusNurseAvailability?.describe(work) || '';
     setPhotoPreview(profile.photo);
     renderNurseEarnings();
   }
@@ -459,12 +483,16 @@
   ["visitSearch", "visitStatus", "visitRange"].forEach(id => $(id).addEventListener("input", renderVisits));
   ["visitStatus", "visitRange"].forEach(id => $(id).addEventListener("change", renderVisits));
   $("patientSearch").addEventListener("input", renderPatientCare);
+  $('patientStatus').addEventListener('change', renderPatientCare);
   $("requestRows").addEventListener("click", event => {
     const button = event.target.closest("button[data-action]"); if (!button) return;
     const request = store.get("careRequests", button.dataset.id); if (!request || !canSeeRequest(request)) return;
     if (button.dataset.action === "details") { openRequestDetails(request); return; }
     if (!isOpen(request) || (request.assignedNurseId && !isMine(request))) return;
     if (button.dataset.action === "accept") {
+      if (window.CarePlusLicenses && !window.CarePlusLicenses.canProvide('nurse', nurseId)) { toast('Your license must be valid and approved before accepting new care requests.', true); return; }
+      const availability = window.CarePlusNurseAvailability?.check(nurseId, request, { ignoreId: request.id });
+      if (!availability?.ok) { toast(availability?.reason || 'Cannot verify working hours. Refresh and retry.', true); return; }
       const updated = updateRequest(request.id, { status: "Accepted", assignedNurseId: nurseId, assignedNurseName: profile.name || nurse.name, acceptedAt: new Date().toISOString(), ...(request.bookingFlow === "nurse-first" ? { paymentStatus: "Awaiting Payment" } : {}) });
       if (updated) {
         $("visitRange").value = "all";
@@ -500,10 +528,8 @@
     if (button.dataset.action === "details") { openRequestDetails(request); return; }
     const state = statusName(request).toLowerCase();
     if (button.dataset.action === "start") {
-      if (state !== "accepted") return;
-      if (!depositReady(request)) { toast("The deposit must be paid before starting this visit.", true); return; }
-      if (!request.date || !request.time) { toast("This visit needs a scheduled date and time before it can start.", true); return; }
-      if (!visitTimeReached(request)) { toast("This visit cannot start before its scheduled date and time.", true); return; }
+      const gate = startVisitGate(request);
+      if (!gate.ready) { toast(gate.reason, true); return; }
       const now = new Date().toISOString();
       if (updateRequest(request.id, { status: "In Progress", visitStatus: "In Progress", actualStartAt: now, startedAt: now })) { toast("Visit started."); renderAll(); navigate("patient-care"); selectedRequestId = String(request.id); renderPatientCare(); }
     }
@@ -511,7 +537,14 @@
       promptCompleteVisit(request);
     }
   });
-  $("patientCards").addEventListener("click", event => { const card = event.target.closest("[data-patient-id]"); if (card) renderCareDetail(card.dataset.patientId); });
+  $('patientCards').addEventListener('click', event => {
+    const button = event.target.closest('[data-action="patient-details"]');
+    if (!button || !assignedVisits().some(request => String(request.id) === String(button.dataset.id))) return;
+    renderCareDetail(button.dataset.id);
+    $('patientCareDialog').showModal();
+  });
+  document.querySelectorAll('[data-close-patient-care]').forEach(button => button.addEventListener('click', () => $('patientCareDialog').close()));
+  $('patientCareDialog').addEventListener('close', () => { selectedRequestId = ''; $('careDetail').replaceChildren(); });
   $("careDetail").addEventListener("change", event => {
     const checkbox = event.target.closest("[data-care-task]"); if (!checkbox) return;
     const request = store.get("careRequests", selectedRequestId); if (!request || !isMine(request)) return;
@@ -539,26 +572,48 @@
       renderAll();
     }
   });
+  $("profileForm").addEventListener('change', event => {
+    if (!['workDays', 'workStart', 'workEnd', 'workFullDay'].includes(event.target.name)) return;
+    const form = event.currentTarget;
+    const fullDay = form.elements.namedItem('workFullDay').checked;
+    form.elements.namedItem('workStart').disabled = fullDay;
+    form.elements.namedItem('workEnd').disabled = fullDay;
+    const schedule = { days: new FormData(form).getAll('workDays').map(Number), start: fullDay ? '00:00' : form.elements.namedItem('workStart').value,
+      end: fullDay ? '00:00' : form.elements.namedItem('workEnd').value, fullDay };
+    form.elements.namedItem('availability').value = window.CarePlusNurseAvailability.describe(schedule);
+  });
   $("profileForm").addEventListener("submit", event => {
     event.preventDefault();
     const form = event.currentTarget; const message = $("profileMessage"); message.classList.remove("error"); message.textContent = "";
     const changes = Object.fromEntries(new FormData(form).entries());
+    const rawSchedule = { days: new FormData(form).getAll('workDays').map(Number),
+      start: form.elements.namedItem('workFullDay').checked ? '00:00' : form.elements.namedItem('workStart').value,
+      end: form.elements.namedItem('workFullDay').checked ? '00:00' : form.elements.namedItem('workEnd').value,
+      fullDay: form.elements.namedItem('workFullDay').checked };
+    const workSchedule = window.CarePlusNurseAvailability?.normalizeSchedule(rawSchedule);
+    if (!workSchedule) { message.textContent = 'Choose working days and valid shift hours. Use 24-hour availability for a full-day shift.'; message.classList.add('error'); return; }
+    changes.workSchedule = workSchedule;
+    changes.availability = window.CarePlusNurseAvailability.describe(workSchedule);
+    ['workDays', 'workStart', 'workEnd', 'workFullDay'].forEach(key => { delete changes[key]; });
     changes.name = String(changes.name || "").trim(); changes.phone = String(changes.phone || "").trim(); changes.specialty = String(changes.specialty || "").trim(); changes.availability = String(changes.availability || "").trim(); changes.experience = String(changes.experience || "").trim(); changes.photo = String(changes.photo || "").trim(); changes.email = nurse.email || "";
     if (changes.name.length < 2 || (changes.phone && changes.phone.replace(/\D/g, "").length < 7)) { message.textContent = "Enter your full name and a valid phone number."; message.classList.add("error"); return; }
     if (changes.photo && !/^https?:\/\//i.test(changes.photo)) { message.textContent = "Use a valid http or https image URL, or leave it blank."; message.classList.add("error"); return; }
     try { localStorage.setItem(PROFILE_KEY, JSON.stringify(changes)); }
     catch { message.textContent = "The profile could not be saved in browser storage."; message.classList.add("error"); return; }
-    store.update("users", nurse.id, { name: changes.name, phone: changes.phone, specialty: changes.specialty });
+    store.update("users", nurse.id, { name: changes.name, phone: changes.phone, specialty: changes.specialty, workSchedule, availability: changes.availability });
     profile = changes; message.textContent = "Profile changes saved."; toast("Profile saved."); renderHeader(); setPhotoPreview(profile.photo);
   });
 
   store?.subscribe(renderAll);
+  window.addEventListener('careplus:license-policy', renderAll);
   setInterval(() => {
     document.querySelectorAll('#visitRows button[data-action="start"]').forEach(button => {
       const request = store.get('careRequests', button.dataset.id);
-      const ready = request && isMine(request) && statusName(request).toLowerCase() === 'accepted' && visitTimeReached(request) && depositReady(request);
-      button.disabled = !ready;
-      button.title = ready ? 'Start this visit' : request && !visitTimeReached(request) ? 'Available at the scheduled visit time' : 'Waiting for deposit payment';
+      const gate = startVisitGate(request);
+      button.disabled = !gate.ready;
+      button.title = gate.reason || 'Start this visit';
+      const note = button.parentElement.querySelector('[data-start-reason]');
+      if (note) { note.textContent = gate.reason; note.hidden = gate.ready; }
     });
   }, 1000);
   renderProfileForm(); renderAll();

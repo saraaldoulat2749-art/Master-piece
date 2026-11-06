@@ -12,7 +12,7 @@
   const sampleInventory = [
     { id: "med-panadol", name: "Panadol 500 mg", category: "Pain relief", price: 2.5, quantity: 18, expiry: "2027-11-30", available: true, listed: true, source: "demo-seed" },
     { id: "med-ibuprofen", name: "Ibuprofen 400 mg", category: "Pain relief", price: 3.25, quantity: 5, expiry: "2027-08-15", available: true, listed: true, source: "demo-seed" },
-    { id: "med-vitamin-c", name: "Vitamin C 1000 mg", category: "Vitamins", price: 4.5, quantity: 0, expiry: "2028-02-28", available: false, listed: true, source: "demo-seed" },
+    { id: "med-vitamin-c", name: "Vitamin C 1000 mg", category: "Vitamins", price: 4.5, quantity: 20, expiry: "2028-02-28", available: true, listed: true, source: "demo-seed" },
     { id: "med-vitamin-d", name: "Vitamin D3 1000 IU", category: "Vitamins", price: 6.75, quantity: 12, expiry: "2027-04-30", available: true, listed: true, source: "demo-seed" },
     { id: "med-cetirizine", name: "Cetirizine 10 mg", category: "Allergy", price: 2, quantity: 2, expiry: "2027-01-31", available: true, listed: true, source: "demo-seed" },
     { id: "med-omeprazole", name: "Omeprazole 20 mg", category: "Digestive health", price: 5.25, quantity: 9, expiry: "2027-09-30", available: true, listed: true, source: "demo-seed" }
@@ -40,7 +40,8 @@
   function get(id = DEFAULT_PHARMACY_ID) { return window.CarePlusData?.get("pharmacies", id) || null; }
   function isActivePharmacy(pharmacy) {
     const status = String(pharmacy?.status || "Active").replace(/[\s_-]/g, "").toLowerCase();
-    return Boolean(pharmacy && pharmacy.deleted !== true && pharmacy.archived !== true && !pharmacy.archivedAt && !["inactive", "deleted", "disabled", "removed"].includes(status));
+    return Boolean(pharmacy && pharmacy.deleted !== true && pharmacy.archived !== true && !pharmacy.archivedAt && !["inactive", "deleted", "disabled", "removed"].includes(status)
+      && (!window.CarePlusLicenses || window.CarePlusLicenses.canProvide('pharmacy', pharmacy.id)));
   }
   function listOrders(pharmacyId) {
     return window.CarePlusData.list("orders").filter(order => order.source === "pharmacy-order" && (pharmacyId == null || String(order.pharmacyId) === String(pharmacyId)));
@@ -126,6 +127,19 @@
         if (window.CarePlusData.update("pharmacies", pharmacy.id, syncMedicineNames({ ...pharmacy, inventory }))) localStorage.setItem(restoreMarker, "1");
       } else if (pharmacy) localStorage.setItem(restoreMarker, "1");
     }
+    const vitaminMarker = 'careplusAlShifaVitaminCInStockV1';
+    if (localStorage.getItem(vitaminMarker) !== '1') {
+      const pharmacy = get();
+      if (pharmacy) {
+        const current = pharmacy.inventory || [];
+        const vitamin = current.find(item => item.id === 'med-vitamin-c' || /^vitamin[\s-]*c\b/i.test(String(item.name || '')));
+        const replacement = vitamin
+          ? { ...vitamin, quantity: Math.max(20, Number(vitamin.quantity) || 0), available: true, listed: true }
+          : { ...sampleInventory.find(item => item.id === 'med-vitamin-c') };
+        const inventory = vitamin ? current.map(item => item === vitamin ? replacement : item) : [...current, replacement];
+        if (updatePharmacy(pharmacy.id, { inventory })) localStorage.setItem(vitaminMarker, '1');
+      }
+    }
     const record = get();
     if (!record) return null;
     migrateOrders();
@@ -202,7 +216,7 @@
     }
     return window.CarePlusData.update("pharmacies", id, next);
   }
-  function createOrder({ pharmacyId = DEFAULT_PHARMACY_ID, medicineId, quantity, deliveryAddress, deliveryPhone, deliveryZone = "sameCity", idempotencyKey }) {
+  function createOrder({ pharmacyId = DEFAULT_PHARMACY_ID, medicineId, quantity, items, deliveryAddress, deliveryPhone, deliveryZone = "sameCity", idempotencyKey }) {
     const customer = currentCustomer();
     if (!customer) return { ok: false, error: "Please sign in with a customer account before placing an order." };
     if (idempotencyKey) {
@@ -210,21 +224,33 @@
       if (duplicate) return { ok: true, order: duplicate, duplicate: true };
     }
     const pharmacy = get(pharmacyId);
-    const medicine = pharmacy?.inventory?.find(row => String(row.id) === String(medicineId));
-    const count = Number(quantity);
     if (!isActivePharmacy(pharmacy)) return { ok: false, error: "This pharmacy is no longer available." };
     if (pharmacy?.open === false) return { ok: false, error: "This pharmacy is currently closed." };
-    if (!pharmacy || !medicine || medicine.available === false || Number(medicine.quantity) < 1 || isExpired(medicine)) return { ok: false, error: "This medicine is currently unavailable." };
-    if (!Number.isInteger(count) || count < 1 || count > 99) return { ok: false, error: "Enter a valid quantity." };
-    if (count > Number(medicine.quantity)) return { ok: false, error: `Only ${medicine.quantity} item(s) are currently available.` };
+    const requested = items === undefined ? [{ medicineId, quantity }] : items;
+    if (!Array.isArray(requested) || !requested.length) return { ok: false, error: 'Select at least one medicine.' };
+    const combined = new Map();
+    for (const line of requested) {
+      const count = Number(line?.quantity);
+      if (!line?.medicineId || !Number.isInteger(count) || count < 1 || count > 99) return { ok: false, error: 'Enter a valid medicine and quantity (1–99).' };
+      const key = String(line.medicineId);
+      combined.set(key, (combined.get(key) || 0) + count);
+    }
+    const orderItems = [];
+    for (const [key, count] of combined) {
+      const medicine = pharmacy.inventory?.find(row => String(row.id) === key);
+      if (!medicine || medicine.available === false || Number(medicine.quantity) < 1 || isExpired(medicine)) return { ok: false, error: 'A selected medicine is currently unavailable.' };
+      if (count > 99 || count > Number(medicine.quantity)) return { ok: false, error: `Not enough stock for ${medicine.name}. Choose up to ${Math.min(99, Number(medicine.quantity))}.` };
+      const price = Number(medicine.price);
+      if (!Number.isFinite(price) || price < 0) return { ok: false, error: 'A selected medicine has an invalid price.' };
+      orderItems.push({ medicineId: medicine.id, name: medicine.name, image: medicine.image || '', price, quantity: count });
+    }
     const address = String(deliveryAddress || "").trim();
     const phone = String(deliveryPhone || "").trim();
     if (!["near", "sameCity", "far"].includes(deliveryZone)) return { ok: false, error: "Choose a valid delivery area." };
     if (address.length < 8 || address.length > 300) return { ok: false, error: "Enter a complete delivery address (8–300 characters)." };
     if (phone.replace(/\D/g, "").length < 7 || phone.length > 30) return { ok: false, error: "Enter a valid delivery contact phone number." };
     const reference = nextOrderId();
-    const unitPrice = Number(medicine.price);
-    const subtotal = roundMoney(unitPrice * count);
+    const subtotal = roundMoney(orderItems.reduce((sum, item) => sum + item.price * item.quantity, 0));
     const commissionRate = effectiveRate(pharmacyId);
     const customerCommissionAmount = roundMoney(subtotal * commissionRate / 100);
     const deliveryFee = deliveryFeeForZone(deliveryZone);
@@ -234,7 +260,7 @@
       id: reference, reference, pharmacyId: String(pharmacyId), pharmacyName: pharmacy.name, source: "pharmacy-order", demo: false,
       userId: customer.userId, customerReference: customer.reference,
       deliveryAddress: address, deliveryPhone: phone, deliveryZone, deliveryZoneLabel: deliveryZoneLabel(deliveryZone),
-      customerName: customer.name, items: [{ medicineId: medicine.id, name: medicine.name, image: medicine.image || "", price: unitPrice, quantity: count }],
+      customerName: customer.name, items: orderItems,
       subtotal, customerCommissionAmount, deliveryFee, total: roundMoney(subtotal + customerCommissionAmount + deliveryFee), currency: "JOD", placedAt: new Date().toISOString(), status: "Pending",
       paymentMethod: "cash-on-delivery", paymentStatus: "Awaiting Pharmacy Acceptance", paymentVerified: false,
       commissionPaymentStatus: "Awaiting Pharmacy Acceptance", onlineAmount: customerCommissionAmount, cashOnDeliveryAmount: roundMoney(subtotal + deliveryFee),
@@ -279,6 +305,7 @@
     if (!pharmacyId || String(pharmacyId) !== String(order.pharmacyId) || String(options.pharmacyId || pharmacyId) !== String(order.pharmacyId)) return { ok: false, error: "You can update orders for your pharmacy only." };
     status = canonicalOrderStatus(status);
     const currentStatus = canonicalOrderStatus(order.status);
+    if (status === 'Accepted' && window.CarePlusLicenses && !window.CarePlusLicenses.canProvide('pharmacy', order.pharmacyId)) return { ok: false, error: 'Your pharmacy license must be valid and approved before accepting new orders.' };
     if (currentStatus === "Cancelled") return { ok: false, error: "This order was cancelled and its status cannot be changed." };
     if (!["Pending", "Accepted", "Rejected", "Preparing", "Ready for Pickup", "Completed", "Cancelled"].includes(status) || status === currentStatus) return { ok: false, error: "Choose a different valid order status." };
     if (["Rejected", "Cancelled"].includes(status) && !String(options.reason || "").trim()) return { ok: false, error: "Enter a rejection reason." };
@@ -530,8 +557,9 @@
     const handler = () => callback();
     const storageHandler = event => { if ([SETTINGS_KEY, AUDIT_KEY].includes(event.key)) callback(); };
     window.addEventListener("careplus:commission", handler);
+    window.addEventListener('careplus:license-policy', handler);
     window.addEventListener("storage", storageHandler);
-    return () => { unsubscribe(); window.removeEventListener("careplus:commission", handler); window.removeEventListener("storage", storageHandler); };
+    return () => { unsubscribe(); window.removeEventListener("careplus:commission", handler); window.removeEventListener("storage", storageHandler); window.removeEventListener('careplus:license-policy', handler); };
   }
 
   window.CarePlusPharmacy = {

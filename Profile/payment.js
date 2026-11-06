@@ -79,14 +79,12 @@
     event.preventDefault();
     error.textContent = "";
     const digits = digitsOnly(cardNumber.value);
-    if (holder.value.trim().length < 2) { error.textContent = "Enter the cardholder name."; holder.focus(); return; }
-    if (digits.length < 12 || digits.length > 19) { error.textContent = "Enter a valid card number."; cardNumber.focus(); return; }
-    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry.value)) { error.textContent = "Enter the expiry in MM/YY format."; expiry.focus(); return; }
-    const [month, year] = expiry.value.split("/").map(Number);
-    const expiryDate = new Date(2000 + year, month, 0, 23, 59, 59);
-    if (expiryDate < new Date()) { error.textContent = "This card expiry date has passed."; expiry.focus(); return; }
-    const cvv = digitsOnly(form.elements.namedItem("cvv").value);
-    if (cvv.length < 3 || cvv.length > 4) { error.textContent = "Enter a 3 or 4 digit security code."; form.elements.namedItem("cvv").focus(); return; }
+    const validation = window.CarePlusPaymentValidation?.validateCard({ name: holder.value, number: cardNumber.value, expiry: expiry.value, cvv: form.elements.namedItem('cvv').value });
+    if (!validation?.ok) {
+      error.textContent = validation?.error || 'Payment validation is unavailable. Refresh and try again.';
+      ({ name: holder, number: cardNumber, expiry, cvv: form.elements.namedItem('cvv') }[validation?.field])?.focus();
+      return;
+    }
 
     const latest = dataStore.get("careRequests", request.id);
     if (!latest || !["accepted", "approved"].includes(String(latest.status || "").toLowerCase())) {
@@ -106,6 +104,6 @@
     if (!saved) { error.textContent = "Payment could not be recorded. Please try again."; return; }
     form.reset();
     form.querySelector('[type="submit"]').disabled = true;
-    showResult("Payment recorded", `JOD ${amount.toFixed(2)} payment recorded.`);
+    showResult("Payment recorded", `JOD ${amount.toFixed(2)} demo payment recorded. No money was charged.`);
   });
 })();

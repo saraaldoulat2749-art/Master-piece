@@ -65,12 +65,13 @@
       // Keep the existing rich care request modal and its privacy controls.
       const careRequest = table.closest('[data-admin-page="careRequests"]');
       const nurseRequest = ["requestRows", "visitRows"].includes(body.id);
+      const nursePatient = body.id === 'patientCards';
       const pharmacyOrder = body.hasAttribute("data-orders");
-      const existingDetails = careRequest || nurseRequest ? row.querySelector('button[data-action="details"]') : pharmacyOrder ? row.querySelector('button[data-order-detail]') : null;
+      const existingDetails = careRequest || nurseRequest ? row.querySelector('button[data-action="details"]') : nursePatient ? row.querySelector('button[data-action="patient-details"]') : pharmacyOrder ? row.querySelector('button[data-order-detail]') : null;
       if (existingDetails) {
         button.addEventListener("click", () => {
           existingDetails.click();
-          const dialog = document.querySelector(careRequest ? "[data-care-details-dialog]" : nurseRequest ? "#requestDialog" : "[data-order-dialog]");
+          const dialog = document.querySelector(careRequest ? "[data-care-details-dialog]" : nurseRequest ? "#requestDialog" : nursePatient ? '#patientCareDialog' : "[data-order-dialog]");
           const footer = dialog?.querySelector(careRequest ? ".care-details-footer" : ".dialog-actions");
           if (!footer) return;
           footer.querySelector("[data-compact-actions]")?.remove();

@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f3f8fb"><title>Confirm Medicine Order | CarePlus</title><link rel="stylesheet" href="../Nav/style.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="workflow.css?v=pharmacy-steps-1"><link rel="stylesheet" href="../Footer/style.css"><link rel="stylesheet" href="../shared/notifications.css?v=floating-customer-2"><link rel="stylesheet" href="../shared/global-button-theme.css"><link rel="stylesheet" href="../shared/site-headings.css?v=dancing-script-1">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f3f8fb"><title>Confirm Medicine Order | CarePlus</title><link rel="stylesheet" href="../Nav/style.css"><link rel="stylesheet" href="style.css"><link rel="stylesheet" href="workflow.css?v=compact-medicine-4"><link rel="stylesheet" href="../Footer/style.css"><link rel="stylesheet" href="../shared/notifications.css?v=floating-customer-2"><link rel="stylesheet" href="../shared/site-headings.css?v=dancing-script-1">
 </head>
 <body data-protected="true"><script src="../auth.js?v=professional-role-access-1"></script>
   <div id="nav-container"></div>
@@ -14,12 +14,11 @@
         <div id="orderReview" hidden>
           <div class="checkout-pharmacy"><span class="checkout-pharmacy-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3v18M3 12h18"/><circle cx="12" cy="12" r="9"/></svg></span><div><b id="orderPharmacyName">Pharmacy</b><small id="orderPharmacyInfo"></small></div></div>
           <form id="medicineOrderForm" novalidate>
-            <label>Medicine<select id="orderMedicine" required></select></label>
-            <label>Quantity<input id="orderQuantity" type="number" min="1" step="1" value="1" required></label>
+            <section class="medicine-order-picker"><h3>Your medicines</h3><p>Adjust quantities below, or search to add another medicine.</p><div id="orderItems" class="medicine-order-items"></div><div class="medicine-add-search"><label for="addMedicineSearch">Add another medicine</label><input id="addMedicineSearch" type="search" placeholder="Search this pharmacy’s medicines…" autocomplete="off" aria-controls="addMedicineResults"><div id="addMedicineResults" class="medicine-add-results" hidden></div><p id="addMedicineStatus" class="medicine-add-status" role="status" aria-live="polite"></p></div></section>
             <label>Delivery address<textarea id="deliveryAddress" rows="3" maxlength="300" required placeholder="Building, street, area"></textarea></label>
             <label>Delivery area<select id="deliveryZone" required><option value="near">Nearby area</option><option value="sameCity" selected>Same city</option><option value="far">Far area</option></select><small>Choose based on the distance between your address and the pharmacy.</small></label>
             <label>Contact phone<input id="deliveryPhone" type="tel" maxlength="30" required autocomplete="tel" placeholder="Phone for delivery updates"></label>
-            <div class="order-totals"><div><span>Unit price</span><b id="orderUnitPrice">JOD 0.00</b></div><div><span>Medicine subtotal</span><b id="orderSubtotal">JOD 0.00</b></div><div><span>CarePlus service commission (<span id="orderCommissionRate">0</span>%)</span><b id="orderCommission">JOD 0.00</b></div><div><span id="orderDeliveryLabel">Delivery · Same city</span><b id="orderDelivery">JOD 0.00</b></div><div class="order-total"><span>CarePlus commission after acceptance</span><b id="orderTotal">JOD 0.00</b></div></div>
+            <div class="order-totals"><div><span>Medicines selected</span><b id="orderUnitPrice">JOD 0.00</b></div><div><span>Medicine subtotal</span><b id="orderSubtotal">JOD 0.00</b></div><div><span>CarePlus service commission (<span id="orderCommissionRate">0</span>%)</span><b id="orderCommission">JOD 0.00</b></div><div><span id="orderDeliveryLabel">Delivery · Same city</span><b id="orderDelivery">JOD 0.00</b></div><div class="order-total"><span>CarePlus commission after acceptance</span><b id="orderTotal">JOD 0.00</b></div></div>
             <p id="orderFeedback" role="status" aria-live="polite"></p>
             <button class="btn btn-primary order-submit" type="submit">Send order request</button>
           </form>
@@ -30,5 +29,5 @@
   </main>
   <div id="footer-container"></div>
   <script>fetch("../Nav/index.html").then(r=>r.text()).then(html=>document.getElementById("nav-container").innerHTML=html);fetch("../Footer/index.html?v=footer-hearts-removed-1").then(r=>r.text()).then(html=>document.getElementById("footer-container").innerHTML=html);</script>
-  <script src="../data/careplus-data.js?v=order-notification-profile-1"></script><script src="../data/careplus-pharmacy.js?v=acceptance-payment-1"></script><script src="order.js?v=acceptance-payment-1"></script><script src="../shared/notifications.js?v=order-profile-target-1"></script><script src="../Footer/footer.js?v=footer-hearts-removed-1"></script>
+  <script src="../data/careplus-data.js?v=save-rollback-6"></script><script src="../shared/professional-licenses.js?v=2"></script><script src="../shared/nurse-availability.js?v=1"></script><script src="../data/careplus-pharmacy.js?v=license-renewal-4"></script><script src="order.js?v=compact-medicine-4"></script><script src="../shared/notifications.js?v=order-profile-target-1"></script><script src="../Footer/footer.js?v=footer-hearts-removed-1"></script>
 </body></html>

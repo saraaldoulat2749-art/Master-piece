@@ -39,6 +39,13 @@
     const date = new Date(`${String(value).slice(0, 10)}T12:00:00`);
     return Number.isNaN(date.getTime()) ? String(value) : new Intl.DateTimeFormat("en", { day: "numeric", month: "short", year: "numeric" }).format(date);
   };
+  const displayTime = value => {
+    const raw = String(value || '').trim();
+    const match = /^([01]?\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?$/.exec(raw);
+    if (!match) return raw || 'Time to be confirmed';
+    const hour = Number(match[1]);
+    return `${hour % 12 || 12}:${match[2]} ${hour >= 12 ? 'PM' : 'AM'}`;
+  };
   const initials = value => String(value || "CarePlus").trim().split(/\s+/).slice(0, 2).map(part => part[0]).join("").toUpperCase();
   const iconPaths = {
     calendar: '<rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M8 3v4m8-4v4M4 10h16"/>',
@@ -142,7 +149,7 @@
 
   function showAppointmentDetails(appointment) {
     const status = String(appointment.status || "Pending").toLowerCase() === "requested" ? "Pending" : appointment.status || "Pending";
-    const details = [["Appointment ID", appointment.id], ["Doctor", appointment.doctor], ["Specialty", appointment.specialty], ["Date", dateFormat(appointment.date)], ["Time", appointment.time], ["Clinic", appointment.area], ["Appointment status", status]];
+    const details = [["Appointment ID", appointment.id], ["Doctor", appointment.doctor], ["Specialty", appointment.specialty], ["Date", dateFormat(appointment.date)], ["Time", displayTime(appointment.time)], ["Clinic", appointment.area], ["Appointment status", status]];
     if (String(appointment.status || "").toLowerCase() === "rejected" && appointment.rejectionReason) details.push(["Rejection reason", appointment.rejectionReason]);
     if (String(appointment.status || "").toLowerCase() === "cancelled" && appointment.cancelReason) details.push(["Cancellation reason", appointment.cancelReason]);
     if (Number(appointment.consultationFee) > 0) details.push(["Consultation fee", `JOD ${Number(appointment.consultationFee).toFixed(2)}`], ["Deposit paid", `JOD ${Number(appointment.depositPaid || 0).toFixed(2)}`], ["Required deposit", `JOD ${Number(appointment.depositAmount || 0).toFixed(2)}`], ["Remaining balance", `JOD ${Number(appointment.remainingBalance || 0).toFixed(2)}`], ["CarePlus commission", `JOD ${Number(appointment.commissionAmount || 0).toFixed(2)}`], ["Payment status", appointment.paymentStatus || "Not recorded"]);
@@ -242,7 +249,7 @@
       top.append(copy, setStatusBadge(statusLabel)); card.append(top);
       if (String(appointment.source || "").includes("demo")) card.append(makeElement("small", "demo-record-label", "Sample preview data"));
       const meta = makeElement("div", "record-meta");
-      appendMeta(meta, "calendar", dateFormat(appointment.date)); appendMeta(meta, "clock", appointment.time || "Time to be confirmed");
+      appendMeta(meta, "calendar", dateFormat(appointment.date)); appendMeta(meta, "clock", displayTime(appointment.time));
       appendMeta(meta, "pin", appointment.area || "Clinic details to be confirmed"); card.append(meta);
       if (Number(appointment.consultationFee) > 0) {
         const finance = makeElement("div", "appointment-finance");
@@ -329,7 +336,7 @@
         appendMeta(meta, "clock", `Deposit paid: JOD ${Number(request.depositAmount).toFixed(2)}`);
         appendMeta(meta, "clock", `Remaining balance: JOD ${Number(request.remainingBalance).toFixed(2)}`);
       }
-      appendMeta(meta, "clock", request.time || "Time to be confirmed");
+      appendMeta(meta, "clock", displayTime(request.time));
       appendMeta(meta, "pin", [request.address || request.pickupAddress, request.area, request.city].filter(Boolean).join(", ") || "Address to be confirmed");
       appendMeta(meta, "duration", request.duration ? `${request.duration} ${Number(request.duration) === 1 ? "hour" : "hours"} per visit` : request.schedule || "Schedule to be confirmed");
       card.append(meta);
@@ -351,7 +358,7 @@
       }
       const actions = makeElement("div", "record-actions");
       const details = makeElement("button", "button button--outline", "View details"); details.type = "button";
-      details.addEventListener("click", () => showDetails("Care request details", [["Care recipient", request.elderlyName || request.client], ["Service", request.service], ["Duration", request.duration ? `${request.duration} hours per visit` : "Not provided"], ["Schedule", request.schedule], ["Preferred time", request.time], ["Pickup address", [request.address || request.pickupAddress, request.area, request.city].filter(Boolean).join(", ")], ["Destination", request.destination], ["Emergency contact", [request.emergencyName, request.emergencyPhone].filter(Boolean).join(" · ")], ["Submitted", dateFormat(request.createdAt || request.date)], ["Status", status], ...(request.rejectionReason ? [["Rejection reason", request.rejectionReason]] : []), ...(request.cancelReason ? [["Cancellation reason", request.cancelReason]] : []), ["Payment", depositPaid ? "Deposit paid" : request.paymentStatus || "Not due"], ["Total service price", request.totalPrice != null ? `JOD ${Number(request.totalPrice).toFixed(2)}` : "Not provided"], [depositPaid ? "Deposit paid (10%)" : "Required deposit (10%)", request.depositAmount != null ? `JOD ${Number(request.depositAmount).toFixed(2)}` : "Not provided"], ["Remaining balance", request.remainingBalance != null ? `JOD ${Number(request.remainingBalance).toFixed(2)}` : "Not provided"], ["Notes", request.notes]]));
+      details.addEventListener("click", () => showDetails("Care request details", [["Care recipient", request.elderlyName || request.client], ["Service", request.service], ["Duration", request.duration ? `${request.duration} hours per visit` : "Not provided"], ["Schedule", request.schedule], ["Preferred time", displayTime(request.time)], ["Pickup address", [request.address || request.pickupAddress, request.area, request.city].filter(Boolean).join(", ")], ["Destination", request.destination], ["Emergency contact", [request.emergencyName, request.emergencyPhone].filter(Boolean).join(" · ")], ["Submitted", dateFormat(request.createdAt || request.date)], ["Status", status], ...(request.rejectionReason ? [["Rejection reason", request.rejectionReason]] : []), ...(request.cancelReason ? [["Cancellation reason", request.cancelReason]] : []), ["Payment", depositPaid ? "Deposit paid" : request.paymentStatus || "Not due"], ["Total service price", request.totalPrice != null ? `JOD ${Number(request.totalPrice).toFixed(2)}` : "Not provided"], [depositPaid ? "Deposit paid (10%)" : "Required deposit (10%)", request.depositAmount != null ? `JOD ${Number(request.depositAmount).toFixed(2)}` : "Not provided"], ["Remaining balance", request.remainingBalance != null ? `JOD ${Number(request.remainingBalance).toFixed(2)}` : "Not provided"], ["Notes", request.notes]]));
       actions.append(details);
       const accepted = ["accepted", "approved"].includes(String(request.status || "").toLowerCase());
       if (accepted && !depositPaid && String(request.paymentStatus || "").toLowerCase() !== "paid") {
@@ -553,7 +560,7 @@
     const form = byId("cancel-appointment-form");
     form.reset();
     form.elements.namedItem("appointmentId").value = appointment.id;
-    byId("cancel-appointment-patient").textContent = `For ${appointment.doctor || "your doctor"} · ${dateFormat(appointment.date)} at ${appointment.time || "time pending"}`;
+    byId("cancel-appointment-patient").textContent = `For ${appointment.doctor || "your doctor"} · ${dateFormat(appointment.date)} at ${displayTime(appointment.time)}`;
     byId("cancel-appointment-feedback").textContent = "";
     byId("cancel-appointment-dialog").showModal();
     byId("cancel-appointment-reason").focus();

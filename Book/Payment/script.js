@@ -64,6 +64,12 @@
   cardForm.addEventListener("submit", event => {
     event.preventDefault();
     if (!cardForm.reportValidity()) return;
+    const validation = window.CarePlusPaymentValidation?.validateCard({ name: document.getElementById('cardholder').value,
+      number: document.getElementById('cardNumber').value, expiry: document.getElementById('cardExpiry').value, cvv: document.getElementById('cardCvc').value });
+    if (!validation?.ok) {
+      document.getElementById('paymentMessage').textContent = validation?.error || 'Payment validation is unavailable. Refresh and try again.';
+      document.getElementById('paymentMessage').hidden = false; return;
+    }
     const record = appointment();
     if (!record) return render();
     if (!window.CarePlusClinic?.isAvailable({ doctor: record.doctor, doctorId: record.doctorId, date: record.date, time: record.time, ignoreId: record.id })) {
@@ -74,13 +80,13 @@
     }
     // Replace this simulated response with verified provider webhooks/API calls in the backend version.
     const updated = window.CarePlusClinic?.recordDemoDepositStep(record.id);
-    cardForm.reset();
     if (!updated) {
       const message = document.getElementById("paymentMessage");
       message.textContent = "Payment could not be recorded. Please try again.";
       message.hidden = false;
       return;
     }
+    cardForm.reset();
     location.href = `../Success/index.html?appointmentId=${encodeURIComponent(updated.id)}`;
   });
   window.CarePlusData?.subscribe(render);

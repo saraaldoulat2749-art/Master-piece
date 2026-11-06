@@ -47,6 +47,7 @@
 }
 
 .brand small {
+  display: block;
   margin-top: 5px;
   color: #9cb0bc;
   font-size: 9px;
@@ -1042,3 +1043,36 @@ body[data-nurse-protected] #rejectRequestDialog #rejectRequestForm button.button
     font-size: 19px;
   }
 }
+/* Working schedule uses the existing profile form styles. */
+.profile-form .nurse-work-schedule { min-width: 0; margin: 24px 0; padding: 18px; border: 1px solid #dce9ec; border-radius: 12px; background: #f8fcfc; }
+.nurse-work-schedule legend { padding: 0 8px; color: #356171; font-size: 13px; font-weight: 600; }
+.nurse-work-schedule p, .nurse-work-schedule > small { color: #7b919e; font-size: 12px; line-height: 1.7; }
+.nurse-work-days { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; }
+.profile-form .nurse-work-days label { display: flex; align-items: center; gap: 7px; padding: 8px 10px; border: 1px solid #d5e5e8; border-radius: 8px; background: white; font-size: 12px; color: #4f7180; cursor: pointer; }
+.nurse-work-days label:has(input:checked) { border-color: #008f98; background: #e9f7f5; }
+body[data-nurse-protected] .profile-form .nurse-work-schedule input[type="checkbox"] { width: 16px; height: 16px; min-height: 0; padding: 0; accent-color: #008f98; }
+.nurse-shift-hours { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.nurse-shift-hours label { display: grid; gap: 8px; color: #557482; font-size: 12px; }
+.profile-form .nurse-full-day { display: flex; align-items: center; gap: 9px; margin: 18px 0; color: #557482; font-size: 12px; }
+@media (max-width: 480px) { .nurse-shift-hours { grid-template-columns: 1fr; } }
+.visit-start-control { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 7px; max-width: 240px; }
+.visit-start-control small { color: #7b919e; font-size: 11px; line-height: 1.6; white-space: normal; }
+.visit-start-control small[hidden] { display: none; }
+.visit-start-control button:disabled { opacity: .5; cursor: not-allowed; }
+.patient-care-dialog { box-sizing: border-box; width: min(780px, calc(100% - 28px)); max-height: 88vh; margin: auto; padding: 0; overflow-y: auto; border: 1px solid #dce9ee; border-radius: 18px; background: #fff; color: #203746; box-shadow: 0 24px 80px #06253640; }
+.patient-care-dialog::backdrop { background: #06253680; backdrop-filter: blur(4px); }
+.patient-care-dialog .dialog-content { padding: 24px; }
+.patient-care-dialog .panel-head { margin-bottom: 18px; padding-bottom: 16px; border-bottom: 1px solid #e5eef0; }
+.patient-care-dialog .care-record-section:last-child { border-bottom: 0; }
+.patient-care-dialog .dialog-actions { padding-top: 16px; border-top: 1px solid #e5eef0; }
+@media (max-width: 600px) { .patient-care-dialog .dialog-content { padding: 18px; } }
+body[data-nurse-protected] .patient-care-summary { grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+body[data-nurse-protected] .patient-care-summary .nurse-summary-card { padding: 18px; gap: 12px; }
+body[data-nurse-protected] .patient-care-summary .nurse-summary-icon { width: 42px; height: 42px; flex-basis: 42px; }
+@media (max-width: 540px) { body[data-nurse-protected] .patient-care-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 360px) { body[data-nurse-protected] .patient-care-summary { grid-template-columns: 1fr; } }
+/* Align only the Patient Care search and status controls. */
+body[data-nurse-protected] #page-patient-care .filter-row { display: flex; flex-direction: row; align-items: center; flex-wrap: wrap; gap: 14px; }
+body[data-nurse-protected] #page-patient-care .filter-row .patient-search { flex: 1 1 260px; width: auto; min-width: 0; height: 54px; min-height: 54px; margin: 0; box-sizing: border-box; }
+body[data-nurse-protected] #page-patient-care .filter-row .select-filter { display: flex; align-items: center; gap: 10px; width: auto; height: 54px; min-height: 54px; margin: 0; padding-block: 5px; box-sizing: border-box; }
+body[data-nurse-protected] #page-patient-care .filter-row .select-filter select { height: 42px; min-height: 42px; }

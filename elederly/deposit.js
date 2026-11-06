@@ -56,11 +56,13 @@
   });
   find("[data-preview]").addEventListener("click", async () => {
     if (previewed) return;
-    clearCard();
+    if (!cardForm.reportValidity()) return;
+    const validation = window.CarePlusPaymentValidation?.validateCard({ name: find('[data-card-name]').value,
+      number: find('[data-card-number]').value, expiry: find('[data-card-expiry]').value, cvv: find('[data-card-cvv]').value });
+    if (!validation?.ok) { find('[data-result]').textContent = validation?.error || 'Payment validation is unavailable. Refresh and try again.'; return; }
     previewed = true;
     const currentAttempt = ++attempt;
     const currentId = requestId;
-    const scenario = "success";
     const method = "card";
     find("[data-preview]").disabled = true;
     find("[data-preview]").textContent = "Processing payment…";
@@ -69,19 +71,20 @@
     if (currentAttempt !== attempt || !dialog.open) return;
     const request = window.CarePlusData?.get("careRequests", currentId);
     if (!payable(request) || request.demoPaymentStatus === 'Succeeded') { cancel(); return; }
-    const succeeded = scenario === "success";
-    const reference = succeeded ? `DEMO-${globalThis.crypto?.randomUUID?.() || Date.now()}` : null;
+    const reference = `DEMO-${globalThis.crypto?.randomUUID?.() || Date.now()}`;
     // Store simulation results separately. Never change real payment/booking status.
     const saved = window.CarePlusData.update("careRequests", currentId, {
-      demoPaymentStatus: succeeded ? "Succeeded" : "Declined",
+      demoPaymentStatus: "Succeeded",
       demoTransactionReference: reference,
       demoPaymentMethod: method,
       demoPaymentAt: new Date().toISOString()
     });
+    const succeeded = Boolean(saved);
+    if (saved) clearCard();
     find("[data-result]").textContent = !saved
       ? "Unable to complete the payment step. Please retry."
       : succeeded
-        ? "Payment successful."
+        ? "Demo payment recorded. No money was charged."
         : "Test payment declined. No money was charged. Your booking remains Pending Payment. Try again or cancel.";
     find("[data-result]").dataset.state = saved && succeeded ? "success" : "error";
     find("[data-preview]").textContent = saved && succeeded ? "Payment complete" : "Retry payment";

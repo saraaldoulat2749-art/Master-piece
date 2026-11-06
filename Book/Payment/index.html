@@ -12,7 +12,7 @@
     .card-form{margin-top:22px}.card-form h3{font-size:16px;margin:0 0 6px;color:var(--dark)}.card-demo-note{margin:0 0 14px}.card-form label{display:block;margin:12px 0 6px;color:var(--dark);font-size:13px;font-weight:600}.card-form input{box-sizing:border-box;width:100%;min-height:44px;padding:10px 12px;border:1px solid #d9e4e8;border-radius:7px;font:inherit;color:var(--dark)}.card-form input:focus{outline:2px solid #83d1d2;outline-offset:1px}.card-fields-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media(max-width:800px){.payment-grid{grid-template-columns:1fr}}
   </style>
-<link rel="stylesheet" href="../../shared/global-button-theme.css"><link rel="stylesheet" href="../../shared/site-headings.css?v=dancing-script-1">
+<link rel="stylesheet" href="../../shared/site-headings.css?v=dancing-script-1">
 </head>
 <body data-protected="true"><script src="../../auth.js?v=professional-role-access-1"></script>
   <div id="nav-container"></div>
@@ -30,7 +30,7 @@
         <div class="money-row"><span>CarePlus commission (10% of full fee)</span><strong id="commissionAmount">JOD 0.00</strong></div>
         <div class="money-row"><span>Commission collected</span><strong id="commissionCollected">JOD 0.00</strong></div>
         <div class="money-row"><span>Commission remaining to settle</span><strong id="commissionRemaining">JOD 0.00</strong></div>
-        <p class="checkout-ref">Appointment ID: <strong id="appointmentId">�</strong></p>
+        <p class="checkout-ref">Appointment ID: <strong id="appointmentId">&mdash;</strong></p>
         <form class="card-form" id="cardForm" autocomplete="off">
           <h3>Card details</h3>
           <label for="cardholder">Name on card</label>
@@ -56,7 +56,7 @@
   </main>
   <div id="footer-container"></div>
   <script>fetch("../../Footer/index.html?v=footer-hearts-removed-1").then(response=>response.text()).then(html=>{document.getElementById("footer-container").innerHTML=html}).catch(error=>console.error("Footer could not be loaded",error));</script>
-  <script src="../../data/careplus-data.js?v=order-notification-profile-2"></script><script src="../../data/careplus-clinic.js?v=doctor-payment-hold-2"></script><script src="script.js?v=doctor-payment-hold-2"></script><script src="../../Footer/footer.js?v=footer-hearts-removed-1"></script>
+  <script src="../../data/careplus-data.js?v=save-rollback-6"></script><script src="../../shared/professional-licenses.js?v=2"></script><script src="../../shared/nurse-availability.js?v=1"></script><script src="../../data/careplus-clinic.js?v=license-renewal-4"></script><script src="../../shared/payment-validation.js?v=1"></script><script src="script.js?v=checkout-validation-3"></script><script src="../../Footer/footer.js?v=footer-hearts-removed-1"></script>
 </body>
 </html>
 

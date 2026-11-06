@@ -144,7 +144,7 @@ body.admin-unified[data-doctor-protected] .fee-breakdown-values.lifetime-values 
 body.admin-unified[data-nurse-protected] .fee-breakdown-values.lifetime-values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 body.admin-unified[data-nurse-protected] #page-visits :is(.select-filter select, .admin-inline-filter select) { height: 54px !important; min-height: 54px !important; box-sizing: border-box; }
 body.admin-unified[data-nurse-protected] #page-profile .form-actions .button.primary { border-color: #008f98 !important; background-color: #008f98 !important; color: #fff !important; }
-body.admin-unified[data-nurse-protected] #page-patient-care label.patient-search { margin-bottom: 18px !important; }
+body.admin-unified[data-nurse-protected] #page-patient-care .filter-row label.patient-search { margin: 0 !important; }
 body.admin-unified[data-nurse-protected] #page-profile .form-actions .button.primary:hover,
 body.admin-unified[data-nurse-protected] #page-profile .form-actions .button.primary:focus-visible { border-color: #007a84 !important; background-color: #007a84 !important; color: #fff !important; }
 @media (max-width: 1200px) {

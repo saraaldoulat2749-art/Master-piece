@@ -5,7 +5,7 @@
 (() => {
   // LocalStorage event adapter; replace notifyCreated/notifyUpdated with API writes and a SignalR subscription when the ASP.NET Core backend is added.
   const KEY = "careplusMockDataV1";
-  const collections = ["users", "appointments", "products", "pharmacies", "careRequests", "orders", "notifications", "professionalApplications"];
+  const collections = ["users", "appointments", "products", "pharmacies", "careRequests", "orders", "notifications", "professionalApplications", "licenseRenewals"];
   const appRoot = new URL("../", document.currentScript.src);
   const id = () => globalThis.crypto?.randomUUID?.() || `cp-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   function read() {
@@ -102,7 +102,7 @@
     }
     if (collection === "careRequests" && record.source === "user-request") {
       const customer = safeName(record.client || customerAccount(record)?.name);
-      nurseRecipients(record).forEach(nurseId => addNotification("nurse", nurseId, "care", baseKey, "New elderly-care request",
+      nurseRecipients(record).filter(nurseId => !window.CarePlusLicenses || window.CarePlusLicenses.canProvide('nurse', nurseId)).forEach(nurseId => addNotification("nurse", nurseId, "care", baseKey, "New elderly-care request",
         `${customer} · ${record.id} · ${record.service || "Care request"} · ${record.date || "Date pending"} ${record.time || ""}`,
         "careRequest", record.id, portalUrl("Nurse/index.html", { page: "requests", requestId: record.id })));
       return;
@@ -336,23 +336,65 @@
     },
     list(name) { return (data[name] || []).map(item => ({ ...item })); },
     get(name, recordId) { const item = (data[name] || []).find(row => String(row.id) === String(recordId)); return item ? { ...item } : null; },
-    seed(name, rows) { if (!data[name]?.length && rows?.length) { data[name] = rows.map(row => ({ id: row.id ?? id(), ...row })); write(); } return api.list(name); },
+    seed(name, rows) { if (!data[name]?.length && rows?.length) { const previous = data[name]; data[name] = rows.map(row => ({ id: row.id ?? id(), ...row })); if (!write()) data[name] = previous || []; } return api.list(name); },
     create(name, row) {
       if (!collections.includes(name)) return null;
+      const licenses = window.CarePlusLicenses;
+      if (licenses && name === 'appointments' && row.doctorId && !licenses.canProvide('doctor', row.doctorId)) return null;
+      if (licenses && name === 'careRequests' && (row.assignedNurseId || row.nurseId) && !licenses.canProvide('nurse', row.assignedNurseId || row.nurseId)) return null;
+      if (window.CarePlusNurseAvailability && name === 'careRequests' && (row.assignedNurseId || row.nurseId)
+        && !window.CarePlusNurseAvailability.check(row.assignedNurseId || row.nurseId, row).ok) return null;
+      if (licenses && name === 'orders' && row.source === 'pharmacy-order' && !row.demo && !licenses.canProvide('pharmacy', row.pharmacyId)) return null;
       const record = { id: row.id ?? id(), createdAt: new Date().toISOString(), ...row };
+      const notificationsBefore = data.notifications.slice();
       data[name].push(record);
       if (name !== "notifications") notifyCreated(name, record);
-      return write() ? { ...record } : null;
+      if (write()) return { ...record };
+      data[name].splice(data[name].indexOf(record), 1);
+      data.notifications = notificationsBefore;
+      return null;
+    },
+    reviewLicenseRenewal(recordId, changes, approvedLicense) {
+      if (!window.CarePlusAuth?.hasDemoAdminSession()) return null;
+      const renewal = data.licenseRenewals.find(item => String(item.id) === String(recordId));
+      const user = renewal && data.users.find(item => String(item.id) === String(renewal.userId));
+      if (!renewal || !user || renewal.status !== 'Pending' || !['Approved', 'Rejected'].includes(changes.status)) return null;
+      const previousRenewal = { ...renewal };
+      const previousUser = { ...user };
+      Object.assign(renewal, changes, { updatedAt: new Date().toISOString() });
+      if (changes.status === 'Approved') {
+        if (!approvedLicense) { Object.assign(renewal, previousRenewal); return null; }
+        user.professionalLicense = approvedLicense;
+      }
+      if (write()) return { ...renewal };
+      Object.keys(renewal).forEach(key => { delete renewal[key]; }); Object.assign(renewal, previousRenewal);
+      Object.keys(user).forEach(key => { delete user[key]; }); Object.assign(user, previousUser);
+      return null;
     },
     update(name, recordId, changes) {
       const row = (data[name] || []).find(item => String(item.id) === String(recordId));
       if (!row) return null;
       const before = { ...row };
+      const licenses = window.CarePlusLicenses;
+      const accepting = ['accepted', 'confirmed'].includes(String(changes.status || '').toLowerCase()) && changes.status !== row.status;
+      if (licenses && accepting && name === 'appointments' && row.doctorId && !licenses.canProvide('doctor', row.doctorId)) return null;
+      if (licenses && accepting && name === 'careRequests' && !licenses.canProvide('nurse', changes.assignedNurseId || changes.nurseId || row.assignedNurseId || row.nurseId)) return null;
+      if (window.CarePlusNurseAvailability && name === 'careRequests' && (accepting || ['date', 'time', 'duration', 'schedule', 'assignedNurseId', 'nurseId'].some(key => Object.hasOwn(changes, key) && changes[key] !== row[key]))) {
+        const next = { ...row, ...changes };
+        const assigned = next.assignedNurseId || next.nurseId;
+        if (assigned && !['Cancelled', 'Rejected', 'Completed', 'Closed'].includes(next.status)
+          && !window.CarePlusNurseAvailability.check(assigned, next, { ignoreId: row.id }).ok) return null;
+      }
+      if (licenses && accepting && name === 'orders' && row.source === 'pharmacy-order' && !licenses.canProvide('pharmacy', row.pharmacyId)) return null;
+      const notificationsBefore = data.notifications.slice();
       Object.assign(row, changes, { updatedAt: new Date().toISOString() });
       if (name !== "notifications") notifyUpdated(name, before, row);
-      return write() ? { ...row } : null;
+      if (write()) return { ...row };
+      Object.keys(row).forEach(key => { delete row[key]; }); Object.assign(row, before);
+      data.notifications = notificationsBefore;
+      return null;
     },
-    remove(name, recordId) { const rows = data[name] || []; const index = rows.findIndex(item => String(item.id) === String(recordId)); if (index < 0) return false; rows.splice(index, 1); return write(); },
+    remove(name, recordId) { const rows = data[name] || []; const index = rows.findIndex(item => String(item.id) === String(recordId)); if (index < 0) return false; const [removed] = rows.splice(index, 1); if (write()) return true; rows.splice(index, 0, removed); return false; },
     upsertDemoUser(identity) {
       const value = String(identity || "").trim(); if (!value) return null;
       const email = value.includes("@") ? value.toLowerCase() : "";

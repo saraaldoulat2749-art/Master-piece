@@ -101,10 +101,14 @@ if (form) {
     if (!customer) { document.getElementById('form-feedback').textContent = 'Please sign in to send a care request.'; return; }
     submitting = true;
     let selectedNurse;
-    try { selectedNurse = await window.CarePlusNursePicker.open(); }
+    const visitDetails = () => ({ date: form.elements.namedItem('date').value, time: form.elements.namedItem('time').value,
+      duration: Number(duration.value), schedule: form.elements.namedItem('schedule')?.value || '' });
+    try { selectedNurse = await window.CarePlusNursePicker.open(visitDetails()); }
     catch { document.getElementById('form-feedback').textContent = 'Nurse selection could not be opened. Please refresh and try again.'; }
     finally { submitting = false; }
     if (!selectedNurse || !form.reportValidity()) return;
+    const availability = window.CarePlusNurseAvailability?.check(selectedNurse.nurseId, visitDetails());
+    if (!availability?.ok) { document.getElementById('form-feedback').textContent = availability?.reason || 'Please refresh and choose an available nurse.'; return; }
     const values = new FormData(form);
     const estimate = updateEstimate();
     const request = window.CarePlusData?.create("careRequests", {

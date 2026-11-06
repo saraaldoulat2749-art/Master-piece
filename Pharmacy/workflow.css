@@ -31,3 +31,28 @@
 @media(max-width:650px){.order-progress.order-progress>span{font-size:10px}.order-progress.order-progress>span>b{width:32px;height:32px;font-size:13px}}
 .customer-cancel-dialog{width:min(460px,calc(100vw - 32px));padding:26px;border:1px solid #dce9ee;border-radius:20px;color:#203746;background:#fff;box-shadow:0 24px 80px #06253640}.customer-cancel-dialog::backdrop{background:#06253680;backdrop-filter:blur(4px)}.cancel-dialog-heading{display:flex;align-items:center;justify-content:space-between;gap:12px}.cancel-dialog-heading h2{margin:0;font-size:22px}.cancel-dialog-heading button{border:0;border-radius:50%;width:32px;height:32px;background:#edf4f5;color:#607b87;font-size:23px}.customer-cancel-dialog p{font-size:13px;line-height:1.7;color:#718391}.customer-cancel-dialog label{display:block;margin:20px 0 8px;font-size:13px;font-weight:700}.customer-cancel-dialog textarea{box-sizing:border-box;width:100%;padding:12px;border:1px solid #d5e3e8;border-radius:10px;font:inherit;resize:vertical}.customer-cancel-dialog textarea:focus{outline:2px solid #94d5d6;outline-offset:2px}.cancel-dialog-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}.cancel-dialog-actions button{min-height:42px;padding:10px 18px;border:1px solid #dce9ee;border-radius:10px;background:#fff;color:#355565;font-weight:700;cursor:pointer}.cancel-dialog-actions .confirm-cancel{background:#b94c54;color:#fff;border-color:#b94c54}.customer-cancel-dialog .cancel-error{color:#b94c54}.delivery-payment-note{color:#527980;font-size:12px}
 .demo-payment-form [hidden]{display:none!important}
+/* Multiple medicines in one pharmacy order. */
+.medicine-order-picker { grid-column: 1 / -1; min-width: 0; margin-bottom: 12px; }
+.medicine-order-picker h3 { margin: 0 0 8px; color: #163c4e; font-size: 18px; }
+.medicine-order-picker > p { color: #7b919e; font-size: 12px; line-height: 1.6; }
+.medicine-order-items { display: grid; gap: 12px; margin-top: 18px; }
+.medicine-selected-name { flex: 1; min-width: 0; }
+#medicineOrderForm .medicine-remove { display: grid; place-items: center; width: 30px; height: 30px; min-height: 30px; padding: 0; flex-shrink: 0; border: 1px solid #e4e9ec; border-radius: 8px; background: white; color: #8d6c70; font-size: 20px; cursor: pointer; }
+#medicineOrderForm .medicine-remove:hover { background: #fff1f1; border-color: #e5c7c7; color: #b34c56; }
+.medicine-add-search { margin: 20px 0 8px; padding-top: 18px; border-top: 1px solid #e3edef; }
+#medicineOrderForm .medicine-add-search > label { display: block; margin: 0 0 8px; font-size: 12px; color: #3b6475; }
+.medicine-add-results { max-height: 270px; overflow-y: auto; margin-top: 8px; border: 1px solid #d9e8ea; border-radius: 12px; background: white; }
+.medicine-add-results[hidden] { display: none; }
+#medicineOrderForm .medicine-add-results button { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; padding: 13px 15px; border: 0; border-bottom: 1px solid #edf3f4; background: white; color: #274e60; text-align: left; cursor: pointer; }
+#medicineOrderForm .medicine-add-results button:hover, #medicineOrderForm .medicine-add-results button:focus-visible { background: #edf8f7; }
+.medicine-add-results small { display: block; margin-top: 5px; color: #7b939f; font-size: 11px; }
+.medicine-add-results b { flex-shrink: 0; color: #008f98; font-size: 12px; }
+.medicine-add-status, .medicine-empty-basket { color: #7a919e; font-size: 12px; line-height: 1.6; }
+.medicine-order-item { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px; border: 1px solid #dce9ec; border-radius: 12px; background: #fbfdfd; }
+.medicine-order-item:has(input:checked) { border-color: #64b9bb; background: #eff9f8; }
+#medicineOrderForm .medicine-order-item > label:first-child { display: flex; align-items: center; flex: 1; gap: 12px; margin: 0; min-width: 0; }
+#medicineOrderForm .medicine-order-item input[type="checkbox"] { width: 18px; height: 18px; min-height: 0; flex: 0 0 18px; accent-color: #008f98; }
+.medicine-order-item strong { display: block; color: #264b5d; overflow-wrap: anywhere; }
+.medicine-order-item small { display: block; margin-top: 6px; color: #6f8a97; font-weight: 400; }
+#medicineOrderForm .medicine-line-quantity { width: 80px; flex-shrink: 0; margin: 0; font-size: 11px; }
+@media (max-width: 480px) { .medicine-order-item { gap: 10px; padding: 12px; } #medicineOrderForm .medicine-line-quantity { width: 65px; } }

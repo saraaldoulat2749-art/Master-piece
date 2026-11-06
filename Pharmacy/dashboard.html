@@ -11,12 +11,12 @@
   <link rel="stylesheet" href="../Admin/theme.css">
   <link rel="stylesheet" href="../Admin/dashboard-ui.css?v=shared-careplus-admin-v2">
   <link rel="stylesheet" href="../shared/admin-dashboard-compat.css">
-<link rel="stylesheet" href="../shared/global-button-theme.css"><link rel="stylesheet" href="../shared/site-headings.css?v=dancing-script-1">
-</head>
+<link rel="stylesheet" href="../shared/site-headings.css?v=dancing-script-1">
+<link rel="stylesheet" href="../shared/license-renewal.css?v=2"></head>
 <body class="admin-unified" data-pharmacy-protected="true">
   <div class="app-shell">
     <aside class="sidebar" id="sidebar">
-      <a class="brand" href="../Home/Master.html" aria-label="CarePlus home"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><path d="M24 41S6 29 6 17.5C6 10.8 10.8 7 16.1 7c3.4 0 6.1 1.8 7.9 4.8C25.8 8.8 28.5 7 31.9 7 37.2 7 42 10.8 42 17.5 42 29 24 41 24 41Z"/><path d="M11 24h7l3-6 5.5 13 4-8H37"/></svg></span><span>Care<span>Plus</span></span></a>
+      <a class="brand" href="../Home/Master.html" aria-label="CarePlus home"><span class="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48" focusable="false"><path d="M24 41S6 29 6 17.5C6 10.8 10.8 7 16.1 7c3.4 0 6.1 1.8 7.9 4.8C25.8 8.8 28.5 7 31.9 7 37.2 7 42 10.8 42 17.5 42 29 24 41 24 41Z"/><path d="M11 24h7l3-6 5.5 13 4-8H37"/></svg></span><span>Care<span>Plus</span><small>PHARMACY PORTAL</small></span></a>
       <nav class="side-nav" aria-label="Pharmacy dashboard">
         <button class="nav-link active" data-page="overview"><span><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="8" height="8" rx="2"/><rect x="13" y="3" width="8" height="5" rx="2"/><rect x="13" y="10" width="8" height="11" rx="2"/><rect x="3" y="13" width="8" height="8" rx="2"/></svg></span>Dashboard</button>
         <button class="nav-link" data-page="medicines"><span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 3h8v4l2 2v11a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V9l2-2V3Z"/><path d="M8 7h8m-4 5v6m-3-3h6"/></svg></span>Manage Medicines</button>
@@ -96,7 +96,7 @@
   <dialog class="pharmacy-order-dialog" id="pharmacyOrderDialog" aria-labelledby="pharmacyOrderTitle"><div class="order-dialog-heading"><div><p class="eyebrow">ORDER DETAILS</p><h2 id="pharmacyOrderTitle"></h2></div><button type="button" class="dialog-close" data-close-order-dialog aria-label="Close">×</button></div><div id="pharmacyOrderContent"></div><div id="pharmacyOrderActions" class="dialog-actions"></div></dialog>
   <dialog class="pharmacy-order-dialog rejection-dialog" id="orderRejectDialog" aria-labelledby="orderRejectTitle"><form method="dialog" id="orderRejectForm"><div class="order-dialog-heading"><div><p class="eyebrow">ORDER DECISION</p><h2 id="orderRejectTitle">Reject order</h2></div><button type="button" class="dialog-close" data-close-order-dialog aria-label="Close">×</button></div><p class="rejection-sharing-note">Please explain why you are rejecting this order. The customer and CarePlus admin will see your reason.</p><label class="reason-field">Rejection reason<textarea id="orderRejectReason" rows="4" maxlength="300" required placeholder="Explain why this order cannot be accepted"></textarea></label><div class="dialog-actions"><button type="button" class="secondary-button" data-close-order-dialog>Keep order</button><button class="danger-button" type="submit">Reject order</button></div></form></dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
-      <script src="../data/careplus-data.js?v=order-notification-profile-2"></script><script src="../data/careplus-pharmacy.js?v=acceptance-payment-1"></script><script src="../auth.js?v=professional-role-access-1"></script><script src="../shared/delete-dialog.js"></script><script src="dashboard.js?v=pharmacy-open-status-2"></script><script src="../shared/notifications.js?v=order-profile-target-2"></script><script src="../shared/account-dashboard-theme.js"></script>
-<script src="../shared/compact-tables.js?v=keep-medicine-actions-and-order-list-2"></script><script src="../shared/search-toggle.js"></script><script src="../shared/filter-toggle.js"></script></body>
+      <script src="../data/careplus-data.js?v=save-rollback-6"></script><script src="../shared/professional-licenses.js?v=2"></script><script src="../shared/nurse-availability.js?v=1"></script><script src="../shared/doctor-documents.js?v=license-renewal-1"></script><script src="../data/careplus-pharmacy.js?v=license-renewal-4"></script><script src="../auth.js?v=professional-role-access-1"></script><script src="../shared/delete-dialog.js"></script><script src="dashboard.js?v=multi-medicine-2"></script><script src="../shared/notifications.js?v=order-profile-target-2"></script><script src="../shared/account-dashboard-theme.js"></script>
+<script src="../shared/compact-tables.js?v=keep-medicine-actions-and-order-list-2"></script><script src="../shared/search-toggle.js"></script><script src="../shared/filter-toggle.js"></script><script src="../shared/license-renewal-ui.js?v=profile-status-8" defer></script></body>
 </html>
 

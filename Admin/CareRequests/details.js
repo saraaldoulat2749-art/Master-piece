@@ -15,6 +15,12 @@
     const date = new Date(value + "T12:00:00+03:00");
     return Number.isNaN(date.getTime()) ? missing : new Intl.DateTimeFormat("en-GB", { dateStyle: "medium", timeZone: "Asia/Amman" }).format(date);
   };
+  function formatPreferredTime(value) {
+    const match = /^([01]?\d|2[0-3]):([0-5]\d)(?::[0-5]\d)?$/.exec(String(value || '').trim());
+    if (!match) return value || missing;
+    const hours = Number(match[1]);
+    return `${hours % 12 || 12}:${match[2]} ${hours >= 12 ? 'PM' : 'AM'}`;
+  }
   function model(record) {
     const raw = String(record.status || "New").toLowerCase();
     const state = ["completed", "closed"].includes(raw) ? "Completed"
@@ -31,7 +37,7 @@
     }
     return {
       state, verified, payment,
-      overview: [["Family Contact", record.client], ["Service", record.service], ["Preferred Date", dateOnly(record.date)], ["Preferred Time", record.time], ["Duration (hours)", record.duration], ["Assigned Nurse", record.assignedNurseName], ["City / Area", [record.city, record.area].filter(Boolean).join(" / ")], ["Schedule", record.schedule], ["Booking Status", state], ...(record.cancelReason ? [["Cancellation Reason", record.cancelReason]] : []), ...(record.rejectionReason ? [["Rejection Reason", record.rejectionReason]] : [])],
+      overview: [["Family Contact", record.client], ["Service", record.service], ["Preferred Date", dateOnly(record.date)], ["Preferred Time", formatPreferredTime(record.time)], ["Duration (hours)", record.duration], ["Assigned Nurse", record.assignedNurseName], ["City / Area", [record.city, record.area].filter(Boolean).join(" / ")], ["Schedule", record.schedule], ["Booking Status", state], ...(record.cancelReason ? [["Cancellation Reason", record.cancelReason]] : []), ...(record.rejectionReason ? [["Rejection Reason", record.rejectionReason]] : [])],
       // Read stored financial values; never infer balance settlement from visit completion.
       finances: [["Estimated Total (JOD)", money(record.totalPrice ?? record.estimatedTotal)], ["Deposit Paid (JOD)", money(record.depositPaid ?? (recorded ? record.depositAmount : null))], ["Remaining Balance (JOD)", money(record.remainingBalance)]],
       sections: [

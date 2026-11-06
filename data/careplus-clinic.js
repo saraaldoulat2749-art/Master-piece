@@ -68,6 +68,7 @@
       && (requestedId ? String(user.doctorId || user.id) === String(requestedId) : String(user.name || "").trim().toLowerCase() === String(doctorName || "").trim().toLowerCase()));
     if (!account) return null;
     const doctorId = account.doctorId || account.id;
+    if (window.CarePlusLicenses && !window.CarePlusLicenses.canProvide('doctor', doctorId)) return null;
     const scopedProfile = getProfile(doctorId);
     const sharedProfile = getProfile();
     const onlyActiveDoctor = accounts.filter(user => String(user.role || "").toLowerCase() === "doctor" && String(user.accountStatus || user.status || "").toLowerCase() === "active").length === 1;
@@ -77,7 +78,8 @@
   function listDoctors() {
     const users = window.CarePlusData?.list("users") || [];
     return (window.CarePlusData?.newestFirst(users) || users).filter(user => String(user.role || "").toLowerCase() === "doctor"
-      && String(user.accountStatus || user.status || "").toLowerCase() === "active" && user.archived !== true && !user.archivedAt)
+      && String(user.accountStatus || user.status || "").toLowerCase() === "active" && user.archived !== true && !user.archivedAt
+      && (!window.CarePlusLicenses || window.CarePlusLicenses.canProvide('doctor', user.doctorId || user.id)))
       .map(user => {
         const doctorId = user.doctorId || user.id;
         const scopedProfile = getProfile(doctorId);
@@ -217,7 +219,8 @@
     const handler = event => { if (event.key === PROFILE_KEY || event.key === SCHEDULE_KEY || event.key?.startsWith(`${PROFILE_KEY}:`) || event.key?.startsWith(`${SCHEDULE_KEY}:`)) callback(); };
     window.addEventListener("storage", handler);
     window.addEventListener("careplus:clinic", callback);
-    return () => { unsubscribeData(); window.removeEventListener("storage", handler); window.removeEventListener("careplus:clinic", callback); };
+    window.addEventListener('careplus:license-policy', callback);
+    return () => { unsubscribeData(); window.removeEventListener("storage", handler); window.removeEventListener("careplus:clinic", callback); window.removeEventListener('careplus:license-policy', callback); };
   }
   window.CarePlusClinic = { getProfile, saveProfile, getSchedule, saveSchedule, listAppointments, listDoctors, resolveDoctor, isAvailable, availableSlots, createBooking, recordDemoDepositStep, updateAppointment, subscribe, expireUnpaidHolds, hasDeposit };
   expireUnpaidHolds();

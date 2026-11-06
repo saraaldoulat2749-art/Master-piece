@@ -58,9 +58,10 @@ form.addEventListener("submit", event => {
   const cardNumber = document.getElementById("cardNumber").value.trim();
   const expiry = document.getElementById("cardExpiry").value.trim();
   const cvv = document.getElementById("cardCvv").value.trim();
-  if (!name || !cardNumber || !expiry || !cvv) {
+  const validation = window.CarePlusPaymentValidation?.validateCard({ name, number: cardNumber, expiry, cvv });
+  if (!validation?.ok) {
     message.classList.add("error");
-    message.textContent = "Complete all card details to continue.";
+    message.textContent = validation?.error || 'Payment validation is unavailable. Refresh and try again.';
     return;
   }
   submit.disabled = true;
