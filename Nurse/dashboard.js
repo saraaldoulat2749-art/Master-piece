@@ -53,14 +53,14 @@
     const value = new Date(`${day}T${String(hour).padStart(2, '0')}:${match[2]}:00+03:00`);
     return Number.isNaN(value.getTime()) ? 0 : value.getTime();
   };
-  const statusName = item => ({ confirmed: 'Accepted', approved: 'Accepted' }[String(item.status || '').trim().toLowerCase()] || String(item.status || 'New').trim());
+  const statusName = item => ({ confirmed: 'Accepted', approved: 'Accepted', canceled: 'Cancelled' }[String(item.status || '').trim().toLowerCase()] || String(item.status || 'New').trim());
   const visitTimeReached = request => timestamp(request) > 0 && timestamp(request) <= Date.now();
-  const requestQueueStatus = request => ["new", "reviewing", "contacted"].includes(statusName(request).toLowerCase()) ? "Pending" : statusName(request);
+  const requestQueueStatus = request => ["new", "requested", "pending", "reviewing", "contacted"].includes(statusName(request).toLowerCase()) ? "Pending" : statusName(request);
   const statusClass = status => String(status).toLowerCase().replace(/[^a-z]+/g, "-");
   const isHomeCare = request => !request.service || /home\s*care|elderly\s*care|hospital\s*companion/i.test(String(request.service));
   const isHospitalCompanion = request => /hospital\s*companion/i.test(String(request.service || ""));
   const isMine = request => [nurseId, String(nurse.id)].includes(String(request.assignedNurseId || request.nurseId || ""));
-  // Admin-reviewed requests with no nurse assigned are still available for a nurse to claim.
+  // Each nurse's dashboard contains only requests explicitly assigned to that account.
   const demoDepositPaid = request => request.paymentMode === "demo" && request.demoPaymentStatus === "Succeeded" && String(request.demoTransactionReference || "").startsWith("DEMO-");
   // Only the deposit gates care delivery. The remaining balance is settled outside this flow.
   const depositReady = request => request.depositRate !== 0.1 || demoDepositPaid(request) || (request.paymentStatus === "Paid" && request.paymentVerified === true && Boolean(request.transactionReference));
@@ -72,10 +72,10 @@
     if (!visitTimeReached(request)) return { ready: false, reason: `Available on ${dateText(request.date)} at ${timeText(request.time)} (Amman time).` };
     return { ready: true, reason: '' };
   }
-  const isOpen = request => request.bookingFlow === "nurse-first"
-    ? isMine(request) && statusName(request).toLowerCase() === "requested"
-    : depositReady(request) && (["new", "pending", "requested", "reviewing", "contacted", "accepted", "confirmed"].includes(statusName(request).toLowerCase()) || (statusName(request).toLowerCase() === "pending payment" && demoDepositPaid(request)));
-  const canSeeRequest = request => isHomeCare(request) && (isMine(request) || ((!window.CarePlusLicenses || window.CarePlusLicenses.canProvide('nurse', nurseId)) && !request.assignedNurseId && !request.nurseId && (isOpen(request) || (request.status === "Pending Payment" && demoDepositPaid(request)) || statusName(request).toLowerCase() === "cancelled")));
+  const isOpen = request => isMine(request) && requestQueueStatus(request) === 'Pending';
+  const isUpcoming = request => statusName(request).toLowerCase() === 'accepted'
+    && timestamp(request) > Date.now() && timestamp(request) < new Date(`${addDays(today(), 7)}T00:00:00+03:00`).getTime();
+  const canSeeRequest = request => isHomeCare(request) && isMine(request);
   const requests = () => (store?.list("careRequests") || []).filter(canSeeRequest);
   const assignedVisits = () => requests().filter(request => isMine(request) && ["accepted", "in progress", "completed", "cancelled"].includes(statusName(request).toLowerCase()));
   const readProfile = () => {
@@ -179,9 +179,9 @@
   function renderDashboard() {
     const allVisits = assignedVisits();
     const day = today();
-    const todayVisits = allVisits.filter(request => request.date === day && ["accepted", "in progress", "completed"].includes(statusName(request).toLowerCase()));
-    const newRequests = requests().filter(request => !isMine(request) && isOpen(request));
-    const upcoming = allVisits.filter(request => ["accepted", "in progress"].includes(statusName(request).toLowerCase()) && timestamp(request) >= new Date(`${day}T00:00`).getTime() && timestamp(request) < new Date(`${addDays(day, 7)}T00:00`).getTime());
+    const todayVisits = allVisits.filter(request => request.date === day && ["accepted", "in progress"].includes(statusName(request).toLowerCase()));
+    const newRequests = requests().filter(isOpen);
+    const upcoming = allVisits.filter(isUpcoming);
     const completed = allVisits.filter(request => statusName(request).toLowerCase() === "completed");
     const hours = completed.reduce((sum, request) => {
       const plannedDuration = Number.parseFloat(request.duration);
@@ -206,7 +206,7 @@
     const status = $("requestStatus").value.toLowerCase();
     const availableRequests = requests();
     $("requestSummaryTotal").textContent = String(availableRequests.length);
-    $("requestSummaryNew").textContent = String(availableRequests.filter(request => !isMine(request) && isOpen(request)).length);
+    $("requestSummaryNew").textContent = String(availableRequests.filter(isOpen).length);
     $("requestSummaryAssigned").textContent = String(availableRequests.filter(isMine).length);
     $("requestSummaryReviewing").textContent = String(availableRequests.filter(request => statusName(request).toLowerCase() === "reviewing").length);
     const rows = store.newestFirst(availableRequests).filter(request => {
@@ -243,7 +243,7 @@
     $("visitSummaryCompleted").textContent = String(allAssignedVisits.filter(request => statusName(request).toLowerCase() === "completed").length);
     const todayStart = new Date(`${day}T00:00:00`).getTime();
     const nextWeek = new Date(`${addDays(day, 7)}T00:00:00`).getTime();
-    $("visitSummaryUpcoming").textContent = String(allAssignedVisits.filter(request => ["accepted", "in progress"].includes(statusName(request).toLowerCase()) && timestamp(request) >= todayStart && timestamp(request) < nextWeek).length);
+    $("visitSummaryUpcoming").textContent = String(allAssignedVisits.filter(isUpcoming).length);
     const rows = store.newestFirst(allAssignedVisits).filter(request => {
       const state = statusName(request).toLowerCase();
       const matchesRange = range === "all" || (range === "daily" ? request.date === day : request.date >= weekStart && request.date <= weekEnd);
@@ -600,7 +600,9 @@
     if (changes.photo && !/^https?:\/\//i.test(changes.photo)) { message.textContent = "Use a valid http or https image URL, or leave it blank."; message.classList.add("error"); return; }
     try { localStorage.setItem(PROFILE_KEY, JSON.stringify(changes)); }
     catch { message.textContent = "The profile could not be saved in browser storage."; message.classList.add("error"); return; }
-    store.update("users", nurse.id, { name: changes.name, phone: changes.phone, specialty: changes.specialty, workSchedule, availability: changes.availability });
+    const savedAccount = store.update("users", nurse.id, { name: changes.name, phone: changes.phone, specialty: changes.specialty, workSchedule, availability: changes.availability });
+    if (!savedAccount) { message.textContent = "Your profile draft was saved, but your working hours could not be published. Please try Save changes again."; message.classList.add("error"); return; }
+    Object.assign(nurse, savedAccount);
     profile = changes; message.textContent = "Profile changes saved."; toast("Profile saved."); renderHeader(); setPhotoPreview(profile.photo);
   });
 

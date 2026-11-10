@@ -39,6 +39,8 @@
     return normalizeSchedule({ days, start: times[0].trim(), end: times[1].trim() });
   }
   function scheduleFor(nurse) {
+    // Dashboard callers may hold the account snapshot from sign-in.
+    nurse = window.CarePlusData?.get?.('users', nurse.id) || nurse;
     let profile = {};
     try { profile = JSON.parse(localStorage.getItem(`carePlusNurseProfileV1:${nurse.nurseId || nurse.id}`) || '{}'); } catch {}
     return normalizeSchedule(nurse.workSchedule) || normalizeSchedule(profile.workSchedule)
@@ -101,7 +103,15 @@
     const data = window.CarePlusData;
     const nurse = data?.list('users').find(user => String(user.role || '').toLowerCase() === 'nurse' && [user.id, user.nurseId].some(id => id != null && String(id) === String(nurseId)));
     if (!nurse) return { ok: false, reason: 'Nurse unavailable.' };
-    if (window.CarePlusLicenses && !window.CarePlusLicenses.canProvide('nurse', nurse.nurseId || nurse.id)) return { ok: false, reason: 'This nurse is not eligible to accept new care requests.' };
+    if (window.CarePlusLicenses && !window.CarePlusLicenses.canProvide('nurse', nurse.nurseId || nurse.id)) {
+      const state = window.CarePlusLicenses.licenseState?.(nurse, 'nurse');
+      const reason = state?.code === 'expired' ? `This nurse's license expired on ${state.expiresOn}. Renewal and Admin approval are required.`
+        : state?.code === 'invalid' ? 'This nurse has an invalid license expiration date. It must be corrected and reviewed.'
+        : state?.code === 'unverified' ? 'This nurse is awaiting professional verification.'
+        : state && !state.active ? 'This nurse account is inactive.'
+        : 'This nurse is not eligible to accept new care requests.';
+      return { ok: false, reason };
+    }
     const schedule = scheduleFor(nurse), visit = interval(request);
     if (!schedule) return { ok: false, reason: 'This nurse has not configured working days and hours.' };
     if (!visit || !allowPast && visit.start * 60000 - 3 * 3600000 <= Date.now()) return { ok: false, reason: 'Choose a valid future date, time and duration.' };
@@ -115,5 +125,56 @@
     });
     return busy ? { ok: false, reason: 'This nurse already has a care request during the selected time.' } : { ok: true, schedule };
   }
-  window.CarePlusNurseAvailability = { normalizeSchedule, parseLegacySchedule, scheduleFor, describe, check, conflicts, interval };
+  function nextSlots(nurseId, request, { limit = 2, days = 30 } = {}) {
+    const nurse = window.CarePlusData?.list('users').find(user => String(user.role || '').toLowerCase() === 'nurse'
+      && [user.id, user.nurseId].some(id => id != null && String(id) === String(nurseId)));
+    const schedule = nurse && scheduleFor(nurse);
+    const requested = interval(request);
+    if (!schedule || !requested) return [];
+    const first = Math.max(requested.start, Math.floor((Date.now() + 3 * 3600000) / 60000) + 1);
+    const last = first + days * 1440;
+    const starts = new Set([first]);
+    const day = Math.floor(first / 1440);
+    for (let offset = -1; offset <= days; offset++) {
+      const midnight = (day + offset) * 1440;
+      starts.add(midnight);
+      starts.add(midnight + minutes(schedule.start));
+    }
+    const ids = [String(nurse.id), String(nurse.nurseId || nurse.id)];
+    window.CarePlusData.list('careRequests').forEach(other => {
+      if (!ids.includes(String(other.assignedNurseId || other.nurseId || ''))) return;
+      const booked = interval(other, true);
+      if (!booked) return;
+      if (!booked.period) starts.add(booked.start + booked.duration);
+      else {
+        const near = Math.max(0, Math.floor((first - booked.start) / booked.period) - 1);
+        for (let index = near; booked.start + index * booked.period <= last; index++) {
+          starts.add(booked.start + index * booked.period + booked.duration);
+        }
+      }
+    });
+    const results = [];
+    for (const start of [...starts].filter(value => value >= first && value < last).sort((a, b) => a - b)) {
+      const candidate = { ...request, date: new Date(start * 60000).toISOString().slice(0, 10), time: timeString(start % 1440) };
+      if (check(nurseId, candidate).ok) results.push(candidate);
+      if (results.length >= limit) break;
+    }
+    return results;
+  }
+  // Older demo accounts were provisioned without hours and could never appear
+  // in care searches. Give only the bundled sample nurse an explicit sample
+  // schedule; never infer working hours for registered nurses.
+  const demoNurse = window.CarePlusData?.list('users').find(user => user.source === 'demo-seed'
+    && user.nurseId === 'nurse-demo-lina' && user.email === 'nurse@careplus.test');
+  if (demoNurse && !scheduleFor(demoNurse)) {
+    let savedProfile = {};
+    try { savedProfile = JSON.parse(localStorage.getItem(`carePlusNurseProfileV1:${demoNurse.nurseId}`) || '{}'); } catch {}
+    if (!demoNurse.workSchedule && !demoNurse.availability && !savedProfile.workSchedule && !savedProfile.availability) {
+      window.CarePlusData.update('users', demoNurse.id, {
+        workSchedule: { days: [0, 1, 2, 3, 4, 5, 6], start: '00:00', end: '00:00', fullDay: true },
+        availability: '24/7'
+      });
+    }
+  }
+  window.CarePlusNurseAvailability = { normalizeSchedule, parseLegacySchedule, scheduleFor, describe, check, conflicts, interval, nextSlots };
 })();

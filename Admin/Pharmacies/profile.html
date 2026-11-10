@@ -5,7 +5,7 @@
   <title>Pharmacy profile | CarePlus Admin</title>
   <link rel="stylesheet" href="../admin.css"><link rel="stylesheet" href="../theme.css"><link rel="stylesheet" href="profile.css"><link rel="stylesheet" href="profile-overrides.css">
 <link rel="stylesheet" href="../dashboard-ui.css?v=admin-pages-5"><link rel="stylesheet" href="../../shared/site-headings.css?v=dancing-script-1">
-</head>
+<link rel="stylesheet" href="../../shared/notifications.css?v=admin-sidebar-notifications-1"></head>
 <body class="admin-unified" data-protected="true" data-admin-protected="true">
   <script src="../../auth.js?v=professional-role-access-1"></script>
   <div class="admin-layout">
@@ -13,7 +13,8 @@
       <a class="brand" href="../index.html"><span class="brand-mark">+</span><span>Care<span>Plus</span><small>ADMIN</small></span></a>
       <nav class="side-nav" aria-label="Admin sections">
         <a href="../index.html"><span></span>Dashboard</a><a href="../Users/index.html"><span></span>Users</a><a href="../Appointments/index.html"><span></span>Appointments</a><a href="../Products/index.html"><span></span>Products</a><a class="active" href="index.html"><span></span>Pharmacies</a><a href="../CareRequests/index.html"><span></span>Care requests</a><a href="../Orders/index.html"><span></span>Orders</a>
-      </nav><div class="sidebar-bottom"><p>Admin workspace</p><a href="../../Home/Master.html">View CarePlus site</a><a href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></div>
+      </nav><div id="careplus-notification-widget" class="cpn-side-slot" aria-label="Admin notifications"></div>
+<div class="sidebar-bottom"><p>Admin workspace</p><a href="../../Home/Master.html">View CarePlus site</a><a href="../../Home/Master.html" data-auth-toggle>LOG OUT</a></div>
     </aside>
     <main class="main-area">
       <header class="topbar"><button class="menu-toggle" type="button" aria-label="Open admin navigation" aria-controls="admin-sidebar" aria-expanded="false">Menu</button><div class="topbar-copy"><span class="eyebrow">CAREPLUS MANAGEMENT</span><h1>Pharmacy profile</h1></div></header>
@@ -34,7 +35,7 @@
   <dialog class="record-dialog" data-order-dialog><div class="dialog-heading"><h2>Order details</h2><button type="button" class="icon-button" data-close aria-label="Close dialog">&times;</button></div><div data-order-detail></div><div class="dialog-actions"><button type="button" class="secondary-button" data-close>Close</button></div></dialog>
   <div class="toast" data-toast role="status" aria-live="polite"></div>
   <script src="../../data/careplus-data.js?v=save-rollback-6"></script><script src="../../shared/professional-licenses.js?v=2"></script><script src="../../shared/nurse-availability.js?v=1"></script><script src="../../data/careplus-pharmacy.js?v=license-renewal-4"></script><script src="../../shared/delete-dialog.js"></script><script src="profile.js?v=pharmacy-orders-readonly-1"></script>
-<script src="../../shared/compact-tables.js"></script><script src="../dashboard-ui.js?v=admin-pages-4"></script><script src="../admin-nav.js?v=nav-3"></script></body>
+<script src="../../shared/compact-tables.js"></script><script src="../dashboard-ui.js?v=admin-pages-4"></script><script src="../admin-nav.js?v=nav-3"></script><script src="../../shared/notifications.js?v=admin-sidebar-notifications-1"></script></body>
 </html>
 
 

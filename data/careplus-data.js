@@ -323,6 +323,33 @@
   };
   data.careRequests.forEach(request => { if (sampleCareRequests[request.id]) fillMissing(request, sampleCareRequests[request.id]); });
   if (demoDataUpdated) write();
+  // One-time cleanup requested for Lina's existing bookings; future bookings are retained.
+  try {
+    const marker = 'careplusLinaBookingsCleared20261110V1';
+    if (localStorage.getItem(marker) !== '1') {
+      const linaIds = new Set(['nurse-demo-lina']);
+      data.users.filter(user => roleName(user.role) === 'nurse'
+        && (user.nurseId === 'nurse-demo-lina' || String(user.email || '').toLowerCase() === 'nurse@careplus.test'))
+        .forEach(user => [user.id, user.nurseId].filter(Boolean).forEach(value => linaIds.add(String(value))));
+      const removed = data.careRequests.filter(request => linaIds.has(String(request.assignedNurseId || request.nurseId || '')));
+      const removedIds = new Set(removed.map(request => String(request.id)));
+      const notifications = data.notifications.filter(item => ['careRequest', 'careRequests'].includes(item.recordType) && removedIds.has(String(item.recordId)));
+      if (removed.length) {
+        localStorage.setItem(marker + ':backup', JSON.stringify({ careRequests: removed, notifications }));
+        const previousRequests = data.careRequests;
+        const previousNotifications = data.notifications;
+        data.careRequests = data.careRequests.filter(request => !removedIds.has(String(request.id)));
+        data.notifications = data.notifications.filter(item => !notifications.includes(item));
+        if (!write()) {
+          data.careRequests = previousRequests;
+          data.notifications = previousNotifications;
+          throw new Error('Unable to save Lina booking cleanup');
+        }
+      }
+      localStorage.setItem(marker, '1');
+    }
+  } catch (error) { console.warn('Lina booking cleanup could not be completed.', error); }
+
   const api = {
     mode: "browser-demo",
     newestFirst(rows) {

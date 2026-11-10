@@ -81,7 +81,8 @@
       data.subscribe(render); setInterval(render, 60000); render();
       return;
     }
-    const filterRole = document.body.dataset.providerType || (/\/Admin\/Pharmacies\//i.test(location.pathname) ? 'pharmacy' : '');
+    if (!document.body.hasAttribute('data-license-renewals-dashboard')) return;
+    const filterRole = '';
     const panel = document.createElement('section'); panel.className = 'panel license-admin-panel';
     panel.id = 'license-renewals';
     panel.innerHTML = '<div class="panel-heading"><div><p class="eyebrow">PROFESSIONAL COMPLIANCE</p><h2>License renewals</h2><p>Review renewed licenses before restoring service eligibility.</p></div><label class="license-review-filter">Show<select aria-label="Filter license renewals"><option value="Pending">Pending review</option><option value="All">All requests</option><option value="Approved">Approved</option><option value="Rejected">Rejected</option></select></label></div><div class="table-wrap"><table><thead><tr><th>Professional</th><th>Role</th><th>License expires</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody></table></div><p class="license-help" data-license-empty hidden>No matching license renewal requests.</p>';

@@ -19,3 +19,75 @@
 .nurse-picker-actions button:disabled { opacity: .5; cursor: not-allowed; }
 .nurse-picker-message { color: #9b4e3c; font-size: 13px; line-height: 1.6; }
 @media(max-width: 540px) { .nurse-picker-dialog { padding: 18px; } .nurse-picker-card { gap: 10px; padding: 14px; } .nurse-picker-avatar { width: 38px; height: 38px; } .nurse-picker-actions button { flex: 1; } }
+
+.nurse-picker-card div > .nurse-picker-available { color: #087f64; font-weight: 700; }
+.nurse-picker-slot { padding: 16px; border: 1px solid #008f98; border-radius: 12px; background: #effafa; color: #173d4d; font: 600 14px Arial, sans-serif; text-align: start; cursor: pointer; }
+.nurse-picker-slot:hover { background: #dff3f3; }
+
+.nurse-picker-card div > .nurse-picker-unavailable { color: #9b4e3c; font-weight: 700; }
+
+/* Reference-style nurse selection and request summary. */
+.nurse-picker-dialog { box-sizing: border-box; width: min(1440px, calc(100% - 40px)); max-height: 94vh; padding: 36px; background: #f3f8f8; color: #1c2e40; }
+.nurse-picker-dialog * { box-sizing: border-box; }
+.nurse-picker-steps { display: flex; align-items: center; gap: 15px; margin-bottom: 28px; color: #637889; font-size: 15px; }
+.nurse-picker-steps span { display: flex; align-items: center; gap: 10px; }
+.nurse-picker-steps b { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #dfeaed; }
+.nurse-picker-steps span:first-child b { color: #188763; background: #d2f0e5; }
+.nurse-picker-steps [aria-current] { color: #1c2e40; font-weight: 700; }
+.nurse-picker-steps [aria-current] b { background: #15959e; color: white; }
+.nurse-picker-steps i { height: 1px; width: 45px; background: #bbced3; }
+.nurse-picker-heading { border: 0; padding-bottom: 18px; }
+.nurse-picker-heading > div > span { display: none; }
+.nurse-picker-heading h2 { margin: 0 0 10px; font: 700 clamp(28px, 3vw, 40px) Arial, sans-serif; letter-spacing: -.6px; }
+.nurse-picker-heading p { margin: 0; color: #637889; font-size: 16px; }
+.nurse-picker-layout { display: grid; grid-template-columns: minmax(0, 1fr) 350px; gap: 28px; align-items: start; }
+.nurse-picker-toolbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; min-height: 48px; font-size: 14px; color: #637889; }
+.nurse-picker-toolbar label { display: flex; align-items: center; gap: 10px; }
+.nurse-picker-toolbar select { border: 1px solid #cfdee3; border-radius: 10px; background: white; padding: 9px 12px; color: #30465a; font: inherit; }
+.nurse-picker-list { gap: 16px; margin: 8px 0 16px; }
+.nurse-picker-card { position: relative; align-items: flex-start; gap: 18px; padding: 24px 20px; border-radius: 19px; min-height: 154px; }
+.nurse-picker-card:has(input:checked) { background: white; border-color: #15959e; box-shadow: inset 0 0 0 1px #15959e; }
+.nurse-picker-card:has(input:focus-visible) { outline: 3px solid #1c708b; outline-offset: 3px; }
+.nurse-picker-card input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.nurse-picker-avatar { width: 60px; height: 60px; border-radius: 50%; background: #d5f0f2; color: #117780; font-size: 20px; }
+.nurse-picker-details { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.nurse-picker-card strong { font-size: 22px; margin: 0 0 4px; color: #1c2e40; }
+.nurse-picker-card div > span { font-size: 14px; line-height: 1.6; }
+.nurse-picker-card .nurse-picker-details > span:nth-of-type(3) { order: 0; }
+.nurse-picker-card .nurse-picker-details > .nurse-picker-tags { background: #edf3f5; color: #586f80; border-radius: 7px; padding: 2px 10px; margin: 6px 0; }
+.nurse-picker-card div > .nurse-picker-available, .nurse-picker-card div > .nurse-picker-unavailable { order: 2; margin-top: 8px; font-weight: 400; }
+.nurse-picker-rate { font-size: 22px; font-weight: 700; white-space: nowrap; }
+.nurse-picker-rate small { font-size: 13px; font-weight: 400; color: #637889; }
+.nurse-picker-summary { position: sticky; top: 0; margin-top: 8px; border: 1px solid #dce9ec; border-radius: 20px; background: white; padding: 26px 24px; }
+.nurse-picker-summary h3 { margin: 0 0 6px; font: 700 14px Arial, sans-serif; letter-spacing: 2px; color: #15959e; }
+.nurse-picker-summary > p { color: #34485d; line-height: 1.6; margin: 0 0 12px; font-size: 15px; }
+.nurse-picker-summary dl { margin: 10px 0; }
+.nurse-picker-summary dl > div { display: flex; justify-content: space-between; gap: 12px; padding: 13px 0; border-bottom: 1px solid #e7eff2; font-size: 15px; }
+.nurse-picker-summary dt { color: #687d90; }
+.nurse-picker-summary dl > div[hidden] { display: none; }
+.nurse-picker-summary dd { margin: 0; text-align: right; color: #34485d; }
+.nurse-picker-summary dl > .nurse-picker-total { align-items: center; border: 0; padding: 20px 0 6px; }
+.nurse-picker-total dt { font-size: 18px; font-weight: 700; color: #1c2e40; }
+.nurse-picker-total dd { font-size: 29px; font-weight: 700; color: #15959e; }
+.nurse-picker-summary > .nurse-picker-note { color: #8b9dad; font-size: 13px; }
+.nurse-picker-actions { border: 0; flex-direction: column-reverse; padding-top: 8px; gap: 8px; }
+.nurse-picker-actions button[type="submit"] { width: 100%; border-radius: 12px; background: #15959e; padding: 16px 10px; font-size: 16px; }
+.nurse-picker-actions button[type="button"] { border: 0; padding: 8px; background: transparent; }
+@media (max-width: 1050px) { .nurse-picker-layout { grid-template-columns: minmax(0, 1fr) 290px; gap: 18px; } .nurse-picker-dialog { padding: 24px; } .nurse-picker-card { flex-wrap: wrap; } .nurse-picker-rate { margin-left: 78px; } }
+@media (max-width: 760px) { .nurse-picker-dialog { width: calc(100% - 20px); padding: 20px 16px; } .nurse-picker-layout { grid-template-columns: 1fr; } .nurse-picker-summary { position: static; } .nurse-picker-steps { gap: 8px; font-size: 11px; } .nurse-picker-steps span { gap: 5px; } .nurse-picker-steps b { width: 24px; height: 24px; } .nurse-picker-steps i { width: 12px; } .nurse-picker-card strong { font-size: 19px; } .nurse-picker-avatar { width: 48px; height: 48px; } .nurse-picker-rate { margin-left: 66px; } }
+
+.nurse-picker-layout { grid-template-columns: minmax(0, 1fr); }
+.nurse-picker-actions { flex-direction: row; justify-content: flex-end; }
+.nurse-picker-actions button[type="submit"] { width: auto; min-width: 220px; }
+.nurse-picker-layout { width: 72%; margin-right: auto; margin-left: auto; display: block; }
+.nurse-picker-heading p { display: none; }
+.nurse-picker-card { min-height: 154px; flex-wrap: nowrap; }
+.nurse-picker-specialties { display: flex; flex-wrap: wrap; gap: 7px; margin: 9px 0 2px; }
+.nurse-picker-card .nurse-picker-specialties > span { padding: 3px 10px; background: #edf3f5; color: #586f80; border-radius: 7px; font-size: 14px; line-height: 1.4; }
+.nurse-picker-card .nurse-picker-meta { color: #687d90; font-size: 15px; }
+@media (max-width: 900px) { .nurse-picker-layout { width: 100%; } }
+.nurse-picker-dialog { width: min(820px, calc(100% - 28px)); max-height: 85vh; padding: 26px; }
+.nurse-picker-layout { width: 100%; }
+.nurse-picker-heading h2 { font-size: 30px; }
+.nurse-picker-card { min-height: 132px; padding: 20px; }
+@media (max-width: 540px) { .nurse-picker-dialog { padding: 18px; } .nurse-picker-card { padding: 16px; gap: 12px; } .nurse-picker-heading h2 { font-size: 26px; } }

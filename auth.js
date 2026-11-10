@@ -595,18 +595,33 @@
       { marker: "careplusDemoUserProvisionedV1", email: "user@careplus.test", password: "CarePlusUser123!", name: "Demo User", role: "Customer", status: "Active", source: "demo-seed" },
       { marker: "careplusDemoDoctorProvisionedV1", email: "doctor@careplus.test", password: "CarePlusDoctor123!", name: "Dr. Omar Khalil", role: "Doctor", doctorId: "doctor-demo-omar", specialty: "Cardiology", approvalStatus: "Approved", accountStatus: "Active", status: "Active", source: "demo-seed" },
       { marker: "careplusDemoPharmacyProvisionedV1", email: "pharmacy@careplus.test", password: "CarePlusPharmacy123!", name: "Al Shifa Pharmacy", role: "Pharmacy", pharmacyId: "pharmacy-1", approvalStatus: "Approved", accountStatus: "Active", status: "Active", source: "demo-seed" },
-      { marker: "careplusDemoNurseProvisionedV1", email: "nurse@careplus.test", password: "CarePlusNurse123!", name: "Lina Haddad", role: "Nurse", nurseId: "nurse-demo-lina", accountStatus: "Active", status: "Active", phone: "+962 7 9000 2001", specialty: "Elderly home care", experience: "5", source: "demo-seed" }
+      { marker: "careplusDemoNurseProvisionedV1", email: "nurse@careplus.test", password: "CarePlusNurse123!", name: "Lina Haddad", role: "Nurse", nurseId: "nurse-demo-lina", accountStatus: "Active", status: "Active", phone: "+962 7 9000 2001", specialty: "Elderly home care", experience: "5", workSchedule: { days: [0, 1, 2, 3, 4, 5, 6], start: "00:00", end: "00:00", fullDay: true }, availability: "24/7", source: "demo-seed" }
     ];
     for (const demo of accounts) {
+      // Apply the requested demo nurse password reset once to existing browsers.
+      // Keep later password changes intact after this migration succeeds.
+      if (demo.email === "nurse@careplus.test") {
+        const resetKey = "careplusDemoNursePasswordResetV2";
+        const existing = findAccount(demo.email);
+        let resetApplied = false;
+        try { resetApplied = localStorage.getItem(resetKey) === "1"; } catch {}
+        if (existing && accountRole(existing) === "nurse" && !resetApplied) {
+          if (!(await setDemoPassword(demo.email, demo.password))) throw new Error("Could not save the nurse password. Open the site over localhost or HTTPS and allow browser storage.");
+          try { localStorage.setItem(resetKey, "1"); } catch {}
+        }
+      }
       let provisioned = false; try { provisioned = localStorage.getItem(demo.marker) === "1"; } catch {}
-      if (provisioned) continue;
       let account = findAccount(demo.email);
+      if (provisioned && account && readCredentials()[demo.email]) continue;
       if (!account) {
         const { marker, password, ...record } = demo;
         account = window.CarePlusData.create("users", record);
       }
       if (!account) continue;
       if (!readCredentials()[demo.email] && !(await setDemoPassword(demo.email, demo.password))) continue;
+      if (demo.email === "nurse@careplus.test" && accountRole(account) === "nurse") {
+        try { localStorage.setItem("careplusDemoNursePasswordResetV2", "1"); } catch {}
+      }
       try { localStorage.setItem(demo.marker, "1"); } catch {}
     }
   }

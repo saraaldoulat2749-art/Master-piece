@@ -103,9 +103,13 @@ if (form) {
     let selectedNurse;
     const visitDetails = () => ({ date: form.elements.namedItem('date').value, time: form.elements.namedItem('time').value,
       duration: Number(duration.value), schedule: form.elements.namedItem('schedule')?.value || '' });
-    try { selectedNurse = await window.CarePlusNursePicker.open(visitDetails()); }
+    try { selectedNurse = await window.CarePlusNursePicker.open(visitDetails(), { city: form.elements.namedItem('city').value, shift: form.elements.namedItem('shift')?.value, hourlyRate: isHome ? PRICING.homeHourlyJod : PRICING.companionHourlyJod, pricing: updateEstimate() }); }
     catch { document.getElementById('form-feedback').textContent = 'Nurse selection could not be opened. Please refresh and try again.'; }
     finally { submitting = false; }
+    if (selectedNurse?.selectedVisit) {
+      form.elements.namedItem('date').value = selectedNurse.selectedVisit.date;
+      form.elements.namedItem('time').value = selectedNurse.selectedVisit.time;
+    }
     if (!selectedNurse || !form.reportValidity()) return;
     const availability = window.CarePlusNurseAvailability?.check(selectedNurse.nurseId, visitDetails());
     if (!availability?.ok) { document.getElementById('form-feedback').textContent = availability?.reason || 'Please refresh and choose an available nurse.'; return; }
